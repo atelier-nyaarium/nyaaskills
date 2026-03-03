@@ -1,0 +1,14 @@
+{
+  "name": "nyaaskills",
+  "description": "Shared agents, skills, and templates for nyaarium projects",
+  "owner": {
+    "name": "Nyaarium"
+  },
+  "plugins": [
+    {
+      "name": "nyaaskills",
+      "description": "Shared agents, skills, and templates for nyaarium projects. Includes testability, quality, team collaboration, debugging instrumentation, and MCP server templates.",
+      "source": "./"
+    }
+  ]
+}
