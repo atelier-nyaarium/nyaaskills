@@ -29,7 +29,7 @@ Two agent files in `.claude/agents/`:
 
 Spawn exactly one engineer per team:
 ```
-Agent(subagent_type="team-engineer", name="engineer", prompt="<the user's task>")
+Agent(subagent_type="team-engineer", name="engineer", model="<model; default to opus>", prompt="<the user's task>")
 ```
 
 ### Subagents
