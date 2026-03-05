@@ -1,6 +1,6 @@
 {
   "name": "nyaaskills",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Shared agents, skills, and templates for nyaarium projects. Includes testability assessment, quality review, code analysis, debugging instrumentation (NDJSON to .cursor/debug-{sessionId}.log), MCP server templates, and team collaboration agents.",
   "author": {
     "name": "Nyaarium"

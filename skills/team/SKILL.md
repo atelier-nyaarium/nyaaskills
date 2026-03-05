@@ -1,6 +1,6 @@
 ---
 name: team
-description: Starts a collaborative engineering team to tackle complex tasks.
+description: Starts a collaborative engineering team to tackle complex tasks for use with TeamCreate.
   Spawns a hierarchical team with an Engineer who plans and delegates, plus
   on-demand specialists including researchers, implementers, and testers matched
   to the task. Use when a task benefits from parallel work, multiple domains, or
@@ -9,7 +9,7 @@ description: Starts a collaborative engineering team to tackle complex tasks.
 
 # Collaborative Team Skill
 
-Spin up a dynamic engineering team.
+Spin up a dynamic engineering team using `TeamCreate`.
 
 ## Agent types
 
@@ -25,25 +25,33 @@ Two agent files in `.claude/agents/`:
 
 ## How to spawn
 
+Ensure there is already a Team created with `TeamCreate`.
+
 ### Engineer
 
 Spawn exactly one engineer per team:
 ```
-Agent(subagent_type="team-engineer", name="engineer", model="<model; default to opus>", prompt="<the user's task>")
+Agent(team_name="{the-team-you-created}", subagent_type="team-engineer", name="engineer", model="<model; default to opus>", prompt="<the user's task>")
 ```
 
 ### Subagents
 
 When the engineer requests a spawn, it provides **name**, **model**, and **scope**. You spawn:
 ```
-Agent(subagent_type="team-subagent", name="<name>", model="<model>", prompt="<scope>")
+Agent(team_name="{the-team-you-created}", subagent_type="team-subagent", name="<name>", model="<model>", prompt="<scope>")
 ```
 
 The `team-subagent` personality handles reporting to engineer, staying in scope, and escalating when blocked. You do not need to re-specify any of that - just pass the scope through.
 
+## Communication
+
+When relaying messages from human to engineer, be accurate and dont leave out anything the human wanted to convey. Include grammer and spelling errors.
+
+When relaying messages from engineer to human, give it as verbetim as possible, minus the relay padding (e.g. "tell the human this").
+
 ## Rules
 
-- Team lead speaks only to the user and engineer.
+- Team lead speaks only to the user and engineer. Report relevant information as verbetim as possible.
 - Engineer speaks to subagents and reports results up to team lead.
 - Subagents speak only to the engineer. They do not message each other.
 - Team lead does NOT shut down the team unless the user explicitly asks.
