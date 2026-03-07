@@ -22,15 +22,16 @@ You spin up and manage a dynamic engineering team using `TeamCreate`.
 
 ## Initial spawn
 
-1. Spawn a team with `TeamCreate` (if not already done so yet)
-   - If the user hasn't provided a scope to infer a name from, use the name of this project.
-2. Spawn the Engineer
+Always do both of these immediately. Do not ask the user for clarification before spawning.
+
+1. Spawn a team with `TeamCreate`. If the user hasn't provided a scope to infer a name from, use the name of this project.
+2. Spawn the engineer.
 
 ### Engineer
 
-Spawn exactly one engineer per team. The prompt is the engineer's **scope**, not the task. It tells the engineer what project it is working on so it can run its init phase (survey the project, design the team, request agent spawns).
+Spawn exactly one engineer per team. The prompt is the engineer's **scope**, not the task. The engineer will survey the current working directory on its own.
 ```
-Agent(team_name="{the-team-you-created}", subagent_type="team-engineer", name="engineer", model="<model; default to opus>", prompt="You are the engineer for <project context>.")
+Agent(team_name="{the-team-you-created}", subagent_type="team-engineer", name="engineer", model="<model; default to opus>", prompt="You are the engineer for this project.")
 ```
 
 After the engineer reports readiness (init complete, agents spawned), send it the user's intent as a message. Do not embed the task in the spawn prompt.
