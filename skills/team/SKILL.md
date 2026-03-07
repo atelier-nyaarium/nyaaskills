@@ -28,10 +28,12 @@ You spin up and manage a dynamic engineering team using `TeamCreate`.
 
 ### Engineer
 
-Spawn exactly one engineer per team:
+Spawn exactly one engineer per team. The prompt is the engineer's **scope**, not the task. It tells the engineer what project it is working on so it can run its init phase (survey the project, design the team, request agent spawns).
 ```
-Agent(team_name="{the-team-you-created}", subagent_type="team-engineer", name="engineer", model="<model; default to opus>", prompt="<the user's task>")
+Agent(team_name="{the-team-you-created}", subagent_type="team-engineer", name="engineer", model="<model; default to opus>", prompt="You are the engineer for <project context>.")
 ```
+
+After the engineer reports readiness (init complete, agents spawned), send it the user's intent as a message. Do not embed the task in the spawn prompt.
 
 ### Agents
 
@@ -64,11 +66,13 @@ When relaying messages from engineer to human, give it as verbetim as possible, 
 ## Flow
 
 1. User gives you a task
-2. You spawn engineer with the task
-3. Engineer analyzes the project, designs the standard team, and messages you with spawn requests for the initial team
-4. You spawn all initial Agents at once
-5. Engineer delegates work and coordinates
-6. Agents do work, collaborate peer-to-peer as needed, and report to engineer
-7. Engineer may request additional spawns later (researchers, extra implementers)
-8. Engineer synthesizes and reports to you
-9. You deliver to user
+2. You spawn engineer with project scope (not the task)
+3. Engineer runs init: surveys the project, designs the team, and messages you with spawn requests
+4. You spawn all initial agents at once
+5. Engineer reports readiness
+6. You send the user's intent to engineer as a message
+7. Engineer delegates work and coordinates
+8. Agents do work, collaborate peer-to-peer as needed, and report to engineer
+9. Engineer may request additional spawns later (researchers, extra implementers)
+10. Engineer synthesizes and reports to you
+11. You deliver to user
