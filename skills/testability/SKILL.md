@@ -9,9 +9,15 @@ description: Orchestrates systematic addition of autonomous testability infrastr
 
 You orchestrate systematic testability infrastructure additions to untestable projects. Your role is to manage the testability workflow, communicate with the user, and coordinate agent work to progressively build autonomous validation capabilities.
 
-## Spawning Subagents
+## Routing
 
-When this skill instructs you to delegate to a subagent, spawn it using whichever tool your environment provides — `Task`, `mcp_task`, `runSubagent`, or equivalent. Always delegate to a subagent rather than performing the work yourself. Pass the relevant context (goal, constraints, affected files) as explicit instructions to the subagent.
+If you are known as `team-lead` with an active team via `CreateTeam`, delegate the request to the engineer and let them handle it using `team-testability-assessor`. Do not orchestrate the request yourself. Ignore the rest of this skill.
+
+Otherwise, continue with the workflow below.
+
+## Spawning subagents
+
+When this skill instructs you to delegate to a subagent, spawn it using whichever tool your environment provides (Agent, Task, or runSubagent). Always delegate to a subagent rather than performing the work yourself. Pass the relevant context (goal, constraints, affected files) as explicit instructions to the subagent.
 
 ## Understanding the Request
 
@@ -27,7 +33,7 @@ If no specific request is given, proceed with a comprehensive assessment of test
 
 ### 1. Assessment Phase
 
-Delegate to the `testability-assessor` subagent to evaluate current autonomous testability capabilities and identify gaps.
+Delegate to the `subagent-testability-assessor` to evaluate current autonomous testability capabilities and identify gaps.
 
 The assessor will:
 - Evaluate test automation (can agents discover, run, and interpret tests?)
@@ -50,25 +56,25 @@ Based on the assessor's recommended opportunity, determine implementation approa
 
 ### 3. Execution Loop
 
-If problems are found, delegate to the `code-analyst` subagent to assess the impact and return to step 1 to fix the problem.
+If problems are found, delegate to the `subagent-code-analyst` to assess the impact and return to step 1 to fix the problem.
 
 **Delegate to subagents for implementation:**
 
-1. **Implementation** - Delegate to the `refactor-worker` subagent with clear instructions:
+1. **Implementation** - Delegate to the `subagent-refactor-worker` with clear instructions:
    - What to build and how it should integrate
    - For development skills, specify exact project context (languages, build tools, environment, file paths)
 
-2. **Automated Verification** - Ensure `refactor-worker` has run:
+2. **Automated Verification** - Ensure `subagent-refactor-worker` has run:
    - Linting and type checking
    - Build verification
    - Test suite execution
-   - Delegate to the `ux-tester` subagent if refactoring affects UI components or user workflows
+   - Delegate to the `subagent-ux-tester` if refactoring affects UI components or user workflows
 
 3. **Testability Infrastructure Validation** - YOU validate agent usability:
    - **For test infrastructure**: Run sample tests, verify agents can interpret results and understand coverage
    - **For diagnostic capabilities**: Write sample debug statements, verify output is structured and parseable
    - **For MCP servers**: Execute validation operations (query state, trigger scenarios, verify responses)
-      - You may need to pause and instruct the user how to configure or refresh MCP server on VS/Cursor/Claude Code
+     - You may need to pause and instruct the user how to configure or refresh MCP server on VS/Cursor/Claude Code
    - **For development skills**: Read generated SKILL.md, verify it accurately describes this project's validation workflow
 
 4. **User Acceptance** - Present results to user:
@@ -82,7 +88,7 @@ If problems are found, delegate to the `code-analyst` subagent to assess the imp
    - **Encourage the user to commit** - this locks in stable testability capability progress
 
 6. **Reassess & Continue** - After successful commit:
-   - Return to **Assessment Phase** and delegate to the `testability-assessor` subagent again to reassess the next opportunity
+   - Return to **Assessment Phase** and delegate to the `subagent-testability-assessor` again to reassess the next opportunity
 
 This creates an iterative loop where each cycle adds tangible, testable capabilities without expensive re-analysis.
 

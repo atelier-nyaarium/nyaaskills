@@ -1,6 +1,6 @@
 ---
-name: quality-assessor
-description: Subagent that evaluates code quality and identifies improvement opportunities. Analyzes architecture, patterns, and technical debt. Recommends one prioritized refactoring based on dependency order and impact, selecting between forceful improvement or gentle migration approaches.
+name: subagent-quality-assessor
+description: One-shot subagent for use with Agent, Task, or runSubagent. Evaluates code quality and identifies improvement opportunities. Recommends one prioritized refactoring based on dependency order and impact.
 model: opus
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---

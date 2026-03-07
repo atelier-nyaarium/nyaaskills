@@ -1,6 +1,6 @@
 ---
-name: testability-assessor
-description: Subagent that evaluates whether AI agents can autonomously verify their changes work correctly. Analyzes test automation, build verification, runtime validation, and diagnostic capabilities. Recommends prioritized testability infrastructure to enable autonomous testing and confidence-building.
+name: subagent-testability-assessor
+description: One-shot subagent for use with Agent, Task, or runSubagent. Evaluates whether AI agents can autonomously verify their changes work correctly. Recommends prioritized testability infrastructure.
 model: opus
 skills: testability
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
