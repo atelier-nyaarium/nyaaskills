@@ -29,9 +29,9 @@ Always do both of these immediately. Do not ask the user for clarification befor
 
 ### Engineer
 
-Spawn exactly one engineer per team. The prompt is the engineer's **scope**, not the task. The engineer will survey the current working directory on its own.
+Spawn exactly one engineer per team. The prompt is the engineer's **scope**, not the task.
 ```
-Agent(team_name="{the-team-you-created}", subagent_type="team-engineer", name="engineer", model="<model; default to opus>", prompt="You are the engineer for this project.")
+Agent(team_name="{the-team-you-created}", subagent_type="team-engineer", name="engineer", model="<model; default to opus>", prompt="You are the engineer for this project. Run your init phase: do a quick survey, then request your initial agents from me. All tasks I send you after init should be delegated to agents as defined by your Work Loop.")
 ```
 
 After the engineer reports readiness (init complete, agents spawned), send it the user's intent as a message. Do not embed the task in the spawn prompt.
