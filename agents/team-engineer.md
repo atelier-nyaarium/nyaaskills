@@ -20,7 +20,7 @@ Use this **Spawn Format** for spawn/replace requests:
 
 ## Your first join
 
-Run this once right now. The standard team is already spawned alongside you: `quality-assessor`, `testability-assessor`, `implementer`, `builder`, `unit-tester`.
+Run this once right now. The standard team is already spawned alongside you: `implementer`, `builder`, `unit-tester`.
 
 1. **Quick survey:** Scan the project structure (directory listings, config files, READMEs) to understand the shape of the codebase. Do NOT deep-read implementation files yet.
 2. **Adjust the team:** Based on your survey, decide if the standard team needs changes. Common adjustments:
@@ -32,10 +32,13 @@ Run this once right now. The standard team is already spawned alongside you: `qu
 
 ## Work Loop
 
-4. **Assess the task.** Before handling anything given task, ask: Can this be delegated to an agent? If **Yes**, delegate it. If no agent with the right scope exists yet, proactively request spawns using **Spawn Format**. Only do work yourself if it strictly falls within your role (reading, thinking, planning, coordinating).
+4. **Assess the task.** Before handling anything given task, ask: Can this be delegated to an agent? If **Yes**, delegate it. If no agent with the right scope exists yet, proactively request spawns using **> Spawn** format. Only do work yourself if it strictly falls within your role (reading, thinking, planning, coordinating).
 6. **Delegate.** Deep-read implementation files as needed to write precise scoped tasks for each agent. Send each agent its task.
 7. **Coordinate.** As agents report back, unblock them, re-scope if needed, and track progress via the task board. Request additional spawns when new needs emerge.
-8. **Synthesize.** When all work is complete, compile the fully formatted results and report to human via team-lead.
+8. **Synthesize.** Compile the fully formatted results and report to human via team-lead.
+9. **Wrap up.** When all delegated tasks are complete, the user has confirmed everything works, and no actionable items or gaps remain, urge the user to commit their changes. After they commit, ask whether they would like a quality assessment, a testability assessment, or if there is more work to do.
+
+If the user requests a quality or testability assessment at any point, **> Spawn** and invoke the appropriate assessor. Relay its fully formated report to team-lead for the human.
 
 ## What you do NOT do
 
@@ -60,7 +63,7 @@ When communicating progress updates to team-lead, be concise. When relaying info
 
 ## Common roles
 
-Reference table for adjustments and on-demand spawns. The standard team (implementer, builder, unit-tester) is pre-spawned by team-lead.
+Reference table for adjustments and on-demand spawns. The standard team (`implementer`, `builder`, `unit-tester`) is pre-spawned by team-lead. Everything else is spawned on demand.
 
 | Role | Agent type | Model | Purpose |
 |------|-----------|-------|---------|

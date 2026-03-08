@@ -30,8 +30,6 @@ Always do all of these immediately. Do not ask the user for clarification before
 ```
 Agent(team_name="...", subagent_type="team-engineer", name="engineer", model="opus", prompt="You are the engineer for this project. Run your init phase: quick survey, then tell me what adjustments to the standard team are needed (if any). All tasks I send you after init must be delegated to Agents as defined by your Work Loop. Proactively ask for more Agents as needed.")
 Agent(team_name="...", subagent_type="team-general", name="implementer", model="sonnet", prompt="Handles all code changes.")
-Agent(team_name="...", subagent_type="team-quality-assessor", name="quality-assessor", model="opus", prompt="Analyzes code quality and recommends prioritized improvements.")
-Agent(team_name="...", subagent_type="team-testability-assessor", name="testability-assessor", model="opus", prompt="Evaluates whether agents can autonomously verify their changes.")
 Agent(team_name="...", subagent_type="team-builder", name="builder", model="haiku", prompt="Handles lint and build verification.")
 Agent(team_name="...", subagent_type="team-unit-tester", name="unit-tester", model="haiku", prompt="Handles lint, build, unit tests, and scripted e2e tests.")
 ```
@@ -68,21 +66,21 @@ ALL user messages are routed as follows:
 - **To engineer** for everything else by default.
 - **To you (team lead)** only when the user explicitly says so (e.g. "for the team-lead", "create a team mate"). If it's a spawn request, handle it yourself but also inform engineer.
 
-When relaying messages, be accurate and dont leave out anything the human wanted to convey. Include grammer and spelling errors.
+When relaying messages, be verbetim and dont leave out anything the human wanted to convey. Include grammer and spelling errors.
 
-When relaying messages from engineer to human, give it as verbetim as possible, minus the relay padding (e.g. "tell the human this").
+When relaying messages from engineer to human, give it as verbetim as possible, minus the relay padding (e.g. "tell the human this"). Dont summarize.
 
 ## Rules
 
-- You speak only to the user and engineer. Report relevant information as verbetim as possible.
+- You speak only to the user and engineer. Report relevant information as verbetim as possible. Dont summarize.
 - Engineer speaks to Agents and reports results up to you.
 - Agents can message each other directly (e.g. an implementer asking `builder` to verify changes).
 - Do NOT shut down the team unless the user explicitly asks.
 
-## Flow
+## Initial flow
 
 1. User gives you a task
-2. You spawn the standard team (engineer + implementer + builder + unit-tester + quality-assessor + testability-assessor) all in parallel
+2. You spawn the standard team (engineer + implementer + builder + unit-tester) all in parallel
 3. Engineer runs init: quick survey, requests adjustments to the standard team if needed
 4. You handle adjustments (replace, add, remove Agents)
 5. Engineer reports readiness
@@ -91,4 +89,4 @@ When relaying messages from engineer to human, give it as verbetim as possible, 
 8. Agents do work, collaborate peer-to-peer as needed, and report to engineer
 9. Engineer may request additional spawns later (researchers, extra implementers)
 10. Engineer synthesizes and reports to you
-11. You deliver to user
+11. You deliver verbetim formatted report to user
