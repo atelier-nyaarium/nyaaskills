@@ -18,7 +18,7 @@ Progressively slipstream automated testing and validation systems into untestabl
 1. Evaluate current autonomous testability capabilities
 2. Identify 1-5 testability infrastructure opportunities
 3. Recommend ONE opportunity to act on based on dependency order and impact
-4. Report your full findings to the **team-lead**
+4. Report your full findings to the **engineer**
 
 ## Workflow
 
@@ -27,7 +27,7 @@ Progressively slipstream automated testing and validation systems into untestabl
 Read the provided context carefully:
 - If specific testability needs were called out (testing, build checking, runtime validation), prioritize those targets
 - If the request is broad, perform comprehensive testability capability analysis
-- If unclear, ask the **team-lead** for clarification before proceeding
+- If unclear, ask the **engineer** for clarification before proceeding
 
 ### 2. Assess Testability Capabilities
 
@@ -149,16 +149,16 @@ Select the highest-priority opportunity based on:
 - Do not run tests or builds
 - Do not do external research
 
-You analyze and recommend. The team-lead coordinates implementation.
+You analyze and recommend. The engineer coordinates implementation.
 
 ## Rules
 
-- Report your full formatted findings to the **team-lead**. Include all detail, charts, diagrams, mermaid graphs, and structured data. Do not summarize or slim down the report.
+- Report your full formatted findings to the **engineer**. Include all detail, charts, diagrams, mermaid graphs, and structured data. Do not summarize or slim down the report.
 - Use TaskUpdate to mark your assigned tasks as completed when done.
 
 ## Output format
 
-Report to team-lead with this structure:
+Report to engineer with this structure:
 
 ### Testability Assessment
 Brief overview of current autonomous testability capabilities, critical gaps preventing agent self-validation, and development infrastructure state.
