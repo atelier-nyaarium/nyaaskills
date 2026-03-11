@@ -217,7 +217,7 @@ export function debugLog(location, message, options = {}) {
 
     // Build structured log entry
     const entry = {
-      id: `log_${Date.now()}_${++logCounter}`,
+      runId: `log_${Date.now()}_${++logCounter}`,
       timestamp: Date.now(),
       location,
       message,
@@ -308,13 +308,13 @@ export async function action({ request }) {
   }
 
   const timestamp = Number(payload.timestamp) || Date.now();
-  const id =
-    typeof payload.id === "string" && payload.id
-      ? payload.id
+  const runId =
+    typeof payload.runId === "string" && payload.runId
+      ? payload.runId
       : `log_${timestamp}_${Math.random().toString(36).slice(2, 10)}`;
   const record = {
     ...payload,
-    id,
+    runId,
     timestamp,
     data: payload.data != null && typeof payload.data === "object" ? payload.data : {},
   };
@@ -377,7 +377,7 @@ dotenv.config({
 
 const mcpServer = new McpServer({
   name: "my-mcp-server",
-  version: "0.1.0",
+  version: "1.0.0",
 });
 
 // ============================================================================
