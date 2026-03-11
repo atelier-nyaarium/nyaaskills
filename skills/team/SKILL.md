@@ -49,10 +49,10 @@ Determine which mode applies:
 
 3. ❓ **Present the team for approval:** Show the user your proposed team layout and wait for confirmation before spawning.
 
-   | Agent Name | Subagent Type | Model |
-   |------------|---------------|-------|
-   | `roster` | `team-notes` | sonnet |
-   | `goals` | `team-notes` | sonnet |
+   | Agent Name | Subagent Type | Model | Scope |
+   |------------|---------------|-------|-------|
+   | `roster` | `team-notes` | sonnet | ... |
+   | `goals` | `team-notes` | sonnet | ... |
    | ... | ... | ... |
 
 4. **Spawn:** Create the team with `TeamCreate` and spawn all agents in parallel (always include `roster` and `goals`). If the user hasn't provided a scope to infer a team name from, use the name of this project.
