@@ -38,7 +38,10 @@ Determine which mode applies:
 
 ### Fresh Start
 
-1. **Quick survey:** Scan the project structure to understand the shape of the codebase. Directory listings, config files, READMEs, package.json. No source code yet, just the shape. Check for specialized agents and top `head -n 6` frontmatter for the project.
+1. **Quick survey:** Scan the project structure to understand the shape of the codebase.
+   - Full read project configurations like: config files, `package.json`.
+   - Explore around directory listings with `ls -1` to understand the shape of the project's code.
+   - Check for specialized agents frontmatters with `head -n 6` to understand what you should use.
 
 2. **Decide the team:** Based on your survey, determine which agents to spawn. Start from the standard team and adjust:
    - Replace `implementer` with multiple `implementer-<domain>` if the project has clearly separated domains, like Ruby on Rails.
