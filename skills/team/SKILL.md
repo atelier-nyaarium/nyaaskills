@@ -38,7 +38,7 @@ Determine which mode applies:
 
 ### Fresh Start
 
-1. **Quick survey:** Scan the project structure to understand the shape of the codebase. Directory listings, config files, READMEs, package.json. No source code yet, just the shape.
+1. **Quick survey:** Scan the project structure to understand the shape of the codebase. Directory listings, config files, READMEs, package.json. No source code yet, just the shape. Check for specialized agents for the project.
 
 2. **Decide the team:** Based on your survey, determine which agents to spawn. Start from the standard team and adjust:
    - Replace `implementer` with multiple `implementer-<domain>` if the project has clearly separated domains, like Ruby on Rails.
@@ -47,7 +47,15 @@ Determine which mode applies:
    - Add any other roles as needed.
    - Make sure to follow the common roles table for "Model" selection and good defaults.
 
-3. **Spawn:** Create the team with `TeamCreate` and spawn all agents in parallel (always include `roster` and `goals`). If the user hasn't provided a scope to infer a team name from, use the name of this project.
+3. ❓ **Present the team for approval:** Show the user your proposed team layout and wait for confirmation before spawning.
+
+   | Agent Name | Subagent Type | Model |
+   |------------|---------------|-------|
+   | `roster` | `team-notes` | sonnet |
+   | `goals` | `team-notes` | sonnet |
+   | ... | ... | ... |
+
+4. **Spawn:** Create the team with `TeamCreate` and spawn all agents in parallel (always include `roster` and `goals`). If the user hasn't provided a scope to infer a team name from, use the name of this project.
 
 Standard team (adjust before spawning):
 ```
@@ -58,11 +66,11 @@ Agent(team_name="...", subagent_type="team-builder", name="builder", model="haik
 Agent(team_name="...", subagent_type="team-unit-tester", name="unit-tester", model="haiku", prompt="Handles lint, build, unit tests, and scripted e2e tests.")
 ```
 
-4. **Brief roster:** Message `roster` with the full team state: team name, every agent spawned (name, type, model, scope).
+5. **Brief roster:** Message `roster` with the full team state: team name, every agent spawned (name, type, model, scope).
 
-5. **Sync with goals:** Message `goals` with the user's task and your initial objectives. Wait for `goals` to confirm its understanding. If it has it wrong or incomplete, correct it. Repeat until aligned.
+6. **Sync with goals:** Message `goals` with the user's task and your initial objectives. Wait for `goals` to confirm its understanding. If it has it wrong or incomplete, correct it. Repeat until aligned.
 
-6. **Delegate:** Enter the Work Loop with the user's task.
+7. **Delegate:** Enter the Work Loop with the user's task.
 
 ### Recovery Probe
 
@@ -76,7 +84,7 @@ Agent(team_name="...", subagent_type="team-unit-tester", name="unit-tester", mod
 
 4. **Handle conflicts:** If no agents respond at all, the team ID may be wrong or the team was never fully created.
    - Attempt a **Fresh Start**.
-   - If `TeamCreate` fails reporting a team already exists under that name: **stop and ask the user for recovery advice.** Do not force-create or delete the existing team.
+   - ❓ If `TeamCreate` fails reporting a team already exists under that name: **stop and ask the user for recovery advice.** Do not force-create or delete the existing team.
 
 5. Resume the Work Loop with restored state.
 
@@ -87,14 +95,15 @@ Agent(team_name="...", subagent_type="team-unit-tester", name="unit-tester", mod
 3. **Coordinate:** As agents report back, unblock them, re-scope if needed, and track progress via the task board (TaskCreate, TaskUpdate, TaskList). Spawn additional agents when new needs emerge.
 4. **Synthesize:** Compile the fully formatted results and report to the user.
 
-**Wrap up:** When all delegated tasks are complete, the user has confirmed everything works, and no actionable items or gaps remain, urge the user to commit their changes. After they commit, ask whether they would like a quality assessment, a testability assessment, or if there is more work to do.
+**Wrap up:** When all delegated tasks are complete, the user has confirmed everything works, and no actionable items or gaps remain, urge the user to commit their changes. ❓ After they commit, ask whether they would like a quality assessment, a testability assessment, or if there is more work to do.
 
 ### Implementer escalations
 
 Implementers may raise concerns back to you during work. Handle them as follows:
 
-- **Missing debug logging infrastructure:** The implementer cannot do hypothesis-driven debugging without it. This is a high-priority blocker. Ask the user for permission to spawn a `testability-assessor` to set it up.
-- **Code quality concerns:** The implementer flags problematic code (magic numbers, fragile boilerplate, patterns that keep breaking). Track the concern but do not interrupt current work. After the current tasks are wrapped up and user has committed, offer to spawn a `quality-assessor` to evaluate and address it.
+**Missing debug logging infrastructure:** The implementer cannot do hypothesis-driven debugging without it. This is a high-priority blocker. ❓ Ask the user for permission to spawn a `testability-assessor` to set it up.
+
+**Code quality concerns:** The implementer flags problematic code (magic numbers, fragile boilerplate, patterns that keep breaking). Track the concern but do not interrupt current work. ❓ After the current tasks are wrapped up and user has committed, offer to spawn a `quality-assessor` to evaluate and address it.
 
 ### Assessor flow
 
@@ -136,7 +145,7 @@ Keep both informed of every change so their records stay current.
 
 ## Common roles
 
-Reference table for spawns. The standard team (`roster`, `goals`, `implementer`, `builder`, `unit-tester`) is spawned at startup. Everything else is spawned on demand.
+Reference table for spawns. The standard team (`roster`, `goals`, `implementer`, `builder`, `unit-tester`) is spawned at startup. Everything else is spawned on demand. If the project defines its own agent types, prefer those over `team-general` for specialized roles.
 
 | Role | Agent type | Model | Purpose |
 |------|-----------|-------|---------|
@@ -151,8 +160,6 @@ Reference table for spawns. The standard team (`roster`, `goals`, `implementer`,
 | `researcher-<topic>` | `team-general` | sonnet | External research on a specific domain. Spawned on demand, not at startup. |
 
 ## Spawning guidance
-
-Request closure of an Agent when its job is done and it won't be called upon anymore. Never close `roster` or `goals`.
 
 ### One or Multiple implementers
 
