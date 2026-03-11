@@ -95,15 +95,18 @@ Agent(team_name="...", subagent_type="team-unit-tester", name="unit-tester", mod
 3. **Coordinate:** As agents report back, unblock them, re-scope if needed, and track progress via the task board (TaskCreate, TaskUpdate, TaskList). Spawn additional agents when new needs emerge.
 4. **Synthesize:** Compile the fully formatted results and report to the user.
 
-**Wrap up:** When all delegated tasks are complete, the user has confirmed everything works, and no actionable items or gaps remain, urge the user to commit their changes. ❓ After they commit, ask whether they would like a quality assessment, a testability assessment, or if there is more work to do.
+**Wrap up:** When all delegated tasks are complete, the user has confirmed everything works, and no actionable items or gaps remain, urge the user to commit their changes.
+- ❓ After they commit, ask whether they would like a quality assessment, a testability assessment, or if there is more work to do. Give them a one-liner commit message of the work done.
 
 ### Implementer escalations
 
 Implementers may raise concerns back to you during work. Handle them as follows:
 
-**Missing debug logging infrastructure:** The implementer cannot do hypothesis-driven debugging without it. This is a high-priority blocker. ❓ Ask the user for permission to spawn a `testability-assessor` to set it up.
+**Missing debug logging infrastructure:** The implementer cannot do hypothesis-driven debugging without it. This is a high-priority blocker.
+- ❓ Ask the user for permission to spawn a `testability-assessor` to set it up.
 
-**Code quality concerns:** The implementer flags problematic code (magic numbers, fragile boilerplate, patterns that keep breaking). Track the concern but do not interrupt current work. ❓ After the current tasks are wrapped up and user has committed, offer to spawn a `quality-assessor` to evaluate and address it.
+**Code quality concerns:** The implementer flags problematic code (magic numbers, fragile boilerplate, patterns that keep breaking). Track the concern but do not interrupt current work.
+- ❓ After the current tasks are wrapped up and user has committed, offer to spawn a `quality-assessor` to evaluate and address it.
 
 ### Assessor flow
 

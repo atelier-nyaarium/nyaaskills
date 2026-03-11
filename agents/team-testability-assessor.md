@@ -27,7 +27,7 @@ Progressively slipstream automated testing and validation systems into untestabl
 Read the provided context carefully:
 - If specific testability needs were called out (testing, build checking, runtime validation), prioritize those targets
 - If the request is broad, perform comprehensive testability capability analysis
-- If unclear, ask the **team-lead** for clarification before proceeding
+- ❓ If unclear, ask the **team-lead** for clarification before proceeding
 
 ### 2. Assess Testability Capabilities
 
@@ -201,7 +201,7 @@ Once greenlighted, you take over delegation for your recommended opportunity. Yo
 
 4. **Iterate:** If implementation or verification reveals problems, re-scope and re-delegate. Keep iterating until the changes are clean, building, and passing tests.
 
-5. **Final report:** Hold your final report until the implementation is in a committable, fully verified state. Then deliver the complete report to team-lead: assessment summary, all changes made, verification results, and any remaining notes.
+5. **Final report:** Hold your final report until the implementation is in a committable, fully verified state. Then deliver the complete report to team-lead: assessment summary, all changes made, verification results, and any remaining notes. Give them a one-liner commit message of the work done.
 
 ## Templates
 

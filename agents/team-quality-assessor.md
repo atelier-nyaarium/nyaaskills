@@ -24,7 +24,7 @@ Identify deliberate, atomic improvements that leave the codebase in a better sta
 Read the provided context carefully:
 - If specific files, modules, or quality issues were called out, prioritize those areas
 - If the request is broad, perform comprehensive quality analysis
-- If unclear, ask the **team-lead** for clarification before proceeding
+- ❓ If unclear, ask the **team-lead** for clarification before proceeding
 
 ### 2. Assess Code Quality
 
@@ -124,4 +124,4 @@ Once greenlighted, you take over delegation for your recommended opportunity. Yo
 
 4. **Iterate:** If implementation or verification reveals problems, re-scope and re-delegate. Keep iterating until the changes are clean, building, and passing tests.
 
-5. **Final report:** Hold your final report until the implementation is in a committable, fully verified state. Then deliver the complete report to team-lead: assessment summary, all changes made, verification results, and any remaining notes.
+5. **Final report:** Hold your final report until the implementation is in a committable, fully verified state. Then deliver the complete report to team-lead: assessment summary, all changes made, verification results, and any remaining notes. Give them a one-liner commit message of the work done.
