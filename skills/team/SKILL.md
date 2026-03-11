@@ -23,23 +23,31 @@ When the user tells you to edit a file, or perform research, they mean for you t
   - `team-unit-tester` - for lint, build, and tests
   - `team-ux-tester` - for interactive click-through UX testing
 
+## Team Identity
+
+Never forget your team ID. Once you create or recover a team, hold the team ID in your working memory for the entire session. You need it for every `TeamCreate`, `Agent`, and `SendMessage` call. This is the single most important thing to retain across compactions.
+
 ## Startup
 
 Do all of this immediately. Do not ask the user for clarification first.
 
-1. **Check-in:** Look for a team agent named `roster` in your current team.
-   - If `roster` **does not exist**, this is a **fresh start**. Continue to step 2.
-   - If `roster` **exists**, this is a **post-compaction recovery**. Message both `roster` and `goals` for full briefings. `roster` will remind you the team name, all active agents, and their roles. `goals` will summarize past milestones and give you the current objectives and reasoning in detail. Restore your state from both briefings and resume the Work Loop. Skip the rest of **Startup**.
+Determine which mode applies:
 
-2. **Quick survey:** Scan the project structure to understand the shape of the codebase. Directory listings, config files, READMEs, package.json. No source code yet, just the shape.
+- **Direct order**: The user explicitly asked to create/spin up a team. No team exists yet. Go to **Fresh Start**.
+- **Contextual load**: The skill was loaded as context (possibly recovery from compaction). A team may already exist. Go to **Recovery Probe**.
 
-3. **Decide the team:** Based on your survey, determine which agents to spawn. Start from the standard team and adjust:
-   - **Replace** `implementer` with multiple `implementer-<domain>` if the project has clearly separated domains, like Ruby on Rails.
-   - **Add** `ux-tester` if the project has UI to manually test.
-   - **Remove** `unit-tester` if the project has no tests.
-   - **Add** any other roles as needed.
+### Fresh Start
 
-4. **Spawn:** Create the team with `TeamCreate` and spawn all agents in parallel (always include `roster` and `goals`). If the user hasn't provided a scope to infer a team name from, use the name of this project.
+1. **Quick survey:** Scan the project structure to understand the shape of the codebase. Directory listings, config files, READMEs, package.json. No source code yet, just the shape.
+
+2. **Decide the team:** Based on your survey, determine which agents to spawn. Start from the standard team and adjust:
+   - Replace `implementer` with multiple `implementer-<domain>` if the project has clearly separated domains, like Ruby on Rails.
+   - Add `ux-tester` if the project has UI to manually test.
+   - Remove `unit-tester` if the project has no tests.
+   - Add any other roles as needed.
+   - Make sure to follow the common roles table for "Model" selection and good defaults.
+
+3. **Spawn:** Create the team with `TeamCreate` and spawn all agents in parallel (always include `roster` and `goals`). If the user hasn't provided a scope to infer a team name from, use the name of this project.
 
 Standard team (adjust before spawning):
 ```
@@ -50,11 +58,27 @@ Agent(team_name="...", subagent_type="team-builder", name="builder", model="haik
 Agent(team_name="...", subagent_type="team-unit-tester", name="unit-tester", model="haiku", prompt="Handles lint, build, unit tests, and scripted e2e tests.")
 ```
 
-5. **Brief roster:** Message `roster` with the full team state: team name, every agent spawned (name, type, model, scope).
+4. **Brief roster:** Message `roster` with the full team state: team name, every agent spawned (name, type, model, scope).
 
-6. **Sync with goals:** Message `goals` with the user's task and your initial objectives. Wait for `goals` to confirm its understanding. If it has it wrong or incomplete, correct it. Repeat until aligned.
+5. **Sync with goals:** Message `goals` with the user's task and your initial objectives. Wait for `goals` to confirm its understanding. If it has it wrong or incomplete, correct it. Repeat until aligned.
 
-7. **Delegate:** Enter the Work Loop with the user's task.
+6. **Delegate:** Enter the Work Loop with the user's task.
+
+### Recovery Probe
+
+1. **Probe roster:** Blind-message `roster` on your remembered team ID. Give it 10 seconds to respond.
+   - If `roster` responds: you have an existing team. It will report the team name, all agents, and their roles. Continue to step 2.
+   - If `roster` does not respond within 10 seconds: no team found. Fall back to **Fresh Start**.
+
+2. **Check members:** For each agent `roster` reports, message them to confirm they are alive. Give each up to 5 minutes (implementers may be mid-task). Poll every 10 seconds.
+
+3. **Recover goals:** Message `goals` for a full briefing on objectives, milestones, and current direction. Restore your state from both briefings.
+
+4. **Handle conflicts:** If no agents respond at all, the team ID may be wrong or the team was never fully created.
+   - Attempt a **Fresh Start**.
+   - If `TeamCreate` fails reporting a team already exists under that name: **stop and ask the user for recovery advice.** Do not force-create or delete the existing team.
+
+5. Resume the Work Loop with restored state.
 
 ## Work Loop
 
@@ -143,6 +167,6 @@ When the main conversation compacts, you lose memory of your team state. But spa
 - `roster` holds the current team state: who is on the team right now and what they do.
 - `goals` holds the intent record: past milestones summarized, current objectives and reasoning in full detail.
 
-On every Startup, you check for `roster` first. If it exists, you are recovering from compaction. Ask both `roster` and `goals` for briefings and they will restore your full awareness.
+Your most critical piece of state is the **team ID**. Never forget it. If you retain the team ID, the Recovery Probe in Startup can restore everything else via `roster` and `goals`.
 
 Keep both informed of every change so their records stay current.
