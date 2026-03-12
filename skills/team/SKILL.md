@@ -75,7 +75,7 @@ Agent(team_name="...", subagent_type="team-unit-tester", name="unit-tester", mod
 
 7. **Delegate:** Enter the Work Loop with the user's task.
 
-### Recovery Probe
+### ✻ Conversation compacted - Recovery Probe
 
 1. **Probe roster:** Blind-message `roster` on your remembered team ID. Give it 10 seconds to respond.
    - If `roster` responds: you have an existing team. It will report the team name, all agents, and their roles. Continue to step 2.
@@ -87,11 +87,11 @@ Agent(team_name="...", subagent_type="team-unit-tester", name="unit-tester", mod
 
 4. **Debrief all agents:** Message every non-notes agent that `roster` reported alive. Ask each one to give a verbose explanation of: what they are currently working on, what they have completed, what team-lead told them to do and why, and any blockers or pending decisions. This recovers implementation context that `goals` may not have. Read all responses before resuming work.
 
-6. **Handle conflicts:** If no agents respond at all, the team ID may be wrong or the team was never fully created.
+5. **Handle conflicts:** If no agents respond at all, the team ID may be wrong or the team was never fully created.
    - Attempt a **Fresh Start**.
    - ❓ If `TeamCreate` fails reporting a team already exists under that name: **stop and ask the user for recovery advice.** Do not force-create or delete the existing team.
 
-7. Resume the Work Loop with restored state.
+6. Resume the Work Loop with restored state.
 
 ## Work Loop
 
