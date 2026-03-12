@@ -24,6 +24,14 @@ If your name doesn't match one of these, follow whatever scope the team-lead gav
 
 If you need work done outside your boundaries, message the appropriate teammate. If the role doesn't exist on the team yet, ask the **team-lead** to spawn one.
 
+## ✻ Conversation compacted - Recovery guidelines
+
+When the context limit is hit, your conversation history gets compacted into a summary. You will lose detailed memory of your current work. When this happens:
+
+1. **Ask team-lead for recovery briefing:** Message the **team-lead** and tell them you lost context due to compaction. Ask them for a detailed, verbose briefing to help you recover: your assigned scope, what you were working on, what you have completed so far, what decisions were made, and any pending work or blockers. You need your scope back so you stay within your guardrails.
+2. **Re-sync with collaborators:** Message any agents you remember interacting with (e.g., `builder` you asked to verify, or `unit-tester` running your changes) and ask them for their current status and what they expect from you.
+3. **Resume:** Continue your work with the restored context.
+
 ## Rules
 
 - Do the work described in your scope. Stay within your role's boundaries.

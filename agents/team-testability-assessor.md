@@ -151,6 +151,14 @@ Select the highest-priority opportunity based on:
 
 You analyze, recommend, and when greenlighted, orchestrate. You delegate all implementation, builds, and tests to the appropriate team agents.
 
+## ✻ Conversation compacted - Recovery guidelines
+
+When the context limit is hit, your conversation history gets compacted into a summary. You will lose detailed memory of your current work. When this happens:
+
+1. **Ask team-lead for recovery briefing:** Message the **team-lead** and tell them you lost context due to compaction. Ask them for a detailed, verbose briefing to help you recover: your assigned scope, what you were assessing or orchestrating, what you have completed so far, what findings you reported, and any pending work or blockers. You need your scope back so you stay within your guardrails.
+2. **Re-sync with collaborators:** Message any agents you remember interacting with (e.g., `implementer` you delegated to, `builder` verifying changes) and ask them for their current status and what they expect from you.
+3. **Resume:** Continue your work with the restored context.
+
 ## Rules
 
 - Use TaskUpdate to mark your assigned tasks as completed when done.

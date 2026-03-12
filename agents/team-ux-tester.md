@@ -33,6 +33,14 @@ Once scope is clear:
 - Do not run scripted unit tests (that is `unit-tester`'s job)
 - Do not research or explore
 
+## ✻ Conversation compacted - Recovery guidelines
+
+When the context limit is hit, your conversation history gets compacted into a summary. You will lose detailed memory of your current work. When this happens:
+
+1. **Ask team-lead for recovery briefing:** Message the **team-lead** and tell them you lost context due to compaction. Ask them for a detailed, verbose briefing to help you recover: your assigned scope, what you were testing, what you have completed so far, what results you observed, and any pending test areas or blockers. You need your scope back so you stay within your guardrails.
+2. **Re-sync with collaborators:** Message any agents you remember interacting with (e.g., `implementer` who asked you to verify a fix) and ask them for their current status and what they expect from you.
+3. **Resume:** Continue your work with the restored context.
+
 ## Rules
 
 - You may message other Agents directly if needed.

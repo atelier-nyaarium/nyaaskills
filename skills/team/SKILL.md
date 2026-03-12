@@ -83,13 +83,15 @@ Agent(team_name="...", subagent_type="team-unit-tester", name="unit-tester", mod
 
 2. **Check members:** For each agent `roster` reports, message them to confirm they are alive. Give each up to 5 minutes (implementers may be mid-task). Poll every 10 seconds.
 
-3. **Recover goals:** Message `goals` for a full briefing on objectives, milestones, and current direction. Restore your state from both briefings.
+3. **Recover goals:** Message `goals` for a full briefing on objectives, milestones, and current direction. Restore your state from `roster` and `goals` briefings.
 
-4. **Handle conflicts:** If no agents respond at all, the team ID may be wrong or the team was never fully created.
+4. **Debrief all agents:** Message every non-notes agent that `roster` reported alive. Ask each one to give a verbose explanation of: what they are currently working on, what they have completed, what team-lead told them to do and why, and any blockers or pending decisions. This recovers implementation context that `goals` may not have. Read all responses before resuming work.
+
+6. **Handle conflicts:** If no agents respond at all, the team ID may be wrong or the team was never fully created.
    - Attempt a **Fresh Start**.
    - ❓ If `TeamCreate` fails reporting a team already exists under that name: **stop and ask the user for recovery advice.** Do not force-create or delete the existing team.
 
-5. Resume the Work Loop with restored state.
+7. Resume the Work Loop with restored state.
 
 ## Work Loop
 
@@ -131,14 +133,22 @@ If the user requests a quality or testability assessment at any point, spawn and
 Your notes agents are your memory. Keep them current. Do not defer these updates. Do them before moving on to the next action.
 
 - **`roster`**: Message immediately when you spawn, close, or re-scope any agent. Include name, type, model, and scope.
-- **`goals`**: Message when you decide on new objectives, complete a goal, remove a goal, or the user changes direction. State what was completed or removed, then the new objectives. Wait for `goals` to confirm its understanding. If it is off, correct it until you are aligned.
+- **`goals`**: Message when you decide on new objectives, complete a goal, remove a goal, or the user changes direction. Every message to `goals` must be **verbose and self-contained** — written as if the reader has zero prior context. Include:
+  - What changed and why (the reasoning, not just the fact).
+  - Full current objective list with status, context, and any constraints or decisions that shaped them.
+  - What was completed or removed, including what the outcome was and why it matters.
+  - Any corrections, pivots, or user feedback that shifted direction — quote or paraphrase the user when relevant.
+  - Dependencies, blockers, or ordering constraints between objectives.
+  - Enough detail that someone reading only `goals` could reconstruct the full project intent and history.
 
-## Context compaction
+  Do NOT send terse one-liners. After compaction, `goals` is your only source of truth for what the team is doing and why. Treat every update as a restoration document. Wait for `goals` to confirm its understanding. If it is off, correct it until you are aligned.
+
+## ✻ Conversation compacted - Recovery guidelines
 
 When the context limit is hit in a session, the whole chat history gets compacted. Your session will be via a summary, and you will lose memory of your team state. `roster` and `goals` exist for you to recover what you've forgotten.
 
 - `roster` holds the current team state: who is on the team right now and what they do.
-- `goals` holds the intent record: past milestones summarized, current objectives and reasoning in full detail.
+- `goals` holds the intent record: past milestones summarized, current objectives, reasoning, user feedback, corrections, and all context needed to fully restore your understanding of what the team is doing and why. This is your primary recovery document after compaction — its quality depends entirely on how detailed your updates were.
 
 Your most critical piece of state is the **team ID**. Never forget it. If you retain the team ID, the Recovery Probe in Startup can restore everything else via `roster` and `goals`.
 
