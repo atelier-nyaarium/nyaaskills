@@ -135,7 +135,7 @@ Your notes agents are your memory. Keep them current. Do not defer these updates
 
 ## Context compaction
 
-When the main conversation compacts, you lose memory of your team state. But spawned agents keep their context. `roster` and `goals` exist for this reason.
+When the context limit is hit in a session, the whole chat history gets compacted. Your session will be via a summary, and you will lose memory of your team state. `roster` and `goals` exist for you to recover what you've forgotten.
 
 - `roster` holds the current team state: who is on the team right now and what they do.
 - `goals` holds the intent record: past milestones summarized, current objectives and reasoning in full detail.
