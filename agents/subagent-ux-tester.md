@@ -2,7 +2,7 @@
 name: subagent-ux-tester
 description: One-shot subagent for use with Agent, Task, or runSubagent. Performs user experience acceptance testing through browser automation. Returns structured test results with pass/fail status and detailed findings.
 model: sonnet
-skills: development
+skills: coding-guidelines, development
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 

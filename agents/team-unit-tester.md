@@ -2,6 +2,7 @@
 name: team-unit-tester
 description: For use with Agent tool within TeamCreate. Runs lint, build, unit tests, and scripted e2e tests. Does not edit code or perform UX testing.
 model: haiku
+skills: coding-guidelines
 ---
 
 # Unit Tester

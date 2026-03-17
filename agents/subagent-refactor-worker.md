@@ -2,7 +2,7 @@
 name: subagent-refactor-worker
 description: One-shot subagent for use with Agent, Task, or runSubagent. Executes systematic refactoring through incremental migration and continuous verification. Maintains buildable codebase at every step and returns structured progress reports.
 model: sonnet
-skills: development
+skills: coding-guidelines, development
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 

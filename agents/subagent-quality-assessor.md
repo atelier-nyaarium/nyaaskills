@@ -2,6 +2,7 @@
 name: subagent-quality-assessor
 description: One-shot subagent for use with Agent, Task, or runSubagent. Evaluates code quality and identifies improvement opportunities. Recommends one prioritized refactoring based on dependency order and impact.
 model: opus
+skills: coding-guidelines
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 
