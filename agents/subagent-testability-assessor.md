@@ -35,7 +35,7 @@ Read the provided context carefully:
 
 Analyze the codebase to answer: **Can an agent verify its changes work correctly?**
 
-Reference the **Templates** section at the bottom of this document for implementation examples (debug logger, ingest route, MCP server/schema). These are JavaScript/Node.js examples. Cannibalize what you need in the project's actual OS, language, framework, and architecture.
+Reference the **Templates** section at the bottom of this document for implementation examples (debug logger, ingest route, MCP server/schema). These are TypeScript/Node.js examples. Cannibalize what you need in the project's actual OS, language, framework, and architecture.
 
 Use Glob, Grep, and Read to investigate existing testability infrastructure, test coverage, build automation, and diagnostic tooling.
 
@@ -104,7 +104,7 @@ Think of each opportunity as one deliberate leap toward autonomous validation, n
    **Recommended Pattern:** Set up a lightweight MCP server that the IDE launches on startup. This server dynamically loads project-specific tool schemas and bridges tool calls via HTTP POST to the project's running dev server. The key components are:
 
      - **An MCP server** that lives outside the project (user space, system-level, or devcontainer entrypoint) and starts with the IDE. It uses environment variables to locate the project and its dev server port.
-     - **A project schema** (`.claude/mcp-schema.js`) - a simple file that exports a function receiving `z` (Zod) and returning an array of tool definitions. This keeps tool definitions co-located with the project and consistent across setups.
+     - **A project schema** (`.claude/connector/mcp-schema.js`) - a simple file that exports a function receiving `z` (Zod) and returning an array of tool definitions. This keeps tool definitions co-located with the project and consistent across setups.
      - **Debug API routes** in the project's dev server (e.g. `/api/debug/:toolName`) that handle the bridged requests and return JSON. In an application like a game, this might be a self-hosted HTTP endpoint. (see **Safety** below)
 
    The implementing agent should adapt the MCP server script to match the user's actual operating system, IDE, and environment. A Linux devcontainer setup will differ from a Windows host running Unity; the pattern is similar, but paths, launch configuration, and environment variables will vary.
@@ -113,8 +113,8 @@ Think of each opportunity as one deliberate leap toward autonomous validation, n
 
    **What to Assess:**
    - Does the user already have an MCP server? If not, recommend setting one up using the template and guide them through IDE configuration for their specific environment.
-   - Does `.claude/mcp-schema.js` exist? If not, create one using the template.
-   - Does the project have `/api/debug/` routes to handle the bridge requests?
+   - Does `.claude/connector/mcp-schema.js` exist? If not, create one using the template.
+   - Does the project have a game client that connects to the WebSocket connector?
    - **State inspection** (foundational) - Do MCP tools expose application state (configuration, cache contents, connection status)?
    - **Autonomous control** (intermediate) - Can agents trigger application operations (config reload, cache clear, scenario initialization)?
    - **Progressive assessment** - Identify which capabilities exist and which are missing. Recommend simplest gaps first (state inspection before control).
@@ -176,13 +176,13 @@ The ONE opportunity to act on right now:
 
 ## Templates
 
-The following are JavaScript/Node.js reference implementations. Adapt to the project's actual language, framework, and architecture.
+The following are TypeScript/Node.js reference implementations. Adapt to the project's actual language, framework, and architecture.
 
-### Debug Logger (`debug-logger.js`)
+### Debug Logger (`debug-logger.ts`)
 
 Server-side NDJSON debug logger. Writes structured entries to `.cursor/debug-{sessionId}.log`.
 
-```js
+```ts
 // Debug Logger for AI Agent Instrumentation
 // Writes NDJSON to .cursor/debug-{sessionId}.log for structured, machine-parseable output
 // Adapt this template to your project's architecture and logging conventions
@@ -196,151 +196,153 @@ const LOG_FILE = path.join(LOG_DIRECTORY, `debug-${SESSION_ID}.log`);
 
 let logCounter = 0;
 
+interface DebugLogOptions {
+	hypothesisId?: string;
+	data?: Record<string, unknown>;
+}
+
+interface DebugLogEntry {
+	id: string;
+	timestamp: number;
+	location: string;
+	message: string;
+	data: Record<string, unknown>;
+	hypothesisId?: string;
+}
+
 /**
  * Log debug information for AI agent analysis.
  * Writes structured NDJSON entries that agents can programmatically parse.
  *
- * @param {string} location - Source location (e.g., "src/services/auth.js:142")
- * @param {string} message - Human-readable description of the observation
- * @param {Object} options - Optional configuration
- * @param {string} [options.hypothesisId] - Hypothesis identifier for A/B debugging (e.g., "A", "B")
- * @param {Object} [options.data] - Structured key-value data for analysis
+ * @param location - Source location (e.g., "src/services/auth.ts:142")
+ * @param message - Human-readable description of the observation
+ * @param options - Optional hypothesis ID and structured data
  */
-export function debugLog(location, message, options = {}) {
-  const { hypothesisId = null, data = {} } = options;
+export function debugLog(location: string, message: string, options: DebugLogOptions = {}): void {
+	const { hypothesisId, data = {} } = options;
 
-  try {
-    // Ensure log directory exists
-    if (!fs.existsSync(LOG_DIRECTORY)) {
-      fs.mkdirSync(LOG_DIRECTORY, { recursive: true });
-    }
+	try {
+		if (!fs.existsSync(LOG_DIRECTORY)) {
+			fs.mkdirSync(LOG_DIRECTORY, { recursive: true });
+		}
 
-    // Build structured log entry
-    const entry = {
-      runId: `log_${Date.now()}_${++logCounter}`,
-      timestamp: Date.now(),
-      location,
-      message,
-      data,
-      ...(hypothesisId && { hypothesisId }),
-    };
+		const entry: DebugLogEntry = {
+			id: `log_${Date.now()}_${++logCounter}`,
+			timestamp: Date.now(),
+			location,
+			message,
+			data,
+			...(hypothesisId && { hypothesisId }),
+		};
 
-    // Append as single-line JSON (NDJSON format)
-    fs.appendFileSync(LOG_FILE, JSON.stringify(entry) + "\n");
-  } catch (err) {
-    console.error("[debugLog]", err);
-  }
+		fs.appendFileSync(LOG_FILE, JSON.stringify(entry) + "\n");
+	} catch (err) {
+		console.error("[debugLog]", err);
+	}
 }
 
 /**
  * Clear the debug log.
  * Call at the start of a debugging session or test run.
  */
-export function clearDebugLog() {
-  try {
-    if (fs.existsSync(LOG_FILE)) {
-      fs.unlinkSync(LOG_FILE);
-    }
-  } catch (err) {
-    console.error("[clearDebugLog]", err);
-  }
+export function clearDebugLog(): void {
+	try {
+		if (fs.existsSync(LOG_FILE)) {
+			fs.unlinkSync(LOG_FILE);
+		}
+	} catch (err) {
+		console.error("[clearDebugLog]", err);
+	}
 }
 
 /**
  * Read all log entries for AI agent analysis.
  * Returns parsed NDJSON entries as an array of objects.
- *
- * @returns {Array<Object>} Array of log entry objects
  */
-export function readDebugLog() {
-  const entries = [];
+export function readDebugLog(): DebugLogEntry[] {
+	const entries: DebugLogEntry[] = [];
 
-  try {
-    if (!fs.existsSync(LOG_FILE)) {
-      return entries;
-    }
+	try {
+		if (!fs.existsSync(LOG_FILE)) return entries;
 
-    const content = fs.readFileSync(LOG_FILE, "utf-8");
-    for (const line of content.split("\n")) {
-      if (!line.trim()) continue;
-      entries.push(JSON.parse(line));
-    }
-  } catch (err) {
-    console.error("[readDebugLog]", err);
-  }
+		const content = fs.readFileSync(LOG_FILE, "utf-8");
+		for (const line of content.split("\n")) {
+			if (!line.trim()) continue;
+			entries.push(JSON.parse(line) as DebugLogEntry);
+		}
+	} catch (err) {
+		console.error("[readDebugLog]", err);
+	}
 
-  return entries;
+	return entries;
 }
 
 /**
  * Filter log entries by hypothesis ID.
  * Useful for comparing behavior between code paths during debugging.
- *
- * @param {string} hypothesisId - The hypothesis to filter by (e.g., "A" or "B")
- * @returns {Array<Object>} Filtered log entries
  */
-export function getEntriesByHypothesis(hypothesisId) {
-  return readDebugLog().filter((entry) => entry.hypothesisId === hypothesisId);
+export function getEntriesByHypothesis(hypothesisId: string): DebugLogEntry[] {
+	return readDebugLog().filter((entry) => entry.hypothesisId === hypothesisId);
 }
 ```
 
-### Debug Ingest Route (`debug.ingest.js`)
+### Debug Ingest Route (`debug.ingest.ts`)
 
 Client-side debug POST endpoint (Remix action). Receives browser-side debug payloads and appends to the same NDJSON log.
 
-```js
+```ts
 import fs from "node:fs";
 import path from "node:path";
+import type { ActionFunctionArgs } from "@remix-run/node";
 
-const getDebugLogPath = () => {
-  const sessionId = process.env.DEBUG_SESSION_ID ?? "default";
-  return path.join(process.cwd(), ".cursor", `debug-${sessionId}.log`);
+const getDebugLogPath = (): string => {
+	const sessionId = process.env.DEBUG_SESSION_ID ?? "default";
+	return path.join(process.cwd(), ".cursor", `debug-${sessionId}.log`);
 };
 
-export async function action({ request }) {
-  if (request.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
-  }
+export async function action({ request }: ActionFunctionArgs): Promise<Response> {
+	if (request.method !== "POST") {
+		return new Response("Method not allowed", { status: 405 });
+	}
 
-  const payload = await request.json().catch(() => null);
-  if (payload == null || typeof payload !== "object") {
-    return new Response("Bad request", { status: 400 });
-  }
+	const payload: unknown = await request.json().catch(() => null);
+	if (payload == null || typeof payload !== "object") {
+		return new Response("Bad request", { status: 400 });
+	}
 
-  const timestamp = Number(payload.timestamp) || Date.now();
-  const runId =
-    typeof payload.runId === "string" && payload.runId
-      ? payload.runId
-      : `log_${timestamp}_${Math.random().toString(36).slice(2, 10)}`;
-  const record = {
-    ...payload,
-    runId,
-    timestamp,
-    data: payload.data != null && typeof payload.data === "object" ? payload.data : {},
-  };
+	const p = payload as Record<string, unknown>;
+	const timestamp = Number(p.timestamp) || Date.now();
+	const id =
+		typeof p.id === "string" && p.id
+			? p.id
+			: `log_${timestamp}_${Math.random().toString(36).slice(2, 10)}`;
 
-  const logPath = getDebugLogPath();
-  const dir = path.dirname(logPath);
-  fs.mkdirSync(dir, { recursive: true });
+	const record = {
+		...p,
+		id,
+		timestamp,
+		data: p.data != null && typeof p.data === "object" ? p.data : {},
+	};
 
-  const line = JSON.stringify(record) + "\n";
-  fs.appendFileSync(logPath, line);
+	const logPath = getDebugLogPath();
+	fs.mkdirSync(path.dirname(logPath), { recursive: true });
+	fs.appendFileSync(logPath, JSON.stringify(record) + "\n");
 
-  return new Response(null, { status: 204 });
+	return new Response(null, { status: 204 });
 }
 ```
 
-### MCP Server (`mcp-server.js`)
+### MCP Server (`mcp-server.ts`)
 
 Lightweight MCP server that the IDE launches on startup. Dynamically loads project-specific tool schemas and bridges tool calls via HTTP POST to the dev server.
 
-```js
+```ts
 #!/usr/bin/env node
 
 // MCP Server Template
 //
-// An MCP server that the IDE launches on startup. It dynamically loads
-// project-specific tool schemas from .claude/mcp-schema.js, and bridges
+// A TypeScript MCP server that the IDE launches on startup. It dynamically loads
+// project-specific tool schemas from .claude/connector/mcp-schema.js, and bridges
 // tool calls via HTTP POST to the project's local dev server.
 //
 // WHY A SEPARATE SERVER?
@@ -352,10 +354,10 @@ Lightweight MCP server that the IDE launches on startup. Dynamically loads proje
 // SETUP:
 // 1. Install dependencies: npm install @modelcontextprotocol/sdk dotenv zod
 // 2. Configure your IDE's MCP settings to launch this script
-// 3. Set environment variables: PROJECT_NAME and PORT
-// 4. Create .claude/mcp-schema.js in your project (see MCP Schema template)
+// 3. Set environment variables: PROJECT_NAME, PORT (and optionally HOST)
+// 4. Create .claude/connector/mcp-schema.js in your project (see MCP Schema template)
 //
-// The server resolves the schema path as: /workspace/$PROJECT_NAME/.claude/mcp-schema.js
+// The server resolves the schema path as: /workspace/$PROJECT_NAME/.claude/connector/mcp-schema.js
 // Adapt this path pattern to match your workspace layout.
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -366,24 +368,33 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 
+interface McpTool {
+	name: string;
+	title: string;
+	description: string;
+	operation?: string;
+	schema: z.ZodObject<z.ZodRawShape>;
+	handler?: (cwd: string, args: Record<string, unknown>) => Promise<unknown>;
+}
+
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 
 process.chdir(scriptDir);
 
 dotenv.config({
-  path: path.join(scriptDir, ".env"),
-  quiet: true,
+	path: path.join(scriptDir, ".env"),
+	quiet: true,
 });
 
 const mcpServer = new McpServer({
-  name: "my-mcp-server",
-  version: "1.0.0",
+	name: "my-mcp-server",
+	version: "1.0.0",
 });
 
 // ============================================================================
 // Local Tool Registration
 // ============================================================================
-// Register tools that run directly in this server process (no HTTP bridge).
+// Register tools that run directly in this server process (no WebSocket client needed).
 // Use this for tools that don't need the dev server running.
 //
 // Example:
@@ -391,9 +402,9 @@ const mcpServer = new McpServer({
 // import { myLocalTools } from "./tools/myLocalTools.js";
 // myLocalTools.forEach((tool) => registerTool(tool));
 //
-// Where myLocalTools.js exports an array of tool definitions:
+// Where myLocalTools.ts exports an array of tool definitions:
 //
-// export const myLocalTools = [
+// export const myLocalTools: McpTool[] = [
 //   {
 //     name: "example_tool",
 //     title: "Example Tool",
@@ -402,7 +413,6 @@ const mcpServer = new McpServer({
 //       message: z.string().describe("A message to process"),
 //     }),
 //     async handler(cwd, args) {
-//       // Tool implementation here
 //       return { result: `Processed: ${args.message}` };
 //     },
 //   },
@@ -412,144 +422,142 @@ const mcpServer = new McpServer({
  * Register a local tool with the MCP server.
  * The tool's handler runs in-process. Wraps with error handling.
  */
-function registerTool(tool) {
-  mcpServer.registerTool(
-    tool.name,
-    {
-      title: tool.title,
-      description: tool.description,
-      inputSchema: tool.schema.shape,
-    },
-    async (args) => {
-      try {
-        const roots = await mcpServer.server.listRoots();
-        if (!roots.roots || roots.roots.length === 0) throw new Error("listRoots: no roots");
-        const cwd = fileURLToPath(roots.roots[0].uri);
-        const result = await tool.handler(cwd, args);
-        return {
-          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-        };
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify({ errors: [{ message: error.message }] }, null, 2),
-            },
-          ],
-          isError: true,
-        };
-      }
-    },
-  );
+function registerTool(tool: McpTool): void {
+	mcpServer.registerTool(
+		tool.name,
+		{
+			title: tool.title,
+			description: tool.description,
+			inputSchema: tool.schema.shape,
+		},
+		async (args) => {
+			try {
+				const roots = (await mcpServer.server.listRoots()) as { roots: Array<{ uri: string }> };
+				if (!roots.roots || roots.roots.length === 0) throw new Error("listRoots: no roots");
+				const cwd = fileURLToPath(roots.roots[0].uri);
+				const result = await tool.handler!(cwd, args as Record<string, unknown>);
+				return {
+					content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+				};
+			} catch (error) {
+				return {
+					content: [
+						{
+							type: "text" as const,
+							text: JSON.stringify({ errors: [{ message: (error as Error).message }] }, null, 2),
+						},
+					],
+					isError: true,
+				};
+			}
+		},
+	);
 }
 
 // ============================================================================
-// Project-Specific Tool Loading (Dynamic Schema + HTTP Bridge)
+// Project-Specific Tool Loading (Dynamic Schema + WebSocket Connector)
 // ============================================================================
-// Loads .claude/mcp-schema.js from the project and bridges tool calls
+// Loads .claude/connector/mcp-schema.js from the project and routes tool calls via WebSocket
 // via HTTP POST to the project's local dev server.
 
-async function loadProjectTools() {
-  const projectName = process.env.PROJECT_NAME;
-  const port = process.env.PORT;
+async function loadProjectTools(): Promise<void> {
+	const projectName = process.env.PROJECT_NAME;
+	const port = process.env.PORT;
 
-  if (!projectName || !port) return;
+	if (!projectName || !port) return;
 
-  const schemaPath = `/workspace/${projectName}/.claude/mcp-schema.js`;
+	const schemaPath = `/workspace/${projectName}/.claude/connector/mcp-schema.js`;
 
-  if (!fs.existsSync(schemaPath)) {
-    console.error(`[mcp-server] PROJECT_NAME and PORT are set, but schema not found: ${schemaPath}`);
-    return;
-  }
+	if (!fs.existsSync(schemaPath)) {
+		console.error(`[mcp-server] PROJECT_NAME and PORT are set, but schema not found: ${schemaPath}`);
+		return;
+	}
 
-  let schema;
-  try {
-    schema = await import(schemaPath);
-  } catch (error) {
-    console.error(`[mcp-server] Failed to load MCP schema from ${schemaPath}: ${error.message}`);
-    return;
-  }
+	let schema: { default?: unknown };
+	try {
+		schema = await import(schemaPath);
+	} catch (error) {
+		console.error(`[mcp-server] Failed to load MCP schema from ${schemaPath}: ${(error as Error).message}`);
+		return;
+	}
 
-  const schemaFn = schema.default;
-  if (typeof schemaFn !== "function") {
-    console.error(`[mcp-server] MCP schema must default export a function. Got: ${typeof schemaFn}`);
-    return;
-  }
+	const schemaFn = schema.default;
+	if (typeof schemaFn !== "function") {
+		console.error(`[mcp-server] MCP schema must default export a function. Got: ${typeof schemaFn}`);
+		return;
+	}
 
-  const tools = schemaFn(z);
-  if (!Array.isArray(tools)) {
-    console.error(`[mcp-server] MCP schema function must return an array. Got: ${typeof tools}`);
-    return;
-  }
+	const tools = schemaFn(z) as McpTool[];
+	if (!Array.isArray(tools)) {
+		console.error(`[mcp-server] MCP schema function must return an array. Got: ${typeof tools}`);
+		return;
+	}
 
-  const baseUrl = `http://localhost:${port}`;
+	const host = process.env.HOST || "localhost";
+	const baseUrl = `http://${host}:${port}`;
 
-  for (const tool of tools) {
-    mcpServer.registerTool(
-      tool.name,
-      {
-        title: tool.title,
-        description: tool.description,
-        inputSchema: tool.schema.shape,
-      },
-      async (args) => {
-        try {
-          const endpoint = `/api/debug/${tool.name}`;
-          const url = `${baseUrl}${endpoint}`;
+	for (const tool of tools) {
+		mcpServer.registerTool(
+			tool.name,
+			{
+				title: tool.title,
+				description: tool.description,
+				inputSchema: tool.schema.shape,
+			},
+			async (args) => {
+				try {
+					const endpoint = tool.operation ?? `/api/debug/${tool.name}`;
+					const response = await fetch(`${baseUrl}${endpoint}`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify(args),
+					});
 
-          const response = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(args),
-          });
+					if (!response.ok) {
+						throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+					}
 
-          if (!response.ok) {
-            const text = await response.text();
-            throw new Error(`HTTP ${response.status}: ${text}`);
-          }
+					const result = await response.json();
+					return {
+						content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+					};
+				} catch (error) {
+					return {
+						content: [
+							{
+								type: "text" as const,
+								text: JSON.stringify({ errors: [{ message: (error as Error).message }] }, null, 2),
+							},
+						],
+						isError: true,
+					};
+				}
+			},
+		);
+	}
 
-          const result = await response.json();
-          return {
-            content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-          };
-        } catch (error) {
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify({ errors: [{ message: error.message }] }, null, 2),
-              },
-            ],
-            isError: true,
-          };
-        }
-      },
-    );
-  }
-
-  console.error(`[mcp-server] Loaded ${tools.length} project tool(s) from ${projectName}`);
+	console.error(`[mcp-server] Loaded ${tools.length} project tool(s) from ${projectName}`);
 }
 
 // ============================================================================
 // Entry Point
 // ============================================================================
 
-async function main() {
-  await loadProjectTools();
-  const transport = new StdioServerTransport();
-  await mcpServer.connect(transport);
+async function main(): Promise<void> {
+	await loadProjectTools();
+	const transport = new StdioServerTransport();
+	await mcpServer.connect(transport);
 }
 
 main().catch((error) => {
-  console.error("MCP Server error:", error);
-  process.exit(1);
+	console.error("MCP Server error:", error);
+	process.exit(1);
 });
 ```
 
 ### MCP Schema (`mcp-schema.js`)
 
-Project-specific MCP tool definitions. Place at `.claude/mcp-schema.js` in the project root.
+Project-specific MCP tool definitions. Place at `.claude/connector/mcp-schema.js` in the project root.
 
 ```js
 /**
@@ -558,24 +566,26 @@ Project-specific MCP tool definitions. Place at `.claude/mcp-schema.js` in the p
  * Defines project-specific MCP tools that the MCP server exposes to IDE agents.
  * Each tool is bridged via HTTP POST to the local dev server.
  *
- * POSTS to: /api/debug/:toolName
+ * POSTS to: /api/debug/:toolName (override per-tool with the `operation` field)
  *
- * Place this file at: .claude/mcp-schema.js (project root)
+ * Place this file at: .claude/connector/mcp-schema.js (project root)
+ * Keep as .js. It is loaded via dynamic import() at runtime by the MCP server.
  *
- * @param {import("zod").ZodType} z - Zod module, passed in by the MCP server.
+ * @param {import("zod")} z - Zod module, passed in by the MCP server.
  * @returns {Array} Array of tool definitions.
  */
 export default function (z) {
-  return [
-    {
-      name: "query_state",
-      title: "Query Application State",
-      description:
-        "Retrieve current state of an application component. Use this to inspect runtime configuration, connection status, or cached data.",
-      schema: z.object({
-        component: z.string().describe("Component name to query (e.g., 'auth', 'cache', 'database')."),
-      }),
-    },
-  ];
+	return [
+		{
+			name: "queryState",
+			title: "Query Application State",
+			description:
+				"Retrieve current state of an application component. Use this to inspect runtime configuration, connection status, or cached data.",
+			schema: z.object({
+				component: z.string().describe("Component name to query (e.g., 'auth', 'cache', 'database')."),
+			}),
+			// operation: "/api/custom-endpoint",  // Optional: override the default /api/debug/:toolName
+		},
+	];
 }
 ```

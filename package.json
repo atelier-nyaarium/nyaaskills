@@ -3,7 +3,7 @@
 	"version": "2.0.0",
 	"type": "module",
 	"scripts": {
-		"start:bridge": "bun run src/main.ts"
+		"start:mcp-connector": "bun run src/main.ts"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.26.0",

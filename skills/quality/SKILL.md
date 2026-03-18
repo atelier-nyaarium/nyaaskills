@@ -9,7 +9,7 @@ You orchestrate iterative code quality improvements through specialized subagent
 
 ## Routing
 
-If you are the team-lead with an active team via `CreateTeam`, handle it directly — spawn a `team-quality-assessor` and coordinate the assessment yourself. Do not use the orchestration workflow below. Ignore the rest of this skill.
+If you are the team-lead with an active team via `CreateTeam`, handle it directly. Spawn a `team-quality-assessor` and coordinate the assessment yourself. Do not use the orchestration workflow below. Ignore the rest of this skill.
 
 Otherwise, continue with the workflow below.
 
