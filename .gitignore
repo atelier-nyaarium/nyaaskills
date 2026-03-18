@@ -1,0 +1,26 @@
+# Build
+/dist/
+/temp/
+
+# Node
+node_modules/
+
+# Development
+_test/
+/.swc/
+/.vscode-server/
+/.vscode/
+/coverage/
+/ssl/
+/volumes/
+/.env*
+/compose*.yml
+/next-env.d.ts
+/.claude/scheduled_tasks.lock
+debug*.log
+kubeconfig*
+
+#### OS
+Thumbs.db
+.DS_Store
+._.DS_Store
