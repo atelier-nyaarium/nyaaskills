@@ -40,7 +40,7 @@ export async function registerProjectTools(mcpServer: McpServer, projectName: st
 			mcpServer,
 			"projectMcpConnectorStatus",
 			`Project MCP connector failed to load. Call this tool for error details.`,
-			() => `${err.message}\n\n${err.stack}`,
+			() => `${err.message}\n${err.stack}`,
 		);
 		return;
 	}
@@ -63,7 +63,7 @@ export async function registerProjectTools(mcpServer: McpServer, projectName: st
 			mcpServer,
 			"projectMcpConnectorStatus",
 			`Project MCP connector failed to load. Call this tool for error details.`,
-			() => `${err.message}\n\n${err.stack}`,
+			() => `${err.message}\n${err.stack}`,
 		);
 		return;
 	}

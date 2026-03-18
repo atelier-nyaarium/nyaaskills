@@ -21,8 +21,15 @@ async function main(): Promise<void> {
 		registerStubTool(
 			mcpServer,
 			"projectMcpConnectorStatus",
-			`Project MCP connector is disabled. This is not a container. Ensure PROJECT_NAME is set.`,
-			() => `Project MCP connector is disabled. This is not a container. Ensure PROJECT_NAME is set.`,
+			`Project MCP connector is disabled. Call this tool for details.`,
+			() =>
+				[
+					`Project MCP connector is disabled.`,
+					``,
+					`Requirements:`,
+					`  - PROJECT_NAME env var must be set in the container`,
+					`  - MCP_CONNECTOR_PORT (default 20000) must be exposed via compose.yml`,
+				].join("\n"),
 		);
 	} else {
 		const connectorDir = `/workspace/${projectName}/.claude/connector`;
