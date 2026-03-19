@@ -1,13 +1,13 @@
 {
   "name": "nyaaskills",
-  "description": "Shared agents, skills, and project-mcp-connector for nyaarium projects",
+  "description": "Shared agents and skills for nyaarium projects",
   "owner": {
     "name": "Nyaarium"
   },
   "plugins": [
     {
       "name": "nyaaskills",
-      "description": "Shared agents, skills, and project-mcp-connector for nyaarium projects. Includes testability, quality, team collaboration, debugging instrumentation, and a project-mcp-connector that routes tool invocations to game clients via WebSocket.",
+      "description": "Shared agents and skills for nyaarium projects. Includes testability, quality, team collaboration, and debugging instrumentation.",
       "source": "./"
     }
   ]

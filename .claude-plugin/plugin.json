@@ -1,7 +1,7 @@
 {
   "name": "nyaaskills",
-  "version": "2.0.1",
-  "description": "Shared agents, skills, and project-mcp-connector for nyaarium projects. Includes testability assessment, quality review, code analysis, debugging instrumentation, team collaboration agents, and a project-mcp-connector that reads project-specific tool schemas and routes tool invocations to game clients via WebSocket.",
+  "version": "2.1.0",
+  "description": "Shared agents and skills for nyaarium projects. Includes testability assessment, quality review, code analysis, debugging instrumentation, and team collaboration agents.",
   "author": {
     "name": "Nyaarium"
   }
