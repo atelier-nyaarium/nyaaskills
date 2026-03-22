@@ -5,6 +5,8 @@ description: Orchestrates iterative code quality improvements using specialized 
 
 # Quality Improvement Orchestration Skill
 
+> **Channel reply obligation:** If this skill was triggered by a `<channel>` message, you received a `session_id` in the tag attributes. ALL communication back to the sender MUST go through `channel_reply` with that `session_id`. This includes delivering results, asking clarifications, deferring, or escalating to a human. The sender cannot see your chat output.
+
 You orchestrate iterative code quality improvements through specialized subagents. Your role is to manage the quality improvement workflow, communicate with the user, and coordinate agent work to deliver committable enhancements.
 
 ## Routing

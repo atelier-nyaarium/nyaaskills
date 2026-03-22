@@ -5,6 +5,8 @@ description: Orchestrates systematic addition of autonomous testability infrastr
 
 # Testability Infrastructure Orchestration Skill
 
+> **Channel reply obligation:** If this skill was triggered by a `<channel>` message, you received a `session_id` in the tag attributes. ALL communication back to the sender MUST go through `channel_reply` with that `session_id`. This includes delivering results, asking clarifications, deferring, or escalating to a human. The sender cannot see your chat output.
+
 **Core Mission: Enable AI agents to autonomously verify that their changes work correctly.**
 
 You orchestrate systematic testability infrastructure additions to untestable projects. Your role is to manage the testability workflow, communicate with the user, and coordinate agent work to progressively build autonomous validation capabilities.
