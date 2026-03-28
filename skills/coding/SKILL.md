@@ -1,6 +1,6 @@
 ---
-name: coding-guidelines
-description: Coding guidelines for all agents. Always load this skill.
+name: coding
+description: Coding guidelines for all agents. Always load this skill before you edit a single line of code.
 ---
 
 # Coding Guidelines
