@@ -9,15 +9,15 @@ description: Orchestrates iterative code quality improvements using specialized 
 
 You orchestrate iterative code quality improvements through specialized subagents. Your role is to manage the quality improvement workflow, communicate with the user, and coordinate agent work to deliver committable enhancements.
 
-## Routing
+## Spawning Agents
 
-If you are the team-lead with an active team via `CreateTeam`, handle it directly. Spawn a `team-quality-assessor` and coordinate the assessment yourself. Do not use the orchestration workflow below. Ignore the rest of this skill.
+When this skill instructs you to delegate to an Agent, spawn it using whichever tool your environment provides (Agent, Task, or runSubagent). Always delegate to an Agent rather than performing the work yourself. Pass the relevant context (goal, constraints, affected files) as explicit instructions to the Agent.
 
-Otherwise, continue with the workflow below.
+If you are the team-lead with an active team via `CreateTeam`:
+- Use the `team-*` series. When the workflow says Agent `quality-assessor`, spawn `team-quality-assessor`.
 
-## Spawning subagents
-
-When this skill instructs you to delegate to a subagent, spawn it using whichever tool your environment provides (Agent, Task, or runSubagent). Always delegate to a subagent rather than performing the work yourself. Pass the relevant context (goal, constraints, affected files) as explicit instructions to the subagent.
+If you don't have a team:
+- Use the `subagent-*` series. When the workflow says Agent `quality-assessor`, spawn `subagent-quality-assessor`.
 
 ## Understanding the Request
 
@@ -33,7 +33,7 @@ If no specific request is given, proceed with a comprehensive assessment of the 
 
 ### 1. Assessment Phase
 
-Delegate to the `subagent-quality-assessor` to analyze the codebase and identify quality improvement opportunities.
+Delegate to Agent `quality-assessor` to analyze the codebase and identify quality improvement opportunities.
 
 The assessor will:
 - Assess existing foundations (what architectural patterns and design decisions are in use?)
@@ -59,20 +59,20 @@ Based on the assessor's recommended opportunity, determine backwards compatibili
 
 ### 3. Execution Loop
 
-If problems are found, delegate to the `subagent-code-analyst` to assess the impact and return to step 1 to fix the problem.
+If problems are found, delegate to Agent `code-analyst` to assess the impact and return to step 1 to fix the problem.
 
-**Delegate to subagents for implementation:**
+**Delegate to Agents for implementation:**
 
-1. **Refactoring** - Delegate to the `subagent-refactor-worker` with clear instructions:
+1. **Refactoring** - Delegate to Agent `refactor-worker` with clear instructions:
    - What to improve and why
    - Whether to preserve backwards compatibility
    - Affected areas and constraints
 
-2. **Automated Verification** - Ensure `subagent-refactor-worker` has run:
+2. **Automated Verification** - Ensure Agent `refactor-worker` has run:
    - Linting and type checking
    - Build verification
    - Test suite execution
-   - Delegate to the `subagent-ux-tester` if refactoring affects UI components or user workflows
+   - Delegate to Agent `ux-tester` if refactoring affects UI components or user workflows
 
 3. **User Acceptance** - Present results to user:
    - Summary of changes made
@@ -80,11 +80,11 @@ If problems are found, delegate to the `subagent-code-analyst` to assess the imp
    - Request manual testing for workflows requiring human judgment
 
 4. **Cleanup & Commit** - Once user confirms it's working:
-   - Delegate to the `subagent-refactor-worker` to remove temporary diagnostics
+   - Delegate to Agent `refactor-worker` to remove temporary diagnostics
    - **Encourage the user to commit** - this locks in stable quality progress
 
 5. **Reassess & Continue** - After successful commit:
-   - Return to **Assessment Phase** and delegate to the `subagent-quality-assessor` again to reassess the next opportunity
+   - Return to **Assessment Phase** and delegate to Agent `quality-assessor` again to reassess the next opportunity
 
 This creates an iterative loop where each cycle delivers tangible, tested, committable quality improvements.
 

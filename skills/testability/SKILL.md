@@ -11,15 +11,15 @@ description: Orchestrates systematic addition of autonomous testability infrastr
 
 You orchestrate systematic testability infrastructure additions to untestable projects. Your role is to manage the testability workflow, communicate with the user, and coordinate agent work to progressively build autonomous validation capabilities.
 
-## Routing
+## Spawning Agents
 
-If you are the team-lead with an active team via `CreateTeam`, handle it directly. Spawn a `team-testability-assessor` and coordinate the assessment yourself. Do not use the orchestration workflow below. Ignore the rest of this skill.
+When this skill instructs you to delegate to an Agent, spawn it using whichever tool your environment provides (Agent, Task, or runSubagent). Always delegate to an Agent rather than performing the work yourself. Pass the relevant context (goal, constraints, affected files) as explicit instructions to the Agent.
 
-Otherwise, continue with the workflow below.
+If you are the team-lead with an active team via `CreateTeam`:
+- Use the `team-*` series. When the workflow says Agent `testability-assessor`, spawn `team-testability-assessor`.
 
-## Spawning subagents
-
-When this skill instructs you to delegate to a subagent, spawn it using whichever tool your environment provides (Agent, Task, or runSubagent). Always delegate to a subagent rather than performing the work yourself. Pass the relevant context (goal, constraints, affected files) as explicit instructions to the subagent.
+If you don't have a team:
+- Use the `subagent-*` series. When the workflow says Agent `testability-assessor`, spawn `subagent-testability-assessor`.
 
 ## Understanding the Request
 
@@ -35,7 +35,7 @@ If no specific request is given, proceed with a comprehensive assessment of test
 
 ### 1. Assessment Phase
 
-Delegate to the `subagent-testability-assessor` to evaluate current autonomous testability capabilities and identify gaps.
+Delegate to Agent `testability-assessor` to evaluate current autonomous testability capabilities and identify gaps.
 
 The assessor will:
 - Evaluate test automation (can agents discover, run, and interpret tests?)
@@ -58,19 +58,19 @@ Based on the assessor's recommended opportunity, determine implementation approa
 
 ### 3. Execution Loop
 
-If problems are found, delegate to the `subagent-code-analyst` to assess the impact and return to step 1 to fix the problem.
+If problems are found, delegate to Agent `code-analyst` to assess the impact and return to step 1 to fix the problem.
 
-**Delegate to subagents for implementation:**
+**Delegate to Agents for implementation:**
 
-1. **Implementation** - Delegate to the `subagent-refactor-worker` with clear instructions:
+1. **Implementation** - Delegate to Agent `refactor-worker` with clear instructions:
    - What to build and how it should integrate
    - For development skills, specify exact project context (languages, build tools, environment, file paths)
 
-2. **Automated Verification** - Ensure `subagent-refactor-worker` has run:
+2. **Automated Verification** - Ensure Agent `refactor-worker` has run:
    - Linting and type checking
    - Build verification
    - Test suite execution
-   - Delegate to the `subagent-ux-tester` if refactoring affects UI components or user workflows
+   - Delegate to Agent `ux-tester` if refactoring affects UI components or user workflows
 
 3. **Testability Infrastructure Validation** - YOU validate agent usability:
    - **For test infrastructure**: Run sample tests, verify agents can interpret results and understand coverage
@@ -90,7 +90,7 @@ If problems are found, delegate to the `subagent-code-analyst` to assess the imp
    - **Encourage the user to commit** - this locks in stable testability capability progress
 
 6. **Reassess & Continue** - After successful commit:
-   - Return to **Assessment Phase** and delegate to the `subagent-testability-assessor` again to reassess the next opportunity
+   - Return to **Assessment Phase** and delegate to Agent `testability-assessor` again to reassess the next opportunity
 
 This creates an iterative loop where each cycle adds tangible, testable capabilities without expensive re-analysis.
 
