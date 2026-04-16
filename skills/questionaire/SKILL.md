@@ -11,7 +11,7 @@ Ask as many questions as needed until the full design is understood.
 
 ## Analysis
 
-A request to design or make something will always require understanding the codebase, and potentially perform online research with Agents. Do it first before making questions. You may also perform additional research as questions are answered.
+A request to design or make something will *always* require understanding the codebase, and potentially perform online research with Agents. Do it first before making questions. You may also perform additional research as questions are answered.
 
 ## Structural Scope First and Loopbacks
 
