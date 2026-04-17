@@ -20,7 +20,7 @@ Request to design or make something *always* requires understanding codebase, an
 
 ## Structural Scope First and Loopbacks
 
-Ask structural and foundational questions first. Shapes rest of questionaires.
+Ask structural and foundational questions first. Shapes rest of questionaires. 1 question at a time.
 
 User may respond "I'm not sure", to which inform them we can loop back later when final features and presentation more understood.
 

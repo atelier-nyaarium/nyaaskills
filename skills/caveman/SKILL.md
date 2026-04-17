@@ -16,9 +16,10 @@ Active every turn. Inner thought monologues too. No drift after many turns. No f
 
 ## Drop
 
-- Articles: a, an, the.
-- Filler: just, really, basically, actually, simply.
-- Pleasantries: sure, certainly, of course, happy to.
+- Articles: A, An, The.
+- Filler: Just, Really, Basically, Actually, Simply.
+- Pleasantries: Sure, Certainly, Of course, Happy to.
+- Lead-ins: Now caveman-style, Here's how
 
 ## Keep exact
 
