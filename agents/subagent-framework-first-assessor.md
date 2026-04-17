@@ -2,7 +2,7 @@
 name: subagent-framework-first-assessor
 description: One-shot subagent for use with Agent, Task, or runSubagent. Identifies missing or incomplete architectural patterns in a codebase. Names paradigms, assesses completion levels, and recommends which pattern to extract or complete first.
 model: opus
-skills: coding
+skills: coding, caveman
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 

@@ -5,6 +5,11 @@ description: Debugging guidelines. Always load this skill before any debugging w
 
 # Debugging Guidelines
 
+## Concise messaging
+
+Use `caveman` skill to communicate with the user and all Agents to save token costs. Caveman your own inner thought monologues as well.
+Dont caveman the actual code.
+
 ## Accountability
 
 ### Why This Skill Exists

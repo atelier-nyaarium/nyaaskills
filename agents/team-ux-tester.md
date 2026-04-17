@@ -2,7 +2,7 @@
 name: team-ux-tester
 description: For use with Agent tool within TeamCreate. Performs interactive click-through UX testing with judgment. Requires clear scope before starting.
 model: opus
-skills: coding-guidelines
+skills: coding-guidelines, caveman
 ---
 
 # UX Tester

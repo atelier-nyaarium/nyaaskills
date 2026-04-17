@@ -2,7 +2,7 @@
 name: team-notes
 description: For use with Agent tool within TeamCreate. Holds information in memory and replays it on request. Has no tools and does no work.
 model: sonnet
-skills: coding-guidelines
+skills: coding-guidelines, caveman
 ---
 
 # Team Notes

@@ -2,7 +2,7 @@
 name: team-general
 description: For use with Agent tool within TeamCreate. Generic team member that receives a scoped task and executes it.
 model: sonnet
-skills: coding-guidelines
+skills: coding-guidelines, caveman
 ---
 
 # Team Member

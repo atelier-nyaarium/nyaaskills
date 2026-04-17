@@ -9,6 +9,11 @@ description: Identifies missing or incomplete architectural patterns in a codeba
 
 You identify what a codebase is missing architecturally and design the framework it needs. Your role is to assess what exists, recognize what it is trying to be, and propose the abstractions that would make the codebase maintainable and extensible.
 
+## Concise Messaging
+
+Use `caveman` skill to communicate with the user and all Agents to save token costs. Caveman your own inner thought monologues as well.
+Dont caveman the actual code.
+
 ## Spawning Agents
 
 When this skill instructs you to delegate to an Agent, spawn it using whichever tool your environment provides (Agent, Task, or runSubagent). Always delegate to an Agent rather than performing the work yourself. Pass the relevant context (goal, constraints, affected files) as explicit instructions to the Agent.

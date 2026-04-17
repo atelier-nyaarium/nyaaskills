@@ -7,17 +7,22 @@ description: Coding guidelines for all agents. Always load this skill before you
 
 Follow these guidelines when editing files or writing human-facing text.
 
-## Banned symbols
+## Concise Messaging
+
+Use `caveman` skill to communicate with the user and all Agents to save token costs. Caveman your own inner thought monologues as well.
+Dont caveman the actual code.
+
+## Banned Symbols
 
 In all files, including markdown, NEVER use em dashes, smart quotes, or zero-width characters. Use regular quotes and regular dashes (-). If you see smart quotes in existing code, replace them. Reword sentences to avoid lazy dash-joins.
 
 To check for lingering usages: `... | xargs grep -Pl '[\x{2014}\x{2018}\x{2019}\x{201C}\x{201D}\x{200B}\x{200C}\x{200D}]' 2>/dev/null`
 
-## Documentation style
+## Documentation Style
 
 No tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, rhetorics, or puffery. Write concise, accurate sentences the way a human would. Instead of using em dashes to join sentences and fragments, form proper sentences.
 
-## Comment discipline
+## Comment Discipline
 
 Only comment when something non-obvious is happening. Do not narrate code.
 

@@ -9,6 +9,11 @@ Build a solid understanding of what the user (or even another team Agent) wants.
 
 Ask as many questions as needed until the full design is understood.
 
+## Concise Messaging
+
+Use `caveman` skill to communicate with the user and all Agents to save token costs. Caveman your own inner thought monologues as well.
+Dont caveman the actual code.
+
 ## Analysis
 
 A request to design or make something will *always* require understanding the codebase, and potentially perform online research with Agents. Do it first before making questions. You may also perform additional research as questions are answered.

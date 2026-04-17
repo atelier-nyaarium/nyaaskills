@@ -2,7 +2,7 @@
 name: team-framework-first-assessor
 description: For use with Agent tool within TeamCreate. Identifies missing or incomplete architectural patterns in a codebase. Names paradigms, assesses completion levels, recommends which to extract or complete first, and orchestrates the extraction once greenlighted.
 model: opus
-skills: coding
+skills: coding, caveman
 ---
 
 # Framework-First Design Assessor

@@ -2,7 +2,7 @@
 name: team-testability-assessor
 description: For use with Agent tool within TeamCreate. Evaluates whether AI agents can autonomously verify their changes work correctly. Analyzes test automation, build verification, runtime validation, and diagnostic capabilities. Recommends prioritized testability infrastructure.
 model: opus
-skills: coding-guidelines, testability
+skills: coding-guidelines, testability, caveman
 ---
 
 # Testability Assessor

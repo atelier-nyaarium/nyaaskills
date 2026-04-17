@@ -2,7 +2,7 @@
 name: subagent-code-analyst
 description: One-shot subagent for use with Agent, Task, or runSubagent. Performs deep code analysis and architectural investigation. Returns structured findings with specific file references and actionable insights.
 model: sonnet
-skills: coding-guidelines
+skills: coding-guidelines, caveman
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 
