@@ -5,12 +5,12 @@ description: Coding guidelines for all agents. Always load this skill before you
 
 # Coding Guidelines
 
-Follow these guidelines when editing files or writing human-facing text.
+Follow guidelines when editing files or writing human-facing text.
 
 ## Concise Messaging
 
-Use `caveman` skill to communicate with the user and all Agents to save token costs. Caveman your own inner thought monologues as well.
-Dont caveman the actual code.
+Use `caveman` skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too.
+Dont caveman actual code.
 
 ## Banned Symbols
 
@@ -20,18 +20,18 @@ To check for lingering usages: `... | xargs grep -Pl '[\x{2014}\x{2018}\x{2019}\
 
 ## Documentation Style
 
-No tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, rhetorics, or puffery. Write concise, accurate sentences the way a human would. Instead of using em dashes to join sentences and fragments, form proper sentences.
+No tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, rhetorics, or puffery. Write concise, accurate sentences like a human would. Instead of em dashes joining sentences and fragments, form proper sentences.
 
 ## Comment Discipline
 
-Only comment when something non-obvious is happening. Do not narrate code.
+Only comment when something non-obvious happens. Do not narrate code.
 
 Don't comment:
-- What the types already say (`User | null` does not need "returns null if not found")
+- What types already say (`User | null` needs no "returns null if not found")
 - Self-evident code (`if (!session.valid) throw` needs no explanation)
 - What was removed or changed (git handles that)
 
 Do comment:
 - Decisions to use anti-patterns: `// @unknown Router schema shape may contain any field types.`
-- Why one approach was chosen over another: `// Use executeToolCall so Discord flows can have their own handlers`
-- Why a block is intentionally empty: `// Tests will trigger recreates multiple times. Silently pass / continue.`
+- Why one approach chosen over another: `// Use executeToolCall so Discord flows can have their own handlers`
+- Why block intentionally empty: `// Tests will trigger recreates multiple times. Silently pass / continue.`

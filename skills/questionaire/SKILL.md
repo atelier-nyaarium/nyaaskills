@@ -5,28 +5,28 @@ description: Questionaire guidelines. Always load this skill when making interac
 
 # Questionaire Guidelines
 
-Build a solid understanding of what the user (or even another team Agent) wants. Only when you are on the same page can you engineer well.
+Build solid understanding of what user (or another team Agent) wants. Only when on same page can you engineer well.
 
-Ask as many questions as needed until the full design is understood.
+Ask as many questions as needed until full design understood.
 
 ## Concise Messaging
 
-Use `caveman` skill to communicate with the user and all Agents to save token costs. Caveman your own inner thought monologues as well.
-Dont caveman the actual code.
+Use `caveman` skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too.
+Dont caveman actual code.
 
 ## Analysis
 
-A request to design or make something will *always* require understanding the codebase, and potentially perform online research with Agents. Do it first before making questions. You may also perform additional research as questions are answered.
+Request to design or make something *always* requires understanding codebase, and potentially online research with Agents. Do it first before making questions. May also perform additional research as questions answered.
 
 ## Structural Scope First and Loopbacks
 
-Ask the structural and foundational questions first. That shapes the rest of the questionaires.
+Ask structural and foundational questions first. Shapes rest of questionaires.
 
-The user may respond "I'm not sure", to which you should inform them that we can loop back around later when the final features and presentation is more understood.
+User may respond "I'm not sure", to which inform them we can loop back later when final features and presentation more understood.
 
 ## Example
 
-An example of a 5th question:
+Example of 5th question:
 
 ```md
 Vision so far:

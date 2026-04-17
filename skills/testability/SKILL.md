@@ -9,32 +9,32 @@ description: Orchestrates systematic addition of autonomous testability infrastr
 
 **Core Mission: Enable AI agents to autonomously verify that their changes work correctly.**
 
-You orchestrate systematic testability infrastructure additions to untestable projects. Your role is to manage the testability workflow, communicate with the user, and coordinate agent work to progressively build autonomous validation capabilities.
+You orchestrate systematic testability infrastructure additions to untestable projects. Your role: manage testability workflow, communicate with user, coordinate agent work to progressively build autonomous validation capabilities.
 
 ## Concise Messaging
 
-Use `caveman` skill to communicate with the user and all Agents to save token costs. Caveman your own inner thought monologues as well.
-Dont caveman the actual code.
+Use `caveman` skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too.
+Dont caveman actual code.
 
 ## Spawning Agents
 
-When this skill instructs you to delegate to an Agent, spawn it using whichever tool your environment provides (Agent, Task, or runSubagent). Always delegate to an Agent rather than performing the work yourself. Pass the relevant context (goal, constraints, affected files) as explicit instructions to the Agent.
+When this skill instructs you to delegate to Agent, spawn using whichever tool your environment provides (Agent, Task, or runSubagent). Always delegate to Agent rather than performing work yourself. Pass relevant context (goal, constraints, affected files) as explicit instructions to Agent.
 
-If you are the team-lead with an active team via `CreateTeam`:
-- Use the `team-*` series. When the workflow says Agent `testability-assessor`, spawn `team-testability-assessor`.
+If you are team-lead with active team via `CreateTeam`:
+- Use `team-*` series. When workflow says Agent `testability-assessor`, spawn `team-testability-assessor`.
 
-If you don't have a team:
-- Use the `subagent-*` series. When the workflow says Agent `testability-assessor`, spawn `subagent-testability-assessor`.
+If you don't have team:
+- Use `subagent-*` series. When workflow says Agent `testability-assessor`, spawn `subagent-testability-assessor`.
 
 ## Understanding the Request
 
-When invoked, the user may provide specific context about desired testability capabilities. Start by:
+When invoked, user may provide specific context about desired testability capabilities. Start by:
 
-- **Acknowledging their request** - If they've identified specific areas requiring testability infrastructure (testing, validation, diagnostics), prioritize those targets
-- **Clarifying goals** - If the request is broad ("make this testable by AI"), work with them to understand which testability capabilities are highest priority
+- **Acknowledging their request** - If they identified specific areas requiring testability infrastructure (testing, validation, diagnostics), prioritize those targets
+- **Clarifying goals** - If request broad ("make this testable by AI"), work with them to understand which testability capabilities are highest priority
 - **Tailoring the assessment** - Focus analysis on areas most relevant to their autonomous validation needs
 
-If no specific request is given, proceed with a comprehensive assessment of testability capability gaps.
+If no specific request given, proceed with comprehensive assessment of testability capability gaps.
 
 ## Orchestration Workflow
 
@@ -42,28 +42,28 @@ If no specific request is given, proceed with a comprehensive assessment of test
 
 Delegate to Agent `testability-assessor` to evaluate current autonomous testability capabilities and identify gaps.
 
-The assessor will:
-- Evaluate test automation (can agents discover, run, and interpret tests?)
+Assessor will:
+- Evaluate test automation (can agents discover, run, interpret tests?)
 - Assess build verification (can agents execute builds and confirm success?)
-- Check runtime validation (can agents start the app and observe correct behavior?)
+- Check runtime validation (can agents start app and observe correct behavior?)
 - Analyze diagnostic capabilities (can agents inject debug code and gather evidence?)
 - Review development documentation (does `.claude/skills/development/SKILL.md` document validation workflows?)
-- Present a list of 1-5 testability infrastructure opportunities
+- Present list of 1-5 testability infrastructure opportunities
 - Recommend ONE opportunity to act on based on dependency order and impact
 - Explicitly answer: **Can an agent currently verify its changes work correctly?**
 
-Review the assessment report with the user.
+Review assessment report with user.
 
 ### 2. Determine Approach
 
-Based on the assessor's recommended opportunity, determine implementation approach:
+Based on assessor's recommended opportunity, determine implementation approach:
 
 - **New infrastructure** - Adding capabilities that don't exist (create clean, well-designed implementations)
 - **Replacement** - Updating existing testing tooling (treat as refactor, backwards compatibility should not be needed)
 
 ### 3. Execution Loop
 
-If problems are found, delegate to Agent `code-analyst` to assess the impact and return to step 1 to fix the problem.
+If problems found, delegate to Agent `code-analyst` to assess impact and return to step 1 to fix problem.
 
 **Delegate to Agents for implementation:**
 
@@ -71,7 +71,7 @@ If problems are found, delegate to Agent `code-analyst` to assess the impact and
    - What to build and how it should integrate
    - For development skills, specify exact project context (languages, build tools, environment, file paths)
 
-2. **Automated Verification** - Ensure Agent `refactor-worker` has run:
+2. **Automated Verification** - Ensure Agent `refactor-worker` ran:
    - Linting and type checking
    - Build verification
    - Test suite execution
@@ -81,7 +81,7 @@ If problems are found, delegate to Agent `code-analyst` to assess the impact and
    - **For test infrastructure**: Run sample tests, verify agents can interpret results and understand coverage
    - **For diagnostic capabilities**: Write sample debug statements, verify output is structured and parseable
    - **For MCP servers**: Execute validation operations (query state, trigger scenarios, verify responses)
-     - You may need to pause and instruct the user how to configure or refresh MCP server on VS/Cursor/Claude Code
+     - May need to pause and instruct user how to configure or refresh MCP server on VS/Cursor/Claude Code
    - **For development skills**: Read generated SKILL.md, verify it accurately describes this project's validation workflow
 
 4. **User Acceptance** - Present results to user:
@@ -89,15 +89,15 @@ If problems are found, delegate to Agent `code-analyst` to assess the impact and
    - Any limitations discovered
    - Request manual testing for workflows requiring human judgment
 
-5. **Cleanup & Commit** - Once user confirms it's working:
+5. **Cleanup & Commit** - Once user confirms working:
    - Clean up temporary test code or validation examples
-   - Ensure documentation is complete and accurate
-   - **Encourage the user to commit** - this locks in stable testability capability progress
+   - Ensure documentation complete and accurate
+   - **Encourage user to commit** - locks in stable testability capability progress
 
 6. **Reassess & Continue** - After successful commit:
-   - Return to **Assessment Phase** and delegate to Agent `testability-assessor` again to reassess the next opportunity
+   - Return to **Assessment Phase** and delegate to Agent `testability-assessor` again to reassess next opportunity
 
-This creates an iterative loop where each cycle adds tangible, testable capabilities without expensive re-analysis.
+Creates iterative loop where each cycle adds tangible, testable capabilities without expensive re-analysis.
 
 ## Key Principles
 

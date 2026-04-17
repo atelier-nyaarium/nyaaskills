@@ -7,64 +7,64 @@ description: Orchestrates iterative code quality improvements using specialized 
 
 > **Channel reply obligation:** If this skill was triggered by a `<channel>` message, you received a `session_id` in the tag attributes. ALL communication back to the sender MUST go through `channel_reply` with that `session_id`. This includes delivering results, asking clarifications, deferring, or escalating to a human. The sender cannot see your chat output.
 
-You orchestrate iterative code quality improvements through specialized subagents. Your role is to manage the quality improvement workflow, communicate with the user, and coordinate agent work to deliver committable enhancements.
+You orchestrate iterative code quality improvements through specialized subagents. Your role: manage quality improvement workflow, communicate with user, coordinate agent work to deliver committable enhancements.
 
 ## Concise Messaging
 
-Use `caveman` skill to communicate with the user and all Agents to save token costs. Caveman your own inner thought monologues as well.
-Dont caveman the actual code.
+Use `caveman` skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too.
+Dont caveman actual code.
 
 ## Spawning Agents
 
-When this skill instructs you to delegate to an Agent, spawn it using whichever tool your environment provides (Agent, Task, or runSubagent). Always delegate to an Agent rather than performing the work yourself. Pass the relevant context (goal, constraints, affected files) as explicit instructions to the Agent.
+When this skill instructs you to delegate to Agent, spawn using whichever tool your environment provides (Agent, Task, or runSubagent). Always delegate to Agent rather than performing work yourself. Pass relevant context (goal, constraints, affected files) as explicit instructions to Agent.
 
-If you are the team-lead with an active team via `CreateTeam`:
-- Use the `team-*` series. When the workflow says Agent `quality-assessor`, spawn `team-quality-assessor`.
+If you are team-lead with active team via `CreateTeam`:
+- Use `team-*` series. When workflow says Agent `quality-assessor`, spawn `team-quality-assessor`.
 
-If you don't have a team:
-- Use the `subagent-*` series. When the workflow says Agent `quality-assessor`, spawn `subagent-quality-assessor`.
+If you don't have team:
+- Use `subagent-*` series. When workflow says Agent `quality-assessor`, spawn `subagent-quality-assessor`.
 
 ## Understanding the Request
 
-When invoked, the user may provide specific context, goals, or areas of concern. Start by:
+When invoked, user may provide specific context, goals, or areas of concern. Start by:
 
-- **Acknowledging their request** - If they've pointed to specific files, modules, or quality issues, prioritize those targets
-- **Clarifying scope** - If the request is broad ("improve code quality"), work with them to understand what's most important right now
+- **Acknowledging their request** - If they pointed to specific files, modules, or quality issues, prioritize those targets
+- **Clarifying scope** - If request broad ("improve code quality"), work with them to understand what's most important right now
 - **Tailoring the assessment** - Focus analysis on areas most relevant to their goals
 
-If no specific request is given, proceed with a comprehensive assessment of the entire codebase.
+If no specific request given, proceed with comprehensive assessment of entire codebase.
 
 ## Orchestration Workflow
 
 ### 1. Assessment Phase
 
-Delegate to Agent `quality-assessor` to analyze the codebase and identify quality improvement opportunities.
+Delegate to Agent `quality-assessor` to analyze codebase and identify quality improvement opportunities.
 
-The assessor will:
-- Assess existing foundations (what architectural patterns and design decisions are in use?)
-- Identify friction points (where is code quality suboptimal or are patterns inconsistent?)
+Assessor will:
+- Assess existing foundations (what architectural patterns and design decisions in use?)
+- Identify friction points (where is code quality suboptimal or patterns inconsistent?)
 - Evaluate integration quality (do different systems and modules integrate cleanly or create unnecessary coupling?)
-- Present a list of 1-5 quality improvement opportunities
+- Present list of 1-5 quality improvement opportunities
 - Recommend ONE opportunity to act on based on dependency order and impact
 
-Review the assessment report with the user.
+Review assessment report with user.
 
 ### 2. Determine Approach
 
-Based on the assessor's recommended opportunity, determine backwards compatibility strategy:
+Based on assessor's recommended opportunity, determine backwards compatibility strategy:
 
 - **Default to clean breaks** - Remove old patterns entirely rather than preserving legacy behavior
 - **Signals for backwards compatibility**:
-  - Versioned APIs (e.g., `/api/v1/`, `/api/v2/`)
-  - User said "also", "both", "still support", "keep the old way"
+  - Versioned APIs or routes (e.g., `/api/v1/`, `/api/v2/`)
+  - User explicitly said "also", "both", "still support", "keep the old way"
   - Public APIs, published packages, external integrations
-  - Multi-tenant systems where clients may be on different versions
+  - Multi-tenant systems where different clients may be on different versions
 - **When you see signals**: Ask whether to do **forceful improvement** (clean break) or **gentle migration** (preserve legacy)
-- **When in doubt**: Recommend a clean break
+- **When in doubt**: Recommend clean break
 
 ### 3. Execution Loop
 
-If problems are found, delegate to Agent `code-analyst` to assess the impact and return to step 1 to fix the problem.
+If problems found, delegate to Agent `code-analyst` to assess impact and return to step 1 to fix problem.
 
 **Delegate to Agents for implementation:**
 
@@ -73,7 +73,7 @@ If problems are found, delegate to Agent `code-analyst` to assess the impact and
    - Whether to preserve backwards compatibility
    - Affected areas and constraints
 
-2. **Automated Verification** - Ensure Agent `refactor-worker` has run:
+2. **Automated Verification** - Ensure Agent `refactor-worker` ran:
    - Linting and type checking
    - Build verification
    - Test suite execution
@@ -84,14 +84,14 @@ If problems are found, delegate to Agent `code-analyst` to assess the impact and
    - Automated verification status
    - Request manual testing for workflows requiring human judgment
 
-4. **Cleanup & Commit** - Once user confirms it's working:
+4. **Cleanup & Commit** - Once user confirms working:
    - Delegate to Agent `refactor-worker` to remove temporary diagnostics
-   - **Encourage the user to commit** - this locks in stable quality progress
+   - **Encourage user to commit** - locks in stable quality progress
 
 5. **Reassess & Continue** - After successful commit:
-   - Return to **Assessment Phase** and delegate to Agent `quality-assessor` again to reassess the next opportunity
+   - Return to **Assessment Phase** and delegate to Agent `quality-assessor` again to reassess next opportunity
 
-This creates an iterative loop where each cycle delivers tangible, tested, committable quality improvements.
+Creates iterative loop where each cycle delivers tangible, tested, committable quality improvements.
 
 ## Key Principles
 
@@ -101,4 +101,4 @@ This creates an iterative loop where each cycle delivers tangible, tested, commi
 - **Commit frequently** - Lock in stable progress after each successful quality improvement
 - **Default to clean breaks** - Remove old patterns entirely rather than accumulating technical debt
 - **Project-specific analysis** - Base recommendations on actual architecture and patterns, not generic advice
-- **User is the decision maker** - You assess and recommend, they approve and commit
+- **User is decision maker** - You assess and recommend, they approve and commit
