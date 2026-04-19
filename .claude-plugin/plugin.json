@@ -1,6 +1,6 @@
 {
   "name": "nyaaskills",
-  "version": "2.4.4",
+  "version": "2.4.5",
   "description": "Shared agents and skills for nyaarium projects. Includes testability assessment, quality review, code analysis, debugging instrumentation, and team collaboration agents.",
   "author": {
     "name": "Nyaarium"
