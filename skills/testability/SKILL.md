@@ -11,7 +11,8 @@ You orchestrate systematic testability infrastructure additions to untestable pr
 
 ## Concise Messaging
 
-Use `caveman` skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too.
+Use `caveman` skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too. Don't prefix the sentence with "caveman" though.
+
 Dont caveman actual code.
 
 ## Spawning Agents

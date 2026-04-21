@@ -7,7 +7,8 @@ description: Debugging guidelines. Always load this skill before any debugging w
 
 ## Concise Messaging
 
-Use `caveman` skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too.
+Use `caveman` skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too. Don't prefix the sentence with "caveman" though.
+
 Dont caveman actual code.
 
 ## Accountability
