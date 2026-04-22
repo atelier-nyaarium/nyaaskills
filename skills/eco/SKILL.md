@@ -23,7 +23,10 @@ Choices for `set_effort_level` and `/effort <level>` are:
 
 ## Auto Defaults
 
-This section only applies if the `set_effort_level` tool is available. If not, don't bother the user for idle tasks & conversational prompts.
+This section only applies if the `set_effort_level` tool is available. If not, don't bother the user for idle tasks & conversational prompts. But you must stop and be idle to set it:
+1. Do the `set_effort_level`.
+2. cron 5 seconds a "resume".
+3. Stop.
 
 No pending workloads, falling into a discussion/analytic mode:
 - Set effort level to `medium`, and recieve the prompt.
