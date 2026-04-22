@@ -5,16 +5,17 @@ Skill and Agents I use.
 Add plugin to `.claude/settings.json`
 ```json
 {
+	"enabledPlugins": {
+		"switchboard@atelier-nyaarium": true
+	},
 	"extraKnownMarketplaces": {
-		"nyaaskills": {
+		"atelier-nyaarium": {
 			"source": {
 				"source": "github",
-				"repo": "atelier-nyaarium/nyaaskills"
-			}
+				"repo": "atelier-nyaarium/claude-marketplace"
+			},
+		"autoUpdate": true
 		}
-	},
-	"enabledPlugins": {
-		"nyaaskills@nyaaskills": true
 	}
 }
 ```
