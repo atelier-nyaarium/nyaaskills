@@ -41,6 +41,10 @@ Dumb running a bunch of simple things:
 Highly complex reasoning that you MUST NOT get wrong:
 - `max`. Set lower as the severity of followups decreases.
 
+Documentation and code comments updates:
+- `medium` for simple documentation updates.
+- `high` for documentation of complex systems.
+
 ## Workloads
 
 **Hills:** Tasks that are harder than the last workload.
