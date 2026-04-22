@@ -64,7 +64,7 @@ During your workload, if you encounter an unexpected issue requiring more though
 Within your task lists, keep track of the workload's effort levels so you remember when it's time to switch.
 
 ```
-◻ [max] Phase 1 - Some complex task
+◻ [max] Deep plan all phases and workloads
 ◻ [max] Phase 2 - Some other complex task
 ◻ [medium] Phase 2 - Some medium task
 ◻ [high] Phase 3 - Some high task
