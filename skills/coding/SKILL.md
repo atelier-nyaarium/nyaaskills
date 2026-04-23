@@ -21,7 +21,7 @@ To check for lingering usages: `... | xargs grep -Pl '[\x{2014}\x{2018}\x{2019}\
 
 ## Documentation Style
 
-No tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, rhetorics, or puffery. Write concise, accurate sentences like a human would. Instead of em dashes joining sentences and fragments, form proper sentences.
+No tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, rhetorics, flair, or puffery. Write concise, accurate sentences like a human would. Instead of em dashes joining sentences and fragments, form proper sentences.
 
 ## Comment Discipline
 

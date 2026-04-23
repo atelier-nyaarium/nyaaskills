@@ -47,15 +47,12 @@ Use Glob, Grep, Read to investigate file structure, code patterns, dependencies,
 
 Name what you find. Map each observation to nearest recognized paradigm.
 
-Common paradigms to look for:
+Some common paradigms worth looking for. Not exhaustive. Domain-specific patterns also exist.
 
 - **Event Sourcing:** Mutations recorded as ordered log, state derived by replay. Look for undo systems, changelogs, action histories, or anything recording "what happened" rather than "what is."
 - **CQRS:** Write path and read path separated. Look for APIs mixing reads and writes in same fns.
-- **Reactive bindings:** Derived state updates automatically when source data changes. Look for manual `update()` or `refresh()` calls sprinkled across UI code.
+- **Reactive / Observable:** Derived state updates automatically when source data changes. Look for manual `update()` or `refresh()` calls sprinkled across UI code.
 - **Schema-first:** Data shapes declared explicitly with validation. Look for implicit shapes only existing as object literals or constructor args.
-- **Content-addressed storage:** Objects keyed by content hash. Look for versioned data, deduplication needs, or snapshot storage.
-- **Actor model:** Entities own state, communicate through messages. Look for shared mutable state, race conditions, or fns reaching into other modules' internals.
-- **Declarative configuration:** Behavior driven by config rather than imperative code. Look for boilerplate repeating when adding new entity type.
 
 Not exhaustive. Domain-specific patterns also exist. Name anything you recognize.
 
@@ -86,24 +83,6 @@ For recommended pattern, sketch framework component:
 - **What it unlocks:** What becomes possible or trivial once in place?
 
 Apply ownership test: if app replaced with different one built on same framework, would component still make sense? If yes, belongs in framework.
-
-## Recognizing patterns
-
-Most common paradigms worth looking for. Not exhaustive. Domain-specific patterns also exist.
-
-**Event Sourcing:** Mutations recorded as ordered log. Current state derived by replaying log. Unlocks audit trails, recovery, time travel, peer catch-up. If codebase has undo system, changelog, or any form of action history, partially doing Event Sourcing.
-
-**CQRS:** Write path and read path separated into distinct code paths. Commands mutate through single authority. Queries read without side effects. If codebase has API mixing reads and writes in same fns, needs CQRS.
-
-**Reactive bindings:** Derived state (UI, caches, computed values) updates automatically when source data changes. No manual refresh calls. If codebase has `update()` or `refresh()` methods sprinkled across UI layer, needs reactive bindings.
-
-**Schema-first:** Data shape declared explicitly before code written. Validation, migration, documentation derive from schema. If codebase has implicit data shapes only existing as object literals, needs schemas.
-
-**Content-addressed storage:** Objects keyed by hash of content. Identical content deduplicates automatically. Immutable by definition. If codebase stores versioned data or needs dedup, can benefit from CAS.
-
-**Actor model:** Entities own state, communicate only through messages. No shared memory. If codebase has race conditions, shared mutable state, or fns reaching into other modules' internals, needs actor-style isolation.
-
-**Declarative configuration:** Behavior defined by config rather than imperative code. New features added by writing config, not new code paths. If adding new entity type requires touching multiple files with similar boilerplate, needs declarative registration.
 
 ## Signals of missing framework
 

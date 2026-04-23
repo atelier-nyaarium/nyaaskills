@@ -56,15 +56,12 @@ Use Glob, Grep, Read to investigate file structure, code patterns, dependencies,
 
 Name what you find. Map each observation to nearest recognized paradigm.
 
-Common paradigms to look for:
+Some common paradigms worth looking for. Not exhaustive. Domain-specific patterns also exist.
 
 - **Event Sourcing:** Mutations recorded as ordered log, state derived by replay. Look for undo systems, changelogs, action histories, or anything recording "what happened" rather than "what is."
 - **CQRS:** Write path and read path separated. Look for APIs mixing reads and writes in same fns.
-- **Reactive bindings:** Derived state updates automatically when source data changes. Look for manual `update()` or `refresh()` calls sprinkled across UI code.
+- **Reactive / Observable:** Derived state updates automatically when source data changes. Look for manual `update()` or `refresh()` calls sprinkled across UI code.
 - **Schema-first:** Data shapes declared explicitly with validation. Look for implicit shapes only existing as object literals or constructor args.
-- **Content-addressed storage:** Objects keyed by content hash. Look for versioned data, deduplication needs, or snapshot storage.
-- **Actor model:** Entities own state, communicate through messages. Look for shared mutable state, race conditions, or fns reaching into other modules' internals.
-- **Declarative configuration:** Behavior driven by config rather than imperative code. Look for boilerplate repeating when adding new entity type.
 
 Not exhaustive. Domain-specific patterns also exist. Name anything you recognize.
 
