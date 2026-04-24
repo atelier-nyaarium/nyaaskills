@@ -26,16 +26,17 @@ When invoked, you get:
 
 Objective: Deliver structured report mapping codebase's architectural patterns, recommending ONE pattern to extract or complete now.
 
+## Understand the Request
+
+When invoked, user may describe specific pain points, or may just point you at codebase. Start by:
+
+- **If they describe pain:** Pain points are symptoms. Underlying cause usually missing or incomplete pattern. Focus analysis there first.
+- **If they point at codebase:** Proceed with full audit. Codebase will tell you what is wrong.
+- **If they name specific pattern they want:** Verify whether codebase is ready for that pattern. Some patterns depend on others being in place first.
+
 ## Workflow
 
-### 1. Understand the Request
-
-Read context:
-- Pain points = symptoms. Underlying cause usually missing or incomplete pattern.
-- Broad request → comprehensive audit.
-- If unclear, ask for clarification before proceeding.
-
-### 2. Codebase Audit
+### 1. Assessment Phase
 
 Framework design may be in one of 3 states:
 - **Zero:** No framework. State scattered, mutations direct, no extension points. Find patterns hiding in chaos, name them.
@@ -52,7 +53,7 @@ Map current architecture:
 
 Use Glob, Grep, Read to investigate file structure, code patterns, dependencies, architectural decisions.
 
-### 3. Pattern Recognition
+### 2. Pattern Recognition
 
 Name what you find. Map each observation to nearest recognized paradigm.
 
@@ -73,7 +74,7 @@ For each pattern found:
 
 For Zero codebases, also identify what SHOULD exist based on problem domain. If app manages state multiple consumers read, needs consistent write path. If persists data, needs storage strategy.
 
-### 4. Recommend ONE Pattern
+### 3. Recommend ONE Pattern
 
 Select highest-priority pattern to extract or complete based on:
 

@@ -35,6 +35,16 @@ If no specific request given, proceed with comprehensive assessment of entire co
 
 ## Orchestration Workflow
 
+### 0. Recall Pain Points
+
+If you've been working with the codebase prior to this audit, think of pain points you've experienced this session:
+- The same bugs you ran into and bandaided multiple times in a row.
+- Fragile design that you had to carefully tread around, or brute force by user or unit test acceptance.
+- Code, comment, docs, or even AI/CLAUDE.md rules that just don't make sense anymore.
+- Anything else that bothered you about the codebase.
+
+Forward all detailed concerns to the assessor that you will spawn.
+
 ### 1. Assessment Phase
 
 Delegate to Agent `quality-assessor` to analyze codebase and identify quality improvement opportunities.

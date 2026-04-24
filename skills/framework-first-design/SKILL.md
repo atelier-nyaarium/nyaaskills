@@ -31,9 +31,7 @@ If you are team-lead with active team via `CreateTeam`:
 If you don't have team:
 - Use `subagent-*` series. When workflow says Agent `framework-first-assessor`, spawn `subagent-framework-first-assessor`.
 
-## Orchestration Workflow
-
-### 1. Understand the Request
+## Understand the Request
 
 When invoked, user may describe specific pain points, or may just point you at codebase. Start by:
 
@@ -41,18 +39,12 @@ When invoked, user may describe specific pain points, or may just point you at c
 - **If they point at codebase:** Proceed with full audit. Codebase will tell you what is wrong.
 - **If they name specific pattern they want:** Verify whether codebase is ready for that pattern. Some patterns depend on others being in place first.
 
-### 2. Codebase Audit
+## Orchestration Workflow
 
-#### Identify Structural Patterns
-
-Codebase's framework design may be in one of 3 states:
-- **Zero:** No framework. State scattered, mutations direct, no extension points. Your job: find patterns hiding in chaos and name them.
-- **Partial:** Codebase attempted clean architecture but broke from it under pressure. Patterns half-built or bypassed. Your job: identify what was started, what is missing, what completing those patterns would unlock.
-- **Full:** Codebase has well designed custom framework, nothing to complain about.
-
-#### Recall Pain Points
+### 0. Recall Pain Points
 
 If you've been working with the codebase prior to this audit, think of pain points you've experienced this session:
+
 - The same bugs you ran into and bandaided multiple times in a row.
 - Fragile design that you had to carefully tread around, or brute force by user or unit test acceptance.
 - Code, comment, docs, or even AI/CLAUDE.md rules that just don't make sense anymore.
@@ -60,9 +52,18 @@ If you've been working with the codebase prior to this audit, think of pain poin
 
 Forward all detailed concerns to the assessor that you will spawn.
 
+### 1. Assessment Phase
+
 Delegate to Agent `framework-first-assessor` to grasp current architecture and recommendations.
 
-### 3. Framework Proposal
+Assessor will:
+- Identify architectural patterns currently in use, and how well they are implemented
+- Recognize patterns that codebase is trying to be but isn't fully realized
+- Detect anti-patterns
+- Present list of 1-5 architectural improvements
+- Recommend ONE pattern to handle now
+
+### 2. Framework Proposal
 
 For recommended pattern, design framework component that would own it. Proposal should include:
 
@@ -75,7 +76,7 @@ Ownership test: if application were replaced with different one built on same fr
 
 ❓ Present proposal to user for approval before proceeding.
 
-### 4. Extraction Loop
+### 3. Extraction Loop
 
 Once user approves, execute one pattern at a time:
 
