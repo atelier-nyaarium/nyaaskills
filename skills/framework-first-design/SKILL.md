@@ -43,10 +43,22 @@ When invoked, user may describe specific pain points, or may just point you at c
 
 ### 2. Codebase Audit
 
+#### Identify Structural Patterns
+
 Codebase's framework design may be in one of 3 states:
 - **Zero:** No framework. State scattered, mutations direct, no extension points. Your job: find patterns hiding in chaos and name them.
 - **Partial:** Codebase attempted clean architecture but broke from it under pressure. Patterns half-built or bypassed. Your job: identify what was started, what is missing, what completing those patterns would unlock.
 - **Full:** Codebase has well designed custom framework, nothing to complain about.
+
+#### Recall Pain Points
+
+If you've been working with the codebase prior to this audit, think of pain points you've experienced this session:
+- The same bugs you ran into and bandaided multiple times in a row.
+- Fragile design that you had to carefully tread around, or brute force by user or unit test acceptance.
+- Code, comment, docs, or even AI/CLAUDE.md rules that just don't make sense anymore.
+- Anything else that bothered you about the codebase.
+
+Forward all detailed concerns to the assessor that you will spawn.
 
 Delegate to Agent `framework-first-assessor` to grasp current architecture and recommendations.
 
