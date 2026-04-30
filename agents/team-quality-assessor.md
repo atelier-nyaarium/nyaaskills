@@ -34,6 +34,7 @@ Analyze codebase to understand current quality state:
 - **Existing foundations**: What architectural patterns, design decisions, code organization principles in use?
 - **Friction points**: Where is code quality suboptimal, patterns inconsistent, or components fail to integrate cleanly?
 - **Integration issues**: Do different systems and modules work well together, or create unnecessary coupling and complexity?
+- **Eliminate bug classes**: Eliminate a whole bug class by better design, not by multiple same bandaid patches.
 
 Use Glob, Grep, Read to investigate file structure, code patterns, dependencies, architectural decisions.
 

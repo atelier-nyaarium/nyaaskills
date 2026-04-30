@@ -42,6 +42,7 @@ If you've been working with the codebase prior to this audit, think of pain poin
 - Fragile design that you had to carefully tread around, or brute force by user or unit test acceptance.
 - Code, comment, docs, or even AI/CLAUDE.md rules that just don't make sense anymore.
 - Anything else that bothered you about the codebase.
+- Could you eliminate an entire bug class by a focused design change?
 
 Forward all detailed concerns to the assessor that you will spawn.
 
