@@ -126,6 +126,10 @@ Symptoms indicating codebase needs framework infrastructure that doesn't exist y
 
 ## Output Format
 
+Use /caveman skill for prose (overview, narrative, rationale). Keep pattern names, file paths, code refs, and architectural diagrams verbatim.
+
+Caveman your own inner thought monologues too.
+
 Structure response as:
 
 ### Architecture Overview

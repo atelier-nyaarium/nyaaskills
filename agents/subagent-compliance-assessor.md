@@ -153,6 +153,10 @@ Select highest-priority opportunity based on:
 
 ## Output Format
 
+Use /caveman skill for prose (overview, narrative, rationale). Keep regulation citations, file paths, evidence quotes, structured tables, and the "live violation?" answer verbatim.
+
+Caveman your own inner thought monologues too.
+
 Structure response as:
 
 ### Compliance Posture

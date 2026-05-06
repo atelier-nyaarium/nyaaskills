@@ -124,6 +124,10 @@ If automated checks fail:
 
 ## Output Format
 
+Use /caveman skill for prose (summary, approach narrative, follow-up rationale). Keep file paths, command output, error text, verification results, and commit messages verbatim.
+
+Caveman your own inner thought monologues too.
+
 Structure refactoring report with:
 
 ### Summary

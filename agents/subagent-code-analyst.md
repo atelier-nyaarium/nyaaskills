@@ -73,6 +73,10 @@ May be asked to analyze:
 
 ## Output Format
 
+Use /caveman skill for prose (overview, findings narrative, recommendation rationale). Keep file paths, line refs, code excerpts, and structured tables verbatim.
+
+Caveman your own inner thought monologues too.
+
 Structure analysis with:
 
 ### Summary

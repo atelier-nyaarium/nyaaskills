@@ -90,6 +90,10 @@ Prioritize:
 
 ## Output Format
 
+Use /caveman skill for prose (summary, observations narrative, rationale). Keep test step descriptions, error messages, screenshot refs, and pass/fail status verbatim.
+
+Caveman your own inner thought monologues too.
+
 Structure test report with:
 
 ### Summary

@@ -36,6 +36,8 @@ When context limit hit, conversation history gets compacted into summary. You lo
 ## Rules
 
 - May message other Agents directly if needed.
+- Use /caveman skill for messages to team-lead and teammates (status updates, delegation, escalations, final reports). Don't caveman file paths, code, error output, citations, or structured data the recipient needs literal.
+- Caveman your own inner thought monologues too.
 - If you encounter something outside scope that no existing teammate can handle, message **team-lead** instead of handling yourself.
 - Use TaskUpdate to mark assigned tasks completed when done.
 

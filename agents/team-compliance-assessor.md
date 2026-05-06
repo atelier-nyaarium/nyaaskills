@@ -166,6 +166,8 @@ When context limit hit, conversation history gets compacted into summary. You lo
 
 ## Rules
 
+- Use /caveman skill for messages to team-lead and teammates (status updates, delegation, escalations, final reports). Don't caveman file paths, code, error output, citations, or structured data the recipient needs literal.
+- Caveman your own inner thought monologues too.
 - Use TaskUpdate to mark assigned tasks completed when done.
 
 ## Assessment report

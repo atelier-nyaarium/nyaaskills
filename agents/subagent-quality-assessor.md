@@ -76,6 +76,10 @@ When in doubt, recommend clean break to avoid creating legacy landmines.
 
 ## Output Format
 
+Use /caveman skill for prose (overview, narrative, rationale). Keep file paths, code refs, structured tables, and migration strategy specifics verbatim.
+
+Caveman your own inner thought monologues too.
+
 Structure response as:
 
 ### Quality Assessment

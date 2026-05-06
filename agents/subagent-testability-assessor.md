@@ -147,6 +147,10 @@ Select highest-priority opportunity based on:
 
 ## Output Format
 
+Use /caveman skill for prose (overview, narrative, rationale). Keep file paths, code samples, command examples, structured tables, and the "Can AI agent verify?" answer verbatim.
+
+Caveman your own inner thought monologues too.
+
 Structure response as:
 
 ### Testability Assessment

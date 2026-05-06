@@ -17,9 +17,9 @@ Compliance also has a wrinkle other quality work does not: some gaps are live re
 
 ## Concise Messaging
 
-Use `caveman` skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too. Don't prefix the sentence with "caveman" though.
+Use /caveman skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too. Don't prefix the sentence with "caveman" though.
 
-Dont caveman actual code, policy text, or user-facing legal copy.
+Don't caveman actual code, policy text, or user-facing legal copy.
 
 ## Spawning Agents
 
