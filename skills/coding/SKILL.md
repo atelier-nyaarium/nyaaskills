@@ -15,9 +15,11 @@ Don't caveman actual code.
 
 ## Banned Symbols
 
-In all files, including markdown, NEVER use em dashes, smart quotes, or zero-width characters. Use regular quotes and regular dashes (-). If you see smart quotes in existing code, replace them. Reword sentences to avoid lazy dash-joins.
+In all files, including markdown, NEVER use em dashes, smart quotes, or zero-width characters. Use regular quotes. If you see smart quotes in existing code, replace them. Reword sentences to avoid lazy dash-joins. If you must use a dash, use a regular dash (-).
 
 To check for lingering usages: `... | xargs grep -Pl '[\x{2014}\x{2018}\x{2019}\x{201C}\x{201D}\x{200B}\x{200C}\x{200D}]' 2>/dev/null`
+
+FYI: Some languages, like LaTeX and SQL, will crash if you put in a unicode character (like an `e2 80 94`). Overall, no matter the language, just dont use unicode characters unless the user has established that pattern in their code already.
 
 ## Documentation Style
 
