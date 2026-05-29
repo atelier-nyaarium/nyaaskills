@@ -38,3 +38,27 @@ Do comment:
 - Decisions to use anti-patterns: `// @unknown Router schema shape may contain any field types.`
 - Why one approach chosen over another: `// Use executeToolCall so Discord flows can have their own handlers`
 - Why block intentionally empty: `// Tests will trigger recreates multiple times. Silently pass / continue.`
+
+## Git Hygiene
+
+### Consent
+
+Did the user ask you to commit?
+Just once? Or was it implied they want you committing from now on?
+Did they even ask you to push/PR?
+
+❓ Ask before firing away.
+
+### Message
+
+One short phrase or sentence. Verb first, no prefixes. Do not use words like \"fix\" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like \"attempt\" or \"try\" instead. If related to issues, end with (fixes #N) for bugfixes, (closes #N) for completed tasks, (related #N) to link without closing.
+
+### Dont Spam Commits
+
+Typically I have you execute a plan with phases, so all slices in a phase must be committed together.
+
+Audit thoroughly before committing. Our typical Red Team workflow depend on unstaged diffs.
+
+Found a bug after commiting? gitCommit(amend:true) to keep commits consolidated. If amending, merge messages intelligently.
+
+If you are working on phases of work, finish ALL phases before making a PR. Don't PR incomplete plans.
