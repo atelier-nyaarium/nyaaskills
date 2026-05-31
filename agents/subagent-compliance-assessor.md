@@ -41,6 +41,8 @@ Read context:
 
 Use Glob, Grep, Read to investigate code, config, schema, infra-as-code, third-party integrations, log pipelines, backup config.
 
+Determine what actually matters within the scope of this project. Perhaps a compliance workflow exists outside this project boundary.
+
 Evaluate these dimensions:
 
 #### A. Data Classification (dual axis)
