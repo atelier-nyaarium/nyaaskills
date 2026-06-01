@@ -25,24 +25,38 @@ Ask structural and foundational questions first. Shapes rest of questionaires. 1
 
 User may respond "I'm not sure", to which inform them we can loop back later when final features and presentation more understood.
 
+## Plan File
+
+Decide on a name and write to `./plans/*.md`, a first section of `## Questionaire`.
+
+Capture questionaire as you go.
+
+Only capture:
+- Questions that got a response. Skip any that were invalidated or superceded by another.
+- Only the selected answer for the question.
+- Only if your recommendation was chosen, capture your recommendation reason.
+- If given, quotes of user's reasonings.
+
+Once the questionaire is finally complete, write a rough `## Plan` section based on the questionaire. Then ask if they want to start cycles of plan refinement.
+
 ## Example
 
-Example of 5th question:
+Example of 5th question (recommended options bolded):
 
 ```md
 Vision so far:
-- Tab inserts name only (no suffix guessing)
+- Tab insert name only (no suffix guess)
 - Right panel: lightweight completion list (unchanged)
 - Hint stack: detailed card per valid token under cursor, uniform header + kind-specific body
-- Cursor-aware triggering
+- Cursor-aware trigger
 
 **5. Exception for method parentheses?**
 
-We said Tab `=` name only. But the user's original concern was specifically about methods: "difficult to tell it needs `()`." Properties having ambiguous suffixes (`=` vs nothing) justified name-only. But methods always need `()`. There's no expression context where a method name is valid without them. Should methods be the one exception?
+We said Tab `=` name only. But user original concern was methods: "difficult to tell it needs `()`." Properties have ambiguous suffix (`=` vs nothing) → name-only justified. But methods always need `()`. No expression context where method name valid without them. Should methods be the one exception?
 
-- **A) No exceptions** - Tab always inserts name only. The hint card makes it obvious parens are needed. Consistent behavior, user learns one rule.
-- **B) Methods get `()`** - If it takes params, tab inserts `name()` with cursor inside. If zero-args, cursor placed after `)`. Properties and entities stay name-only. One exception, but it matches the user's original request exactly.
-- **C) Methods get `()`, zero-arg methods auto-execute** - `console.clear` Tab becomes `console.clear()` with cursor after. Saves a keystroke for fire-and-forget commands.
+- A) No exceptions - Tab always name only. Hint card makes parens need obvious. Consistent, user learns one rule.
+- **B) Methods get `()`** - If takes params, tab insert `name()` cursor inside. If zero-args, cursor after `)`. Properties and entities stay name-only. One exception, matches user original request exactly.
+- C) Methods get `()`, zero-arg methods auto-execute - `console.clear` Tab becomes `console.clear()` cursor after. Saves keystroke for fire-and-forget commands.
 
-**Recommendation: B.** The ambiguity argument only applies to properties. Methods always need parens, so inserting them is never wrong. Cursor-inside-vs-after is a small detail that prevents the "forgot parens" problem.
+**Recommendation: B.** Ambiguity argument only applies to properties. Methods always need parens → inserting never wrong. Cursor-inside-vs-after small detail, prevents "forgot parens" problem.
 ```
