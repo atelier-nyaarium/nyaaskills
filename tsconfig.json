@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"types": ["bun-types"],
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"noEmit": true,
+		"resolveJsonModule": true,
+		"allowImportingTsExtensions": true
+	},
+	"include": ["src"],
+	"exclude": [
+		".claude",
+		".cursor",
+		"build",
+		"coverage",
+		"node_modules",
+		"volumes",
+		"tsconfig.json"
+	]
+}
