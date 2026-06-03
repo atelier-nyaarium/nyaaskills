@@ -50,6 +50,27 @@ describe("applyLoop", () => {
 		expect(r.progress.lap).toBe(2);
 		expect(r.lapLimitReached).toBe(false);
 	});
+	it("carries mode-specific fields (incl. in-flight batch) through the loop", () => {
+		const items = {
+			mode: "items",
+			items: ["a", "b"],
+			cursor: 1,
+			spec: "do x",
+			batchStart: 0,
+			batchEnd: 1,
+			batchSize: 1,
+			skipped: [3],
+		};
+		const r = applyLoop({ ...base, ...items }, steps, 8);
+		expect(r.progress.items).toEqual(["a", "b"]);
+		expect(r.progress.cursor).toBe(1);
+		expect(r.progress.spec).toBe("do x");
+		expect(r.progress.batchStart).toBe(0);
+		expect(r.progress.batchEnd).toBe(1);
+		expect(r.progress.batchSize).toBe(1);
+		expect(r.progress.skipped).toEqual([3]);
+		expect(r.progress.current).toBe("propose");
+	});
 	it("allows the loop into the last permitted lap (laps 1..maxLaps)", () => {
 		const r = applyLoop({ ...base, lap: 7 }, steps, 8);
 		expect(r.progress.lap).toBe(8);

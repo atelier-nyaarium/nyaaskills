@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { applyLoop, type CycleProgress } from "../lib/computeNext.ts";
+import { applyLoop } from "../lib/computeNext.ts";
 import { notifyCycleEnd } from "../lib/notify.ts";
 import { appendStepCall, deleteSidecar, loadCycleRun, type StoredProgress, writeProgress } from "../lib/run.ts";
 
@@ -60,16 +60,11 @@ Fires a notify hook (if set) after the write.
 	async handler(cwd: string, args: z.infer<typeof schema>) {
 		const { plan, decision, summary, acknowledgeOverrun } = schema.parse(args);
 		const { planFile, progress, def, steps, instructions } = loadCycleRun(cwd, plan, { requireActive: true });
-		const core: CycleProgress = {
-			name: progress.name,
-			current: progress.current,
-			index: progress.index,
-			lap: progress.lap,
-			status: "active",
-		};
 
 		if (decision === "loop") {
-			const looped = applyLoop(core, steps, def.maxLaps);
+			// Pass the full record, not a narrow rebuild, so mode-specific fields (items queue, spec,
+			// cursor) survive the loop instead of being dropped.
+			const looped = applyLoop(progress, steps, def.maxLaps);
 			if (looped.lapLimitReached && !acknowledgeOverrun) {
 				const result = {
 					plan,
@@ -106,7 +101,7 @@ Fires a notify hook (if set) after the write.
 			// cycleStart begins clean without needing force.
 			deleteSidecar(planFile);
 		} else {
-			const next: StoredProgress = { ...core, status, summary };
+			const next: StoredProgress = { ...progress, status, summary };
 			writeProgress(planFile, next);
 		}
 		notifyCycleEnd({ decision, summary, plan, cycle: progress.name, lap: progress.lap, status });

@@ -8,14 +8,41 @@ import { resolvePlanPath } from "./resolvePlanPath.ts";
 
 // Cycle progress lives in a JSON sidecar next to the plan, NOT in the plan itself, so the tools
 // never touch the document the author is editing (no file-write race against pending body edits).
-export const ProgressSchema = z.object({
+const baseProgressFields = {
 	name: z.string().min(1),
 	current: z.string().min(1),
 	index: z.number().int().nonnegative(),
 	lap: z.number().int().positive(),
 	status: z.enum(["active", "done", "stopped"]),
 	summary: z.string().optional(),
+};
+
+// Plan mode: the spec is the plan .md the agent edits; no work queue in the sidecar.
+const PlanProgress = z.object({ ...baseProgressFields, mode: z.literal("plan") });
+
+// Items mode: the spec and the ordered work queue live in the sidecar. The items fields are a
+// co-required group (all present together) so a half-written record fails validation instead of
+// running half-configured. `cursor` is the next unprocessed index; [batchStart, batchEnd) is the
+// in-flight batch (persisted so an interrupted batch resumes to the exact same window, which cursor
+// plus a mutable batchSize cannot reconstruct); `skipped` records items disposed without doing.
+const ItemsProgress = z.object({
+	...baseProgressFields,
+	mode: z.literal("items"),
+	spec: z.string().min(1),
+	items: z.array(z.string()),
+	cursor: z.number().int().nonnegative(),
+	batchStart: z.number().int().nonnegative(),
+	batchEnd: z.number().int().nonnegative(),
+	batchSize: z.number().int().positive(),
+	skipped: z.array(z.number().int().nonnegative()),
 });
+
+// Sidecars written before items mode (and any hand-rolled one) carry no `mode`; default them to plan
+// mode so existing runs keep parsing while the discriminant stays required for new records.
+export const ProgressSchema = z.preprocess(
+	(raw) => (raw && typeof raw === "object" && !("mode" in raw) ? { ...raw, mode: "plan" } : raw),
+	z.discriminatedUnion("mode", [PlanProgress, ItemsProgress]),
+);
 
 export type StoredProgress = z.infer<typeof ProgressSchema>;
 

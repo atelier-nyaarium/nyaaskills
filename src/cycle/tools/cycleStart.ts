@@ -71,6 +71,7 @@ When the user says something loose like "do cycles of implementation", check thi
 		const { def, instructions } = resolveDef(cycle);
 		const steps = def.steps;
 		const progress: StoredProgress = {
+			mode: "plan",
 			name: cycle,
 			current: steps[0],
 			index: 0,
