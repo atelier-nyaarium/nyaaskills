@@ -42,6 +42,18 @@ and one `## <step>` section per step. Resolution order for the library directory
 
 Ships with `plan-refinement` and `audited-implementation`.
 
+### Custom runbooks
+
+To run your own cycles, point `NYAASKILLS_CYCLES_DIR` at a directory of `<name>.md` runbooks (same
+format as above). This overrides the shipped library rather than merging with it, so copy the
+built-in definitions into your directory to keep them. They also make the best starting templates:
+
+```sh
+cp ~/.claude/plugins/cache/atelier-nyaarium/nyaaskills/*/cycles/*.md  your-cycles-dir/
+```
+
+`cycleList(...)` then reports whatever lives in that directory.
+
 ### Tools
 
 | Tool | Description | Mutable |
