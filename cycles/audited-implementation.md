@@ -60,16 +60,9 @@ clean. This step is commonly skipped (via `includeSteps`) on projects with no co
 
 ## commit
 
-Update docs, then gitStage + gitCommit. If framework-first issues still remain, `cycleGoto(...)` back
-to `framework` instead of ending the phase. On a resumed batch the work may already be partly done;
+Update docs, then gitStage + gitCommit. On a resumed batch the work may already be partly done;
 check `git status` first and tolerate an already-clean tree (no empty commits, no re-editing
 already-correct files).
 
-Otherwise the phase is complete: call `cycleCheckpoint(...)` with one of
-
-- `loop` - unfinished phases left in the plan; starts the next phase
-- `done` - all phases done
-- `critical-stop` - a critical blocker
-
-Default to `loop` and keep going phase after phase. Do not stop to ask the human between phases; only
-`critical-stop` for a genuine blocker, or `done` when every phase is complete.
+If framework-first issues still remain, `cycleGoto(...)` back to `framework` instead of ending the
+phase.

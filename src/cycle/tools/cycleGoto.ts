@@ -40,7 +40,7 @@ export const cycleGoto = {
 	name: "cycleGoto",
 	title: "cycle-goto",
 	description: `
-Jump to a named step when leaving the normal path: redo a step, skip ahead, or recover after needsResolution. This is NOT how you advance normally; for normal forward progress conclude each step with \`cycleNext(...)\` instead. Also reopens a done/stopped cycle by setting it active. Optionally resets the lap counter.
+Jump to a named step when you are leaving the normal path: redo a step, skip ahead, or recover when the current step has vanished from the definition. This is NOT normal forward progress; to move forward, conclude each step with \`cycleNext(...)\`. Also reopens a done or stopped cycle. Optionally resets the lap counter.
 `.trim(),
 	operation: "jumping to a step",
 	schema,

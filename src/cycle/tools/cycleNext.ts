@@ -45,7 +45,7 @@ export const cycleNext = {
 	name: "cycleNext",
 	title: "cycle-next",
 	description: `
-Conclude the step you just finished and move to the next one. This IS normal forward progress through a cycle: do the current step's work, then call \`cycleNext(...)\` with \`completed\` set to that step's name. Concluding the step is the advance, so you never need \`cycleGoto(...)\` to go forward. \`completed\` is required and must match the current step (a bare call only reports the current step and does not advance, so a forgotten name fails safe). Concluding the last step returns lapEnd and points at \`cycleCheckpoint(...)\`. If the current step no longer exists in the definition, it returns needsResolution instead of guessing.
+Conclude the step you just finished and advance to the next. Do the current step's work, then call this with \`completed\` set to that step's name. This is normal forward progress; you do not need \`cycleGoto(...)\` to move forward.
 `.trim(),
 	operation: "concluding a step",
 	schema,
@@ -92,7 +92,7 @@ Conclude the step you just finished and move to the next one. This IS normal for
 				index: progress.index,
 				advanced: false,
 				instructions: withContext(instructions(progress.current)),
-				nextAction: `Do the work for step "${progress.current}", then call \`cycleNext({ plan: "${plan}", completed: "${progress.current}" })\` to conclude it and move on. (\`cycleNext(...)\` is normal forward progress; you do not need \`cycleGoto(...)\` to advance.)`,
+				nextAction: `Not advanced: pass \`completed: "${progress.current}"\` to conclude the current step. Do its work, then call \`cycleNext({ plan: "${plan}", completed: "${progress.current}" })\`. (\`cycleNext(...)\` is normal forward progress; you do not need \`cycleGoto(...)\`.)`,
 			};
 			return { data: OutputSchema.parse(result) };
 		}

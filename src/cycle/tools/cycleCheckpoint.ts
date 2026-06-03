@@ -77,11 +77,10 @@ export const cycleCheckpoint = {
 	name: "cycleCheckpoint",
 	title: "cycle-checkpoint",
 	description: `
-Make the end-of-lap decision after the last step: done | loop | critical-stop, with a 1-2 sentence summary.
-- \`loop\` wraps to the first step and bumps the lap (refused past the maxLaps soft cap unless acknowledgeOverrun is set)
-- \`done\` marks this cycle finished
-- \`critical-stop\` marks this cycle stopped for a critical reason.
-Fires a notify hook (if set) after the write.
+The end-of-lap decision, made after the last step. Give a 1-2 sentence summary of the lap, plus one decision:
+- \`loop\` - do another lap (the default; keep going)
+- \`done\` - the work is genuinely complete
+- \`critical-stop\` - a real blocker needs a human
 `.trim(),
 	operation: "deciding at a lap checkpoint",
 	schema,

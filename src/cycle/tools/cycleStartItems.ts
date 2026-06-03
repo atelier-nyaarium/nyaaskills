@@ -20,7 +20,7 @@ const schema = z.object({
 		.max(200, "name too long")
 		.describe(
 			`
-A short slug naming this run. The queue + spec live in ./plans/<name>.cycle.json; advance and resume by passing plan: "plans/<name>.md". Shares a namespace with plan-mode runs on plans/<name>.md.
+A short slug naming this run. Advance and resume by passing plan: "plans/<name>.md" to the other cycle tools.
 `.trim(),
 		),
 	cycle: z.string().describe(
@@ -33,7 +33,7 @@ Name of the cycle definition to run over each batch (a *.md in the nyaaskills cy
 		.min(1)
 		.describe(
 			`
-The per-item task, applied to every batch (e.g. "Add a license header to each file"). Persisted in the sidecar and re-injected into every step so it survives compaction; do not rely on memory to carry it.
+The per-item task, applied to every batch (e.g. "Add a license header to each file"). Kept with the run and re-shown each step, so it survives compaction; do not rely on memory to carry it.
 `.trim(),
 		),
 	items: z
@@ -84,9 +84,9 @@ export const cycleStartItems = {
 	name: "cycleStartItems",
 	title: "cycle-start-items",
 	description: `
-Initialize a cycle over an explicit work queue (items mode). Unlike \`cycleStartPlan(...)\`, the spec and the ordered item list live in the sidecar, and the tool tracks progress item by item so a long job survives compaction and full restarts. Runs the named cycle definition once per batch of items. Resume or advance by passing plan: "plans/<name>.md" to the other cycle tools. The sidecar plans/<name>.cycle.json is shared with a plan-mode run on plans/<name>.md; a non-active run under the same name is overwritten.
+Start a cycle over an explicit work queue (items mode). You give an ordered item list and a per-item spec; it runs the cycle once per batch of items and tracks progress item by item, so a long job survives compaction and restarts. Resume or advance by passing \`plan: "plans/<name>.md"\` to the other cycle tools. For a freeform plan you split into phases yourself, use \`cycleStartPlan(...)\`.
 
-This may return a step-selection bounce instead of a started cycle: if the result has a \`bounce\` field, stop, show its \`message\` to the user, and re-call with the chosen \`includeSteps\` (or \`["all"]\` for the full suite). Do not treat the cycle as started on a bounce.
+If the result has a \`bounce\` field instead of a started cycle, relay its \`message\` to the user and re-call with their chosen \`includeSteps\` (or \`["all"]\` for the full suite). Do not treat the cycle as started on a bounce.
 `.trim(),
 	operation: "starting an items cycle",
 	schema,

@@ -43,7 +43,7 @@ export const cycleAppendItems = {
 	name: "cycleAppendItems",
 	title: "cycle-append-items",
 	description: `
-Append items to a running items-mode queue. Use to load a large job in smaller chunks back to back, or to add work discovered mid-run. With noDup, already-queued (non-skipped) items are dropped. The write is mtime-guarded and retried on a concurrent change, so it is safe to interleave with stepping.
+Append items to a running items-mode queue. Use to load a large job in chunks, or to add work discovered mid-run. With \`noDup\`, items already in the queue are dropped. Safe to interleave with stepping.
 `.trim(),
 	operation: "appending items to a queue",
 	schema,

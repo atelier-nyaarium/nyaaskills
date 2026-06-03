@@ -68,7 +68,7 @@ function buildPhasesRecord(
 const schema = z.object({
 	plan: z.string().describe(
 		`
-Path to the plan file (relative to the project root) that carries cycle progress.
+Path to the plan file, relative to the project root.
 `.trim(),
 	),
 	cycle: z.string().describe(
@@ -99,7 +99,7 @@ Steps to run by name (others are skipped). Omit to get a confirm-bounce listing 
 		.optional()
 		.describe(
 			`
-Track the plan's phases for crash recovery. Each label must match a ## header in the plan file; that section's body is persisted and re-injected per phase (one phase per lap). Omit for a freeform plan run. The plan file must exist.
+Track the plan's phases for crash recovery. Each label must match a ## header in the plan file; one phase runs per lap and its detail is re-shown each step. Omit for a freeform plan run. The plan file must exist.
 `.trim(),
 		),
 });
@@ -120,11 +120,11 @@ export const cycleStartPlan = {
 	name: "cycleStartPlan",
 	title: "cycle-start-plan",
 	description: `
-Initialize a controlled workflow cycle on a plan file (plan mode: the plan .md is the spec and you judge how to divide the work into phases). Loads the named cycle definition from the nyaaskills cycles library, validates it, writes the starting progress to a JSON sidecar next to the plan file, and returns the first step's instructions. For an explicit, tool-tracked work queue instead, use \`cycleStartItems(...)\`.
+Start a cycle on a plan file: you drive the plan .md and decide how to split the work into phases. Name a cycle definition to run (see \`cycleList(...)\`); the first step's instructions come back. For an explicit, tool-tracked work queue instead, use \`cycleStartItems(...)\`.
 
-When the user says something loose like "do cycles of implementation", check this series of tools.
+When the user says something loose like "do cycles of implementation", reach for this tool family.
 
-This may return a step-selection bounce instead of a started cycle: if the result has a \`bounce\` field, stop, show its \`message\` to the user, and re-call with the chosen \`includeSteps\` (or \`["all"]\` for the full suite). Do not treat the cycle as started or call \`cycleNext(...)\` on a bounce.
+If the result has a \`bounce\` field instead of a started cycle, relay its \`message\` to the user and re-call with their chosen \`includeSteps\` (or \`["all"]\` for the full suite). Do not treat the cycle as started or call \`cycleNext(...)\` on a bounce.
 `.trim(),
 	operation: "starting a cycle",
 	schema,

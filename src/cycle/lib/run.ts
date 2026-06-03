@@ -212,19 +212,28 @@ export function appendStepCall(instructions: string, plan: string, step: string)
 	return `${instructions}\n\n>> When this step's work is done, call \`cycleNext({ plan: "${plan}", completed: "${step}" })\` to conclude it and move to the next step. This is normal forward progress; do not use \`cycleGoto(...)\` to advance.`;
 }
 
+// The lapEnd return: the ONE place the loop/done/critical-stop decision is spelled out. cyclePreamble
+// and itemsContext deliberately stay silent on it, so a first or intermediate step never carries bail
+// mechanics; the decision surfaces only when the agent actually reaches the end of the lap.
 export function checkpointCall(plan: string): string {
-	return `All steps complete. Call \`cycleCheckpoint({ plan: "${plan}", decision, summary })\`: \`loop\` to continue straight into the next phase (the default - do not stop to ask between phases), \`done\` only when all the work is genuinely complete, or \`critical-stop\` only for a real blocker that needs a human.`;
+	return [
+		`All steps complete. Call \`cycleCheckpoint({ plan: "${plan}", decision, summary })\` with a 1-2 sentence summary and one decision:`,
+		"",
+		"- `loop` - do another lap. This is the default; keep going, do not stop to ask between laps.",
+		"- `done` - only when all the work is genuinely complete.",
+		"- `critical-stop` - only for a real blocker that needs a human.",
+	].join("\n");
 }
 
-// Prepended to the first step's instructions at start, so the agent knows it is inside a paced,
-// repeating step-runner and should work one step at a time instead of doing the whole plan up front.
-// The definition supplies any domain framing (e.g. "one lap = one phase"); this stays generic.
+// Prepended to the first step's instructions at start, so the agent works one step at a time instead
+// of doing the whole plan up front. Stays generic and says nothing about ending the lap: the
+// loop/done/critical-stop decision is surfaced only at lapEnd (see checkpointCall), so a first or
+// intermediate step never carries bail mechanics.
 export function cyclePreamble(cycleName: string): string {
 	return [
-		`**Cycle \`${cycleName}\`** - a repeating step-runner that paces you through fixed steps.`,
-		`Do only the current step's work, then call \`cycleNext(...)\`. After the last step,`,
-		`\`cycleCheckpoint(...)\` decides: \`loop\` (run the steps again) or \`done\` (finished).`,
-		`Work one step at a time as written; do not run ahead and do the whole plan at once.`,
+		`**Cycle \`${cycleName}\`** - a step-runner that paces you through fixed steps, one at a time.`,
+		`Do only the current step's work, then call \`cycleNext(...)\` to move on.`,
+		`Do not run ahead and do the whole plan at once.`,
 	].join(" ");
 }
 
@@ -236,12 +245,9 @@ export function itemsContext(progress: StoredProgress): string {
 	if (progress.mode === "phases") {
 		// One phase per lap; the item IS the phase's plan section, injected so a cold resume has the
 		// real detail rather than a pointer to the plan file.
-		return [
-			`Spec: ${spec}`,
-			`Current phase ${batchStart + 1} of ${items.length}:`,
-			items[batchStart] ?? "",
-			"Do this phase's work, concluding each step with `cycleNext(...)`; `cycleCheckpoint(...)` advances to the next phase.",
-		].join("\n\n");
+		return [`Spec: ${spec}`, `Current phase ${batchStart + 1} of ${items.length}:`, items[batchStart] ?? ""].join(
+			"\n\n",
+		);
 	}
 	const list = items
 		.slice(batchStart, batchEnd)
@@ -251,7 +257,7 @@ export function itemsContext(progress: StoredProgress): string {
 		`Spec: ${spec}`,
 		`Current batch - items ${batchStart + 1}-${batchEnd} of ${items.length}:`,
 		list,
-		"Apply the spec to only this batch's items. Conclude each step with `cycleNext(...)`; `cycleCheckpoint(...)` advances to the next batch.",
+		"Apply the spec to only this batch's items.",
 	].join("\n");
 }
 

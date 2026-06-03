@@ -37,8 +37,6 @@ Triage each report on arrival. Real gap vs overcautious / out-of-scope / halluci
 After all return, rethink. Plan changed? Update the plan. Watch out for: yes-manning, scope creep,
 heavy drift (ask the human on large drifts).
 
-End the lap: call `cycleCheckpoint(...)` with one of
-
-- `done` - the plan feels solid; give a final report to the channel
-- `loop` - refine for another lap
-- `critical-stop` - a critical issue you cannot resolve in-loop (you may /questionaire again)
+When the plan feels solid, finish with `done` and give a final report to the channel; otherwise
+`loop` for another lap. A critical issue you cannot resolve in-loop is a `critical-stop` (you may
+/questionaire again).
