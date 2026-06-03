@@ -1,5 +1,29 @@
 import { describe, expect, it } from "bun:test";
-import { ProgressSchema } from "./run.ts";
+import { appendItems, ProgressSchema } from "./run.ts";
+
+describe("appendItems dedup", () => {
+	it("without noDup, appends everything verbatim", () => {
+		const r = appendItems(["a"], [], ["a", "a"], false);
+		expect(r.items).toEqual(["a", "a", "a"]);
+		expect(r.added).toBe(2);
+		expect(r.dropped).toBe(0);
+	});
+
+	it("noDup normalizes (trim + trailing slash), dedups vs non-skipped, and re-allows a skipped item", () => {
+		// existing ["a", "b/"], index 0 ("a") is skipped. Incoming: "a" re-allowed, "b" == "b/" dropped,
+		// "c " normalizes to a fresh "c".
+		const r = appendItems(["a", "b/"], [0], ["a", "b", "c "], true);
+		expect(r.items).toEqual(["a", "b/", "a", "c "]);
+		expect(r.added).toBe(2);
+		expect(r.dropped).toBe(1);
+	});
+
+	it("noDup dedups the incoming batch against itself", () => {
+		const r = appendItems([], [], ["x", "x", "y"], true);
+		expect(r.items).toEqual(["x", "y"]);
+		expect(r.dropped).toBe(1);
+	});
+});
 
 describe("ProgressSchema mode discriminant", () => {
 	const planRecord = { name: "c", current: "a", index: 0, lap: 1, status: "active" };

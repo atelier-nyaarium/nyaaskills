@@ -48,6 +48,14 @@ Required to loop past the cycle's maxLaps soft cap (plan mode only). Set this if
 Items mode only: on a loop, set how many items the next batch hands over (overrides the run default). Use to back off to smaller batches when items are heavy.
 `.trim(),
 		),
+	skip: z
+		.array(z.number().int().nonnegative())
+		.optional()
+		.describe(
+			`
+Items mode only: indices (from the current batch) you could not complete and are skipping. Recorded so they are not re-done, and a later cycleAppendItems can deliberately re-queue them.
+`.trim(),
+		),
 });
 
 const OutputSchema = z.object({
@@ -78,12 +86,22 @@ Fires a notify hook (if set) after the write.
 	operation: "deciding at a lap checkpoint",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
-		const { plan, decision, summary, acknowledgeOverrun, batchSize } = schema.parse(args);
+		const { plan, decision, summary, acknowledgeOverrun, batchSize, skip } = schema.parse(args);
 		const { planFile, progress, def, steps, instructions } = loadCycleRun(cwd, plan, { requireActive: true });
 
 		if (decision === "loop" && progress.mode === "items") {
 			// Items mode: a loop advances the queue by one batch. The queue (not maxLaps) bounds the run.
 			const nextBatchSize = batchSize ?? progress.batchSize;
+			// Only items in the just-finished batch can be skipped, so a stray future index cannot mark an
+			// unreached item and then let noDup re-queue it into a double-process.
+			const mergedSkipped = skip?.length
+				? [
+						...new Set([
+							...progress.skipped,
+							...skip.filter((i) => i >= progress.batchStart && i < progress.batchEnd),
+						]),
+					].sort((a, b) => a - b)
+				: progress.skipped;
 			const adv = advanceBatch(progress.batchEnd, progress.items.length, nextBatchSize);
 			if (adv.drained) {
 				// All items consumed. Keep the sidecar (an append could continue it; "queue empty" is not
@@ -94,9 +112,10 @@ Fires a notify hook (if set) after the write.
 					cursor: progress.items.length,
 					batchStart: progress.items.length,
 					batchEnd: progress.items.length,
+					skipped: mergedSkipped,
 				};
 				writeProgress(planFile, drainedProgress);
-				const skippedNote = progress.skipped.length ? ` (${progress.skipped.length} skipped)` : "";
+				const skippedNote = mergedSkipped.length ? ` (${mergedSkipped.length} skipped)` : "";
 				const result = {
 					plan,
 					cycle: progress.name,
@@ -120,6 +139,7 @@ Fires a notify hook (if set) after the write.
 				batchStart: adv.batchStart,
 				batchEnd: adv.batchEnd,
 				batchSize: nextBatchSize,
+				skipped: mergedSkipped,
 			};
 			writeProgress(planFile, next);
 			notifyCycleEnd({ decision, summary, plan, cycle: progress.name, lap: next.lap, status: "active" });

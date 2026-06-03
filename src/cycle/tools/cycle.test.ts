@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { toolsCycle } from "../index.ts";
+import { cycleAppendItems } from "./cycleAppendItems.ts";
 import { cycleCheckpoint } from "./cycleCheckpoint.ts";
 import { cycleGoto } from "./cycleGoto.ts";
 import { cycleList } from "./cycleList.ts";
@@ -346,13 +347,76 @@ describe("cycle items mode", () => {
 		expect(st.remaining).toBe(3);
 		expect(st.currentBatch).toEqual(["i1", "i2"]);
 	});
+
+	it("cycleAppendItems feeds a drained run, which then resumes through the new items", async () => {
+		await run(cycleStartItems, { name: "feed", cycle: "demo", spec: "x", items: ["i1"] });
+		await runBatchSteps("feed");
+		const drained = await run(cycleCheckpoint, { plan: "plans/feed.md", decision: "loop", summary: "b1" });
+		expect(drained.drained).toBe(true);
+		const app = await run(cycleAppendItems, { name: "feed", items: ["i2", "i3"] });
+		expect(app.added).toBe(2);
+		expect(app.totalItems).toBe(3);
+		const looped = await run(cycleCheckpoint, { plan: "plans/feed.md", decision: "loop", summary: "after append" });
+		expect(looped.drained).toBeUndefined(); // resumed, not drained
+		expect(looped.remaining).toBe(2);
+		expect(itemsSidecar("feed").batchStart).toBe(1);
+		expect(itemsSidecar("feed").batchEnd).toBe(2);
+	});
+
+	it("skip records the item, and noDup drops queued items but re-allows a skipped one", async () => {
+		await run(cycleStartItems, { name: "skip", cycle: "demo", spec: "x", items: ["a", "b", "c"], batchSize: 1 });
+		await runBatchSteps("skip"); // batch [0,1) = "a"
+		await run(cycleCheckpoint, { plan: "plans/skip.md", decision: "loop", summary: "skip a", skip: [0] });
+		expect(itemsSidecar("skip").skipped).toEqual([0]);
+		// "a" (index 0) is skipped so it may be re-added; "b" (index 1, not skipped) is dropped; "d" is new.
+		const app = await run(cycleAppendItems, { name: "skip", items: ["a", "b", "d"], noDup: true });
+		expect(app.added).toBe(2);
+		expect(app.dropped).toBe(1);
+		expect(itemsSidecar("skip").items).toEqual(["a", "b", "c", "a", "d"]);
+	});
+
+	it("cycleAppendItems errors on a missing or plan-mode run", async () => {
+		await run(cycleStartItems, { name: "real", cycle: "demo", spec: "x", items: ["i1"] }); // creates plans/
+		await expect(run(cycleAppendItems, { name: "nope", items: ["x"] })).rejects.toThrow("no items run");
+		await run(cycleStartPlan, { plan: "plans/pm.md", cycle: "demo" });
+		await expect(run(cycleAppendItems, { name: "pm", items: ["x"] })).rejects.toThrow("not an items queue");
+	});
+
+	it("a cold resume replays the exact in-flight batch window", async () => {
+		await run(cycleStartItems, {
+			name: "resume",
+			cycle: "demo",
+			spec: "x",
+			items: ["i1", "i2", "i3", "i4"],
+			batchSize: 2,
+		});
+		await runBatchSteps("resume"); // batch [0,2)
+		await run(cycleCheckpoint, { plan: "plans/resume.md", decision: "loop", summary: "b1" }); // -> [2,4)
+		// Fresh read (cold resume) reads the persisted window, not a recomputed one.
+		const st = await run(cycleStatus, { plan: "plans/resume.md" });
+		expect(st.currentBatch).toEqual(["i3", "i4"]);
+		expect(st.cursor).toBe(2);
+		await run(cycleGoto, { plan: "plans/resume.md", step: "a" });
+		expect(itemsSidecar("resume").batchStart).toBe(2);
+		expect(itemsSidecar("resume").batchEnd).toBe(4);
+	});
+
+	it("skip is clamped to the current batch and merges across checkpoints", async () => {
+		await run(cycleStartItems, { name: "sk", cycle: "demo", spec: "x", items: ["i1", "i2", "i3"], batchSize: 1 });
+		await runBatchSteps("sk"); // batch [0,1)
+		await run(cycleCheckpoint, { plan: "plans/sk.md", decision: "loop", summary: "s", skip: [0] }); // -> [1,2)
+		await runBatchSteps("sk");
+		// skip [1] is in-batch (recorded); the out-of-batch 0 is dropped (already recorded last lap anyway).
+		await run(cycleCheckpoint, { plan: "plans/sk.md", decision: "loop", summary: "s", skip: [1, 2] });
+		expect(itemsSidecar("sk").skipped).toEqual([0, 1]); // merged + sorted; index 2 (future) clamped out
+	});
 });
 
 // Registration smoke test: mirrors what cycle-mcp.ts's registerTool loop requires of every tool, so
 // a tool missing its `schema` field (which crashes the whole stdio server on startup) is caught here.
 describe("toolsCycle registration shape", () => {
-	it("exports seven tools", () => {
-		expect(toolsCycle).toHaveLength(7);
+	it("exports eight tools", () => {
+		expect(toolsCycle).toHaveLength(8);
 	});
 	for (const tool of toolsCycle) {
 		const t = tool as {

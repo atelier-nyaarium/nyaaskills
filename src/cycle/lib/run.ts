@@ -173,3 +173,38 @@ export function itemsContext(progress: StoredProgress): string {
 		"Apply the spec to only this batch's items. Conclude each step with `cycleNext(...)`; `cycleCheckpoint(...)` advances to the next batch.",
 	].join("\n");
 }
+
+// Canonical form for noDup comparison: trim plus strip trailing slashes. Items are treated as opaque
+// strings (often paths), so this is the documented identity rather than full path resolution.
+export function normalizeItem(s: string): string {
+	return s.trim().replace(/\/+$/, "");
+}
+
+export interface AppendResult {
+	items: string[];
+	added: number;
+	dropped: number;
+}
+
+// Append to the queue. With noDup, drop any incoming item whose normalized form already exists among
+// the NON-skipped queue items (so a deliberately re-queued skipped item is allowed through), and dedup
+// the incoming batch against itself. Returns the new queue plus added/dropped counts.
+export function appendItems(existing: string[], skipped: number[], newItems: string[], noDup: boolean): AppendResult {
+	if (!noDup) return { items: [...existing, ...newItems], added: newItems.length, dropped: 0 };
+	const skippedSet = new Set(skipped);
+	const seen = new Set(existing.filter((_, i) => !skippedSet.has(i)).map(normalizeItem));
+	const items = [...existing];
+	let added = 0;
+	let dropped = 0;
+	for (const item of newItems) {
+		const n = normalizeItem(item);
+		if (seen.has(n)) {
+			dropped++;
+			continue;
+		}
+		seen.add(n);
+		items.push(item);
+		added++;
+	}
+	return { items, added, dropped };
+}

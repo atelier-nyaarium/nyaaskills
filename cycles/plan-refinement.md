@@ -10,6 +10,9 @@ proposes, audits from multiple angles, triages the findings, and rethinks, repea
 feels solid. The plan file is the document being refined; its body churns each lap while these steps
 stay fixed.
 
+Run this with `cycleStartPlan(...)` (plan mode): it refines the whole document each lap and you judge
+when it has converged. It is not meant for `cycleStartItems(...)`, which consumes a fixed item queue.
+
 ## propose
 
 Propose or refine the plan. Write the current state back into the plan file this cycle was started

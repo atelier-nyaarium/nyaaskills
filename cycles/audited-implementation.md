@@ -51,7 +51,9 @@ from codebase patterns. If you fixed anything, re-run the red team; repeat until
 ## commit
 
 Update docs, then gitStage + gitCommit. If framework-first issues still remain, `cycleGoto(...)` back
-to `framework` instead of ending the phase.
+to `framework` instead of ending the phase. On a resumed batch the work may already be partly done;
+check `git status` first and tolerate an already-clean tree (no empty commits, no re-editing
+already-correct files).
 
 Otherwise the phase is complete: call `cycleCheckpoint(...)` with one of
 
