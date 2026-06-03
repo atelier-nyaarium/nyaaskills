@@ -60,10 +60,10 @@ Conclude the step you just finished and move to the next one. This IS normal for
 			lap: progress.lap,
 			status: progress.status,
 		};
-		// In items mode, re-inject the spec + current batch on every step so a mid-batch compaction
-		// cannot strand the agent without knowing what it is doing or to which items.
+		// In items/phases mode, re-inject the spec + current batch/phase on every step so a mid-batch
+		// compaction cannot strand the agent without knowing what it is doing or to which items.
 		const withContext = (text: string) =>
-			progress.mode === "items" ? `${itemsContext(progress)}\n\n---\n\n${text}` : text;
+			progress.mode !== "plan" ? `${itemsContext(progress)}\n\n---\n\n${text}` : text;
 
 		// Resolve the move first so a current step that vanished from the definition is detected
 		// before we try to render its (now missing) instructions, regardless of `completed`.

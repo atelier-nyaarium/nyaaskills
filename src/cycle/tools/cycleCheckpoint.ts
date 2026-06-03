@@ -89,19 +89,24 @@ Fires a notify hook (if set) after the write.
 		const { plan, decision, summary, acknowledgeOverrun, batchSize, skip } = schema.parse(args);
 		const { planFile, progress, def, steps, instructions } = loadCycleRun(cwd, plan, { requireActive: true });
 
-		if (decision === "loop" && progress.mode === "items") {
-			// Items mode: a loop advances the queue by one batch. The queue (not maxLaps) bounds the run.
-			const nextBatchSize = batchSize ?? progress.batchSize;
+		if (decision === "loop" && progress.mode !== "plan") {
+			// Items/phases mode: a loop advances the queue by one batch (one phase). The queue (not
+			// maxLaps) bounds the run.
+			const isPhases = progress.mode === "phases";
+			// Phases are definitionally one-per-lap: ignore the items-only batchSize override and skip,
+			// or a batchSize > 1 would slide the window past unvisited phases and silently drop them.
+			const nextBatchSize = isPhases ? 1 : (batchSize ?? progress.batchSize);
 			// Only items in the just-finished batch can be skipped, so a stray future index cannot mark an
 			// unreached item and then let noDup re-queue it into a double-process.
-			const mergedSkipped = skip?.length
-				? [
-						...new Set([
-							...progress.skipped,
-							...skip.filter((i) => i >= progress.batchStart && i < progress.batchEnd),
-						]),
-					].sort((a, b) => a - b)
-				: progress.skipped;
+			const mergedSkipped =
+				!isPhases && skip?.length
+					? [
+							...new Set([
+								...progress.skipped,
+								...skip.filter((i) => i >= progress.batchStart && i < progress.batchEnd),
+							]),
+						].sort((a, b) => a - b)
+					: progress.skipped;
 			const adv = advanceBatch(progress.batchEnd, progress.items.length, nextBatchSize);
 			if (adv.drained) {
 				// All items consumed. Keep the sidecar (an append could continue it; "queue empty" is not
@@ -126,8 +131,12 @@ Fires a notify hook (if set) after the write.
 					drained: true,
 					remaining: 0,
 					totalItems: progress.items.length,
-					instructions: `Queue drained: all ${progress.items.length} items processed${skippedNote}.`,
-					nextAction: `Append with \`cycleAppendItems({ name, items: [...] })\` then loop again, or finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", summary })\`. Do not stop unless finishing or blocked.`,
+					instructions: isPhases
+						? `All ${progress.items.length} phases done${skippedNote}.`
+						: `Queue drained: all ${progress.items.length} items processed${skippedNote}.`,
+					nextAction: isPhases
+						? `Finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", summary })\`. Do not stop unless finishing or blocked.`
+						: `Append with \`cycleAppendItems({ name, items: [...] })\` then loop again, or finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", summary })\`. Do not stop unless finishing or blocked.`,
 				};
 				return { data: OutputSchema.parse(result) };
 			}
@@ -154,7 +163,7 @@ Fires a notify hook (if set) after the write.
 				remaining,
 				totalItems: progress.items.length,
 				instructions: `${itemsContext(next)}\n\n---\n\n${appendStepCall(instructions(next.current), plan, next.current)}`,
-				nextAction: `Next batch (lap ${next.lap}, ${remaining} items left). Do step "${next.current}", then \`cycleNext({ plan: "${plan}", completed: "${next.current}" })\`. Keep going batch by batch; do not stop until the queue drains or you hit a critical blocker.`,
+				nextAction: `Next ${isPhases ? "phase" : "batch"} (lap ${next.lap}, ${remaining} ${isPhases ? "phases" : "items"} left). Do step "${next.current}", then \`cycleNext({ plan: "${plan}", completed: "${next.current}" })\`. Keep going; do not stop until ${isPhases ? "all phases are done" : "the queue drains"} or you hit a critical blocker.`,
 			};
 			return { data: OutputSchema.parse(result) };
 		}

@@ -540,6 +540,98 @@ describe("configurable steps (includeSteps)", () => {
 	});
 });
 
+describe("plan-mode phases (mode: phases)", () => {
+	const writePlan = (rel: string, body: string) => {
+		const p = path.join(cwd, rel);
+		fs.mkdirSync(path.dirname(p), { recursive: true });
+		fs.writeFileSync(p, body);
+	};
+	const sidecar = (rel: string) =>
+		JSON.parse(fs.readFileSync(path.join(cwd, rel.replace(/\.md$/, ".cycle.json")), "utf8"));
+
+	it("persists each phase's section body and injects the first phase", async () => {
+		writePlan("roadmap.md", "# Roadmap\n\n## Phase one\nBuild the schema.\n\n## Phase two\nAdd the tools.\n");
+		const r = await run(cycleStartPlan, {
+			plan: "roadmap.md",
+			cycle: "demo",
+			includeSteps: ["all"],
+			phases: ["Phase one", "Phase two"],
+		});
+		expect(r.step).toBe("a");
+		expect(r.instructions).toContain("Build the schema."); // first phase body injected, not a pointer
+		const sc = sidecar("roadmap.md");
+		expect(sc.mode).toBe("phases");
+		expect(sc.planPath).toBe("roadmap.md");
+		expect(sc.items).toHaveLength(2);
+		expect(sc.items[0]).toContain("Build the schema.");
+		expect(sc.batchSize).toBe(1);
+	});
+
+	it("errors when a phase label has no matching ## header, listing the available headers", async () => {
+		writePlan("r2.md", "## Alpha\nA.\n## Beta\nB.\n");
+		await expect(
+			run(cycleStartPlan, { plan: "r2.md", cycle: "demo", includeSteps: ["all"], phases: ["Alpha", "Nope"] }),
+		).rejects.toThrow("not found");
+	});
+
+	it("errors when the plan file does not exist", async () => {
+		await expect(
+			run(cycleStartPlan, { plan: "ghost.md", cycle: "demo", includeSteps: ["all"], phases: ["x"] }),
+		).rejects.toThrow("to exist");
+	});
+
+	it("status surfaces phases mode; loop advances to the next phase with its body", async () => {
+		writePlan("p3.md", "## One\nFirst.\n## Two\nSecond.\n");
+		await run(cycleStartPlan, { plan: "p3.md", cycle: "demo", includeSteps: ["all"], phases: ["One", "Two"] });
+		const st = await run(cycleStatus, { plan: "p3.md" });
+		expect(st.mode).toBe("phases");
+		expect(st.totalItems).toBe(2);
+		expect(st.currentBatch[0]).toContain("First.");
+		await run(cycleNext, { plan: "p3.md", completed: "a" });
+		await run(cycleNext, { plan: "p3.md", completed: "b" });
+		await run(cycleNext, { plan: "p3.md", completed: "c" });
+		const looped = await run(cycleCheckpoint, { plan: "p3.md", decision: "loop", summary: "phase 1" });
+		expect(looped.instructions).toContain("Second."); // second phase injected
+		expect(looped.nextAction).toContain("phase");
+	});
+
+	it("cycleAppendItems rejects a phases run", async () => {
+		writePlan("plans/p4.md", "## X\nx.\n");
+		await run(cycleStartPlan, { plan: "plans/p4.md", cycle: "demo", includeSteps: ["all"], phases: ["X"] });
+		await expect(run(cycleAppendItems, { name: "p4", items: ["y"] })).rejects.toThrow("not an items queue");
+	});
+
+	it("ignores a batchSize override on a phases run (one phase per lap, none dropped)", async () => {
+		writePlan("bsp.md", "## P1\nOne.\n## P2\nTwo.\n## P3\nThree.\n");
+		await run(cycleStartPlan, { plan: "bsp.md", cycle: "demo", includeSteps: ["all"], phases: ["P1", "P2", "P3"] });
+		const loopPhase = async () => {
+			await run(cycleNext, { plan: "bsp.md", completed: "a" });
+			await run(cycleNext, { plan: "bsp.md", completed: "b" });
+			await run(cycleNext, { plan: "bsp.md", completed: "c" });
+			return run(cycleCheckpoint, { plan: "bsp.md", decision: "loop", summary: "p", batchSize: 5 }); // try to widen
+		};
+		const l1 = await loopPhase();
+		expect(l1.instructions).toContain("Two."); // advanced exactly one phase
+		expect(sidecar("bsp.md").batchEnd).toBe(2); // window stays 1-wide despite batchSize:5
+		expect((await loopPhase()).instructions).toContain("Three."); // phase 3 NOT skipped
+		expect((await loopPhase()).drained).toBe(true);
+	});
+
+	it("drains after the last phase (no append suggestion); done deletes the sidecar", async () => {
+		writePlan("dn.md", "## Only\nThe only phase.\n");
+		await run(cycleStartPlan, { plan: "dn.md", cycle: "demo", includeSteps: ["all"], phases: ["Only"] });
+		await run(cycleNext, { plan: "dn.md", completed: "a" });
+		await run(cycleNext, { plan: "dn.md", completed: "b" });
+		await run(cycleNext, { plan: "dn.md", completed: "c" });
+		const drained = await run(cycleCheckpoint, { plan: "dn.md", decision: "loop", summary: "p" });
+		expect(drained.drained).toBe(true);
+		expect(drained.instructions).toContain("phases done");
+		expect(drained.nextAction).not.toContain("cycleAppendItems");
+		await run(cycleCheckpoint, { plan: "dn.md", decision: "done", summary: "all done" });
+		expect(fs.existsSync(path.join(cwd, "dn.cycle.json"))).toBe(false);
+	});
+});
+
 // Registration smoke test: mirrors what cycle-mcp.ts's registerTool loop requires of every tool, so
 // a tool missing its `schema` field (which crashes the whole stdio server on startup) is caught here.
 describe("toolsCycle registration shape", () => {

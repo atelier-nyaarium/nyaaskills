@@ -60,7 +60,7 @@ Append items to a running items-mode queue. Use to load a large job in smaller c
 				throw new Error(`no items run named "${name}"; start one with \`cycleStartItems(...)\` first.`);
 			}
 			if (planFile.progress.mode !== "items") {
-				throw new Error(`run "${name}" is a plan-mode cycle, not an items queue.`);
+				throw new Error(`run "${name}" is a ${planFile.progress.mode}-mode cycle, not an items queue.`);
 			}
 			const progress = planFile.progress;
 			const appended = appendItems(progress.items, progress.skipped, newItems, noDup);

@@ -25,14 +25,11 @@ const baseProgressFields = {
 // Plan mode: the spec is the plan .md the agent edits; no work queue in the sidecar.
 const PlanProgress = z.object({ ...baseProgressFields, mode: z.literal("plan") });
 
-// Items mode: the spec and the ordered work queue live in the sidecar. The items fields are a
-// co-required group (all present together) so a half-written record fails validation instead of
-// running half-configured. `cursor` is the next unprocessed index; [batchStart, batchEnd) is the
-// in-flight batch (persisted so an interrupted batch resumes to the exact same window, which cursor
-// plus a mutable batchSize cannot reconstruct); `skipped` records items disposed without doing.
-const ItemsProgress = z.object({
-	...baseProgressFields,
-	mode: z.literal("items"),
+// The work-queue fields, shared by items mode and phases mode. A co-required group (all present
+// together) so a half-written record fails validation. `cursor` is the next unprocessed index;
+// [batchStart, batchEnd) is the in-flight batch (persisted so an interrupted batch resumes to the
+// exact same window); `skipped` records entries disposed without doing.
+const queueFields = {
 	spec: z.string().min(1),
 	items: z.array(z.string()),
 	cursor: z.number().int().nonnegative(),
@@ -40,13 +37,26 @@ const ItemsProgress = z.object({
 	batchEnd: z.number().int().nonnegative(),
 	batchSize: z.number().int().positive(),
 	skipped: z.array(z.number().int().nonnegative()),
+};
+
+// Items mode: an explicit work queue lives in the sidecar.
+const ItemsProgress = z.object({ ...baseProgressFields, mode: z.literal("items"), ...queueFields });
+
+// Phases mode: a plan run that tracks the plan's phases. Reuses the queue machinery (one phase per
+// lap, batchSize 1) where `items` holds each phase's section body, plus `planPath` for addressing and
+// honest status (a phases run must NOT masquerade as items mode).
+const PhasesProgress = z.object({
+	...baseProgressFields,
+	mode: z.literal("phases"),
+	planPath: z.string().min(1),
+	...queueFields,
 });
 
-// Sidecars written before items mode (and any hand-rolled one) carry no `mode`; default them to plan
-// mode so existing runs keep parsing while the discriminant stays required for new records.
+// Sidecars written before the discriminant existed carry no `mode`; default them to plan mode so
+// existing runs keep parsing while the discriminant stays required for new records.
 export const ProgressSchema = z.preprocess(
 	(raw) => (raw && typeof raw === "object" && !("mode" in raw) ? { ...raw, mode: "plan" } : raw),
-	z.discriminatedUnion("mode", [PlanProgress, ItemsProgress]),
+	z.discriminatedUnion("mode", [PlanProgress, ItemsProgress, PhasesProgress]),
 );
 
 export type StoredProgress = z.infer<typeof ProgressSchema>;
@@ -221,8 +231,18 @@ export function cyclePreamble(cycleName: string): string {
 // The spec and current batch, re-injected into items-mode instructions so the agent stays grounded
 // each step without leaning on conversation memory (which compaction erases). Empty for plan mode.
 export function itemsContext(progress: StoredProgress): string {
-	if (progress.mode !== "items") return "";
+	if (progress.mode === "plan") return "";
 	const { spec, items, batchStart, batchEnd } = progress;
+	if (progress.mode === "phases") {
+		// One phase per lap; the item IS the phase's plan section, injected so a cold resume has the
+		// real detail rather than a pointer to the plan file.
+		return [
+			`Spec: ${spec}`,
+			`Current phase ${batchStart + 1} of ${items.length}:`,
+			items[batchStart] ?? "",
+			"Do this phase's work, concluding each step with `cycleNext(...)`; `cycleCheckpoint(...)` advances to the next phase.",
+		].join("\n\n");
+	}
 	const list = items
 		.slice(batchStart, batchEnd)
 		.map((item, i) => `  ${batchStart + i + 1}. ${item}`)

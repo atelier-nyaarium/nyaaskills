@@ -51,11 +51,13 @@ Report where a plan is in its cycle without mutating anything: current step, ind
 			};
 		}
 		const progress = planFile.progress;
-		// In items mode, surface the queue so a cold resume is inspectable without reading the sidecar.
+		// In items/phases mode, surface the queue so a cold resume is inspectable without reading the
+		// sidecar. For phases, `currentBatch` holds the current phase's body and `totalItems` is the
+		// phase count; `mode` tells the two apart.
 		const itemsInfo =
-			progress.mode === "items"
+			progress.mode !== "plan"
 				? {
-						mode: "items",
+						mode: progress.mode,
 						spec: progress.spec,
 						cursor: progress.cursor,
 						totalItems: progress.items.length,
