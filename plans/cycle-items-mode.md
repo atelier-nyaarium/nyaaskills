@@ -106,7 +106,8 @@ and a `critical-stop`. Nothing else works until this lands.
   `.md`). Rename surface includes the three hardcoded agent-facing strings the audit found:
   `cycleCheckpoint.ts` done-message, `run.ts` loadCycleRun error, `cycleList.ts` description, plus
   `index.ts`, the MCP registration, `README.md`, and `cycle.test.ts` (imports, call sites, and the
-  "exports N tools" count, which goes 6 -> 8).
+  "exports N tools" count: 6 -> 7 after this phase (the rename is net-zero, +cycleStartItems), then
+  -> 8 when Phase 4 adds cycleAppendItems).
 - `cycleStartItems({ name, cycle, spec, items, batchSize? })` - agent-chosen `name`; sidecar at
   `./plans/<name>.cycle.json`. `name` is sanitized as a bare slug (`^[A-Za-z0-9_-]+$`, reusing the
   cycle-name guard) and resolved through `resolvePlanPath`/`writeProgress` so it inherits the symlink

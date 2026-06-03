@@ -97,7 +97,7 @@ export function writeProgress(planFile: PlanFile, progress: StoredProgress): voi
 }
 
 // Remove the progress sidecar. Used when a cycle finishes "done": the plan is fully consumed, so
-// nothing should linger to resume, and a later cycleStart starts clean without needing force.
+// nothing should linger to resume, and a later cycleStartPlan starts clean without needing force.
 export function deleteSidecar(planFile: PlanFile): void {
 	if (fs.existsSync(planFile.sidecarPath)) fs.rmSync(planFile.sidecarPath);
 }
@@ -126,7 +126,8 @@ export interface CycleRun {
 // here means the tools cannot drift on what counts as runnable or on the error wording.
 export function loadCycleRun(cwd: string, plan: string, opts: { requireActive: boolean }): CycleRun {
 	const planFile = readPlanFile(cwd, plan);
-	if (!planFile.progress) throw new Error("no cycle on this plan; call `cycleStart(...)` first");
+	if (!planFile.progress)
+		throw new Error("no cycle on this plan; call `cycleStartPlan(...)` or `cycleStartItems(...)` first");
 	const progress = planFile.progress;
 	if (opts.requireActive && progress.status !== "active") {
 		throw new Error(`cycle is ${progress.status}; reopen it with \`cycleGoto(...)\` before continuing`);
@@ -154,4 +155,21 @@ export function cyclePreamble(cycleName: string): string {
 		`\`cycleCheckpoint(...)\` decides: \`loop\` (run the steps again) or \`done\` (finished).`,
 		`Work one step at a time as written; do not run ahead and do the whole plan at once.`,
 	].join(" ");
+}
+
+// The spec and current batch, re-injected into items-mode instructions so the agent stays grounded
+// each step without leaning on conversation memory (which compaction erases). Empty for plan mode.
+export function itemsContext(progress: StoredProgress): string {
+	if (progress.mode !== "items") return "";
+	const { spec, items, batchStart, batchEnd } = progress;
+	const list = items
+		.slice(batchStart, batchEnd)
+		.map((item, i) => `  ${batchStart + i + 1}. ${item}`)
+		.join("\n");
+	return [
+		`Spec: ${spec}`,
+		`Current batch - items ${batchStart + 1}-${batchEnd} of ${items.length}:`,
+		list,
+		"Apply the spec to only this batch's items. Conclude each step with `cycleNext(...)`; `cycleCheckpoint(...)` advances to the next batch.",
+	].join("\n");
 }

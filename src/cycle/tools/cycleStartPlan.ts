@@ -42,11 +42,11 @@ const OutputSchema = z.object({
 	instructions: z.string(),
 });
 
-export const cycleStart = {
-	name: "cycleStart",
-	title: "cycle-start",
+export const cycleStartPlan = {
+	name: "cycleStartPlan",
+	title: "cycle-start-plan",
 	description: `
-Initialize a controlled workflow cycle on a plan file. Loads the named cycle definition from the nyaaskills cycles library, validates it, writes the starting progress to a JSON sidecar next to the plan file, and returns the first step's instructions.
+Initialize a controlled workflow cycle on a plan file (plan mode: the plan .md is the spec and you judge how to divide the work into phases). Loads the named cycle definition from the nyaaskills cycles library, validates it, writes the starting progress to a JSON sidecar next to the plan file, and returns the first step's instructions. For an explicit, tool-tracked work queue instead, use \`cycleStartItems(...)\`.
 
 When the user says something loose like "do cycles of implementation", check this series of tools.
 `.trim(),

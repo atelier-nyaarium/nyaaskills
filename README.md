@@ -44,14 +44,15 @@ Ships with `plan-refinement` and `audited-implementation`.
 
 ### Tools
 
-| Tool | Description | Mutable | dryRun |
-|------|-------------|---------|--------|
-| `cycleStart` | Initialize a named cycle on a subject doc | Yes | Yes |
-| `cycleNext` | Advance one step (confirm-then-advance via `completed`) | Yes | Yes |
-| `cycleCheckpoint` | End-of-lap decision: done / loop / critical-stop | Yes | Yes |
-| `cycleStatus` | Report cycle position (step, lap, status) | No | - |
-| `cycleGoto` | Jump to a step, or reopen a finished cycle | Yes | Yes |
-| `cycleList` | List available cycle definitions | No | - |
+| Tool | Description | Mutable |
+|------|-------------|---------|
+| `cycleStartPlan` | Initialize a cycle on a plan file (you judge the phases) | Yes |
+| `cycleStartItems` | Initialize a cycle over an explicit work queue (items mode) | Yes |
+| `cycleNext` | Advance one step (confirm-then-advance via `completed`) | Yes |
+| `cycleCheckpoint` | End-of-lap decision: done / loop / critical-stop | Yes |
+| `cycleStatus` | Report cycle position (step, lap, status) | No |
+| `cycleGoto` | Jump to a step, or reopen a finished cycle | Yes |
+| `cycleList` | List available cycle definitions | No |
 
 Laps are 1-indexed; the soft `maxLaps` cap trips when a loop would exceed it (override per call
 with `acknowledgeOverrun`).

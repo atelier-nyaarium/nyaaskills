@@ -7,7 +7,8 @@ import { cycleCheckpoint } from "./cycleCheckpoint.ts";
 import { cycleGoto } from "./cycleGoto.ts";
 import { cycleList } from "./cycleList.ts";
 import { cycleNext } from "./cycleNext.ts";
-import { cycleStart } from "./cycleStart.ts";
+import { cycleStartItems } from "./cycleStartItems.ts";
+import { cycleStartPlan } from "./cycleStartPlan.ts";
 import { cycleStatus } from "./cycleStatus.ts";
 
 let cwd: string;
@@ -50,7 +51,7 @@ beforeEach(() => {
 
 describe("cycle tool lifecycle", () => {
 	it("starts, steps, ends a lap, loops, and finishes", async () => {
-		const start = await run(cycleStart, { plan: "plan.md", cycle: "demo" });
+		const start = await run(cycleStartPlan, { plan: "plan.md", cycle: "demo" });
 		expect(start.step).toBe("a");
 		expect(start.status).toBe("active");
 		expect(start.steps).toEqual(["a", "b", "c"]);
@@ -92,19 +93,19 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("case-insensitive completed echo advances", async () => {
-		await run(cycleStart, { plan: "p.md", cycle: "demo" });
+		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
 		expect((await run(cycleNext, { plan: "p.md", completed: "A" })).step).toBe("b");
 	});
 
 	it("refuses to clobber an active cycle without force", async () => {
-		await run(cycleStart, { plan: "p.md", cycle: "demo" });
-		await expect(run(cycleStart, { plan: "p.md", cycle: "demo" })).rejects.toThrow("force");
-		const forced = await run(cycleStart, { plan: "p.md", cycle: "demo", force: true });
+		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
+		await expect(run(cycleStartPlan, { plan: "p.md", cycle: "demo" })).rejects.toThrow("force");
+		const forced = await run(cycleStartPlan, { plan: "p.md", cycle: "demo", force: true });
 		expect(forced.step).toBe("a");
 	});
 
 	it("goto jumps to a step case-insensitively and reopens a finished cycle", async () => {
-		await run(cycleStart, { plan: "p.md", cycle: "demo" });
+		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
 		await run(cycleCheckpoint, { plan: "p.md", decision: "critical-stop", summary: "halt" });
 		const goto = await run(cycleGoto, { plan: "p.md", step: "C" });
 		expect(goto.step).toBe("c");
@@ -112,7 +113,7 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("enforces the maxLaps soft cap, then honors acknowledgeOverrun", async () => {
-		await run(cycleStart, { plan: "p.md", cycle: "cap" });
+		await run(cycleStartPlan, { plan: "p.md", cycle: "cap" });
 		await run(cycleNext, { plan: "p.md", completed: "x" });
 		const capped = await run(cycleCheckpoint, { plan: "p.md", decision: "loop", summary: "lap" });
 		expect(capped.lapLimitReached).toBe(true);
@@ -127,7 +128,7 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("goto with resetLap resets the lap to 1", async () => {
-		await run(cycleStart, { plan: "p.md", cycle: "demo" });
+		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
 		await run(cycleNext, { plan: "p.md", completed: "a" });
 		await run(cycleNext, { plan: "p.md", completed: "b" });
 		await run(cycleNext, { plan: "p.md", completed: "c" });
@@ -141,7 +142,7 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("returns needsResolution (not a throw) when the current step left the definition", async () => {
-		await run(cycleStart, { plan: "p.md", cycle: "demo" });
+		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
 		corruptSidecar("p.md", (p) => {
 			p.current = "ghost";
 		});
@@ -154,7 +155,7 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("status reports an error (not a throw) when the definition is gone", async () => {
-		await run(cycleStart, { plan: "p.md", cycle: "demo" });
+		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
 		corruptSidecar("p.md", (p) => {
 			p.name = "vanished";
 		});
@@ -164,15 +165,15 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("guards a malformed cycle block from being clobbered without force", async () => {
-		await run(cycleStart, { plan: "p.md", cycle: "demo" });
+		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
 		corruptSidecar("p.md", (p) => {
 			p.status = "bogus";
 		});
 		const status = await run(cycleStatus, { plan: "p.md" });
 		expect(status.initialized).toBe(false);
 		expect(status.malformed).toBe(true);
-		await expect(run(cycleStart, { plan: "p.md", cycle: "demo" })).rejects.toThrow("malformed");
-		expect((await run(cycleStart, { plan: "p.md", cycle: "demo", force: true })).step).toBe("a");
+		await expect(run(cycleStartPlan, { plan: "p.md", cycle: "demo" })).rejects.toThrow("malformed");
+		expect((await run(cycleStartPlan, { plan: "p.md", cycle: "demo", force: true })).step).toBe("a");
 	});
 
 	it("lists available cycle definitions", async () => {
@@ -183,11 +184,74 @@ describe("cycle tool lifecycle", () => {
 	});
 });
 
+describe("cycle items mode", () => {
+	const itemsSidecar = (name: string) =>
+		JSON.parse(fs.readFileSync(path.join(cwd, "plans", `${name}.cycle.json`), "utf8"));
+
+	it("writes the queue + spec sidecar and injects the first batch", async () => {
+		const start = await run(cycleStartItems, {
+			name: "migrate",
+			cycle: "demo",
+			spec: "Add a header to each file",
+			items: ["a.ts", "b.ts", "c.ts"],
+			batchSize: 2,
+		});
+		expect(start.step).toBe("a");
+		expect(start.plan).toBe("plans/migrate.md");
+		expect(start.totalItems).toBe(3);
+		expect(start.instructions).toContain("Add a header to each file");
+		expect(start.instructions).toContain("a.ts");
+		expect(start.instructions).toContain("b.ts");
+		expect(start.instructions).not.toContain("c.ts"); // beyond the first batch
+
+		const prog = itemsSidecar("migrate");
+		expect(prog.mode).toBe("items");
+		expect(prog.items).toEqual(["a.ts", "b.ts", "c.ts"]);
+		expect(prog.cursor).toBe(0);
+		expect(prog.batchStart).toBe(0);
+		expect(prog.batchEnd).toBe(2);
+		expect(prog.spec).toBe("Add a header to each file");
+	});
+
+	it("defaults batchSize to 1 and clamps batchEnd to the queue length", async () => {
+		const start = await run(cycleStartItems, { name: "tiny", cycle: "demo", spec: "x", items: ["only.ts"] });
+		expect(start.batchSize).toBe(1);
+		expect(itemsSidecar("tiny").batchEnd).toBe(1);
+	});
+
+	it("rejects an empty queue and a path-traversal name", async () => {
+		await expect(run(cycleStartItems, { name: "ok", cycle: "demo", spec: "x", items: [] })).rejects.toThrow();
+		await expect(
+			run(cycleStartItems, { name: "../escape", cycle: "demo", spec: "x", items: ["a"] }),
+		).rejects.toThrow();
+	});
+
+	it("refuses to clobber an active run under the same name", async () => {
+		await run(cycleStartItems, { name: "busy", cycle: "demo", spec: "x", items: ["a"] });
+		await expect(run(cycleStartItems, { name: "busy", cycle: "demo", spec: "y", items: ["b"] })).rejects.toThrow(
+			"already active",
+		);
+	});
+
+	it("advances and loops via the synthetic plan path, preserving the queue (load-bearing fix)", async () => {
+		await run(cycleStartItems, { name: "keep", cycle: "demo", spec: "x", items: ["a", "b"], batchSize: 2 });
+		expect((await run(cycleNext, { plan: "plans/keep.md", completed: "a" })).step).toBe("b");
+		await run(cycleNext, { plan: "plans/keep.md", completed: "b" });
+		await run(cycleNext, { plan: "plans/keep.md", completed: "c" });
+		await run(cycleCheckpoint, { plan: "plans/keep.md", decision: "loop", summary: "batch done" });
+		const prog = itemsSidecar("keep");
+		expect(prog.mode).toBe("items");
+		expect(prog.items).toEqual(["a", "b"]); // survived the loop, not wiped to a narrow record
+		expect(prog.spec).toBe("x");
+		expect(prog.lap).toBe(2);
+	});
+});
+
 // Registration smoke test: mirrors what cycle-mcp.ts's registerTool loop requires of every tool, so
 // a tool missing its `schema` field (which crashes the whole stdio server on startup) is caught here.
 describe("toolsCycle registration shape", () => {
-	it("exports six tools", () => {
-		expect(toolsCycle).toHaveLength(6);
+	it("exports seven tools", () => {
+		expect(toolsCycle).toHaveLength(7);
 	});
 	for (const tool of toolsCycle) {
 		const t = tool as {

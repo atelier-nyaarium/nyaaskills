@@ -98,7 +98,7 @@ Fires a notify hook (if set) after the write.
 		const status = decision === "done" ? "done" : "stopped";
 		if (decision === "done") {
 			// Plan fully consumed: clear the sidecar so nothing lingers to resume and a later
-			// cycleStart begins clean without needing force.
+			// cycleStartPlan begins clean without needing force.
 			deleteSidecar(planFile);
 		} else {
 			const next: StoredProgress = { ...progress, status, summary };
@@ -115,7 +115,7 @@ Fires a notify hook (if set) after the write.
 			instructions: summary,
 			nextAction:
 				decision === "done"
-					? `\`${plan}\` done; its cycle sidecar was cleared. Start a cycle on a new plan with \`cycleStart(...)\`.`
+					? `\`${plan}\` done; its cycle sidecar was cleared. Start a cycle on a new plan with \`cycleStartPlan(...)\`.`
 					: `\`${plan}\` stopped. Resolve the critical issue, then resume with \`cycleGoto(...)\`.`,
 		};
 		return { data: OutputSchema.parse(result) };
