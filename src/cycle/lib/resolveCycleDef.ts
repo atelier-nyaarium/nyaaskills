@@ -49,6 +49,9 @@ function validateSteps(value: unknown, name: string): string[] {
 	const seen = new Set<string>();
 	for (const step of steps) {
 		const key = step.toLowerCase();
+		// "all" is reserved by includeSteps as the full-suite token, so a step named "all" would be
+		// unreachable when selecting steps.
+		if (key === "all") throw new Error(`cycle "${name}" cannot have a step named "all" (reserved)`);
 		if (seen.has(key)) throw new Error(`cycle "${name}" has duplicate step: "${step}"`);
 		seen.add(key);
 	}

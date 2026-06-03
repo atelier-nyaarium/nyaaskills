@@ -4,6 +4,8 @@ import {
 	cyclePreamble,
 	readPlanFile,
 	resolveDef,
+	resolveSteps,
+	StepBounceSchema,
 	type StoredProgress,
 	writeProgress,
 } from "../lib/run.ts";
@@ -28,6 +30,14 @@ Name of the cycle definition to run (a *.md in the nyaaskills cycles library).
 Restart even if the plan file already has an active cycle.
 `.trim(),
 		),
+	includeSteps: z
+		.array(z.string())
+		.optional()
+		.describe(
+			`
+Steps to run by name (others are skipped). Omit to get a confirm-bounce listing the full step suite to show the user; pass ["all"] for the full suite; unknown ids bounce with the valid list.
+`.trim(),
+		),
 });
 
 const OutputSchema = z.object({
@@ -49,14 +59,24 @@ export const cycleStartPlan = {
 Initialize a controlled workflow cycle on a plan file (plan mode: the plan .md is the spec and you judge how to divide the work into phases). Loads the named cycle definition from the nyaaskills cycles library, validates it, writes the starting progress to a JSON sidecar next to the plan file, and returns the first step's instructions. For an explicit, tool-tracked work queue instead, use \`cycleStartItems(...)\`.
 
 When the user says something loose like "do cycles of implementation", check this series of tools.
+
+This may return a step-selection bounce instead of a started cycle: if the result has a \`bounce\` field, stop, show its \`message\` to the user, and re-call with the chosen \`includeSteps\` (or \`["all"]\` for the full suite). Do not treat the cycle as started or call \`cycleNext(...)\` on a bounce.
 `.trim(),
 	operation: "starting a cycle",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
-		const { plan, cycle, force } = schema.parse(args);
-		const planFile = readPlanFile(cwd, plan);
+		const { plan, cycle, force, includeSteps } = schema.parse(args);
 
-		// Protect an existing run (active, or corrupted-but-present) before loading the new def.
+		const { def, instructions } = resolveDef(cycle);
+		// Resolve the step selection first: a blank/unknown includeSteps bounces back for the user to
+		// confirm, with zero side effects. Otherwise this is the effective per-run subset (def-order,
+		// deduped); a strict subset is persisted, a full run is not.
+		const resolution = resolveSteps(cycle, def.steps, includeSteps);
+		if ("bounce" in resolution) return { data: StepBounceSchema.parse(resolution.bounce) };
+		const steps = resolution.steps;
+
+		const planFile = readPlanFile(cwd, plan);
+		// Protect an existing run (active, or corrupted-but-present) before overwriting it.
 		if (!force) {
 			if (planFile.progress?.status === "active") {
 				throw new Error(
@@ -68,8 +88,6 @@ When the user says something loose like "do cycles of implementation", check thi
 			}
 		}
 
-		const { def, instructions } = resolveDef(cycle);
-		const steps = def.steps;
 		const progress: StoredProgress = {
 			mode: "plan",
 			name: cycle,
@@ -77,6 +95,7 @@ When the user says something loose like "do cycles of implementation", check thi
 			index: 0,
 			lap: 1,
 			status: "active",
+			...(steps.length < def.steps.length ? { steps } : {}),
 		};
 		writeProgress(planFile, progress);
 

@@ -7,6 +7,8 @@ import {
 	itemsContext,
 	readPlanFile,
 	resolveDef,
+	resolveSteps,
+	StepBounceSchema,
 	type StoredProgress,
 	writeProgress,
 } from "../lib/run.ts";
@@ -53,6 +55,14 @@ The ordered work queue (e.g. file paths from a find). Processed one batch per la
 How many items to hand over per batch. Default 1. Keep small for heavy per-item work; larger suits uniform mechanical edits.
 `.trim(),
 		),
+	includeSteps: z
+		.array(z.string())
+		.optional()
+		.describe(
+			`
+Steps to run by name (others are skipped). Omit to get a confirm-bounce listing the full step suite to show the user; pass ["all"] for the full suite; unknown ids bounce with the valid list.
+`.trim(),
+		),
 });
 
 const OutputSchema = z.object({
@@ -75,11 +85,19 @@ export const cycleStartItems = {
 	title: "cycle-start-items",
 	description: `
 Initialize a cycle over an explicit work queue (items mode). Unlike \`cycleStartPlan(...)\`, the spec and the ordered item list live in the sidecar, and the tool tracks progress item by item so a long job survives compaction and full restarts. Runs the named cycle definition once per batch of items. Resume or advance by passing plan: "plans/<name>.md" to the other cycle tools. The sidecar plans/<name>.cycle.json is shared with a plan-mode run on plans/<name>.md; a non-active run under the same name is overwritten.
+
+This may return a step-selection bounce instead of a started cycle: if the result has a \`bounce\` field, stop, show its \`message\` to the user, and re-call with the chosen \`includeSteps\` (or \`["all"]\` for the full suite). Do not treat the cycle as started on a bounce.
 `.trim(),
 	operation: "starting an items cycle",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
-		const { name, cycle, spec, items, batchSize } = schema.parse(args);
+		const { name, cycle, spec, items, batchSize, includeSteps } = schema.parse(args);
+
+		const { def, instructions } = resolveDef(cycle);
+		// Resolve the step selection before touching the filesystem: a bounce writes nothing.
+		const resolution = resolveSteps(cycle, def.steps, includeSteps);
+		if ("bounce" in resolution) return { data: StepBounceSchema.parse(resolution.bounce) };
+		const steps = resolution.steps;
 
 		// The sidecar lives at plans/<name>.cycle.json; resolvePlanPath (via readPlanFile) requires the
 		// parent dir, so ensure plans/ exists. The synthetic plan path reuses all the existing
@@ -96,8 +114,6 @@ Initialize a cycle over an explicit work queue (items mode). Unlike \`cycleStart
 			throw new Error(`a malformed cycle sidecar already exists for "${name}"; pick a new name or remove it.`);
 		}
 
-		const { def, instructions } = resolveDef(cycle);
-		const steps = def.steps;
 		const progress: StoredProgress = {
 			mode: "items",
 			name: cycle,
@@ -112,6 +128,7 @@ Initialize a cycle over an explicit work queue (items mode). Unlike \`cycleStart
 			batchEnd: Math.min(batchSize, items.length),
 			batchSize,
 			skipped: [],
+			...(steps.length < def.steps.length ? { steps } : {}),
 		};
 		writeProgress(planFile, progress);
 

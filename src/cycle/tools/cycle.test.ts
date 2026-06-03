@@ -22,6 +22,15 @@ async function run(tool: { handler: (cwd: string, args: any) => Promise<unknown>
 	return out.data;
 }
 
+// Most tests want a started cycle, not the step-confirmation bounce, so default includeSteps to the
+// full suite. Tests that exercise the bounce/includeSteps call cycleStart* through `run` directly.
+// biome-ignore lint/suspicious/noExplicitAny: thin start wrappers, unwrap the { data } envelope.
+const startPlan = async (args: any): Promise<any> =>
+	((await cycleStartPlan.handler(cwd, { includeSteps: ["all"], ...args })) as { data: unknown }).data;
+// biome-ignore lint/suspicious/noExplicitAny: thin start wrappers, unwrap the { data } envelope.
+const startItems = async (args: any): Promise<any> =>
+	((await cycleStartItems.handler(cwd, { includeSteps: ["all"], ...args })) as { data: unknown }).data;
+
 // Progress lives in `<plan>.cycle.json`; corrupt that sidecar to simulate drift/corruption.
 function corruptSidecar(plan: string, mutate: (p: Record<string, unknown>) => void): void {
 	const sc = path.join(cwd, plan.replace(/\.md$/, ".cycle.json"));
@@ -52,7 +61,7 @@ beforeEach(() => {
 
 describe("cycle tool lifecycle", () => {
 	it("starts, steps, ends a lap, loops, and finishes", async () => {
-		const start = await run(cycleStartPlan, { plan: "plan.md", cycle: "demo" });
+		const start = await startPlan({ plan: "plan.md", cycle: "demo" });
 		expect(start.step).toBe("a");
 		expect(start.status).toBe("active");
 		expect(start.steps).toEqual(["a", "b", "c"]);
@@ -94,19 +103,19 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("case-insensitive completed echo advances", async () => {
-		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
+		await startPlan({ plan: "p.md", cycle: "demo" });
 		expect((await run(cycleNext, { plan: "p.md", completed: "A" })).step).toBe("b");
 	});
 
 	it("refuses to clobber an active cycle without force", async () => {
-		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
-		await expect(run(cycleStartPlan, { plan: "p.md", cycle: "demo" })).rejects.toThrow("force");
-		const forced = await run(cycleStartPlan, { plan: "p.md", cycle: "demo", force: true });
+		await startPlan({ plan: "p.md", cycle: "demo" });
+		await expect(startPlan({ plan: "p.md", cycle: "demo" })).rejects.toThrow("force");
+		const forced = await startPlan({ plan: "p.md", cycle: "demo", force: true });
 		expect(forced.step).toBe("a");
 	});
 
 	it("goto jumps to a step case-insensitively and reopens a finished cycle", async () => {
-		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
+		await startPlan({ plan: "p.md", cycle: "demo" });
 		await run(cycleCheckpoint, { plan: "p.md", decision: "critical-stop", summary: "halt" });
 		const goto = await run(cycleGoto, { plan: "p.md", step: "C" });
 		expect(goto.step).toBe("c");
@@ -114,7 +123,7 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("enforces the maxLaps soft cap, then honors acknowledgeOverrun", async () => {
-		await run(cycleStartPlan, { plan: "p.md", cycle: "cap" });
+		await startPlan({ plan: "p.md", cycle: "cap" });
 		await run(cycleNext, { plan: "p.md", completed: "x" });
 		const capped = await run(cycleCheckpoint, { plan: "p.md", decision: "loop", summary: "lap" });
 		expect(capped.lapLimitReached).toBe(true);
@@ -129,7 +138,7 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("goto with resetLap resets the lap to 1", async () => {
-		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
+		await startPlan({ plan: "p.md", cycle: "demo" });
 		await run(cycleNext, { plan: "p.md", completed: "a" });
 		await run(cycleNext, { plan: "p.md", completed: "b" });
 		await run(cycleNext, { plan: "p.md", completed: "c" });
@@ -143,7 +152,7 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("returns needsResolution (not a throw) when the current step left the definition", async () => {
-		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
+		await startPlan({ plan: "p.md", cycle: "demo" });
 		corruptSidecar("p.md", (p) => {
 			p.current = "ghost";
 		});
@@ -156,7 +165,7 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("status reports an error (not a throw) when the definition is gone", async () => {
-		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
+		await startPlan({ plan: "p.md", cycle: "demo" });
 		corruptSidecar("p.md", (p) => {
 			p.name = "vanished";
 		});
@@ -166,15 +175,15 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("guards a malformed cycle block from being clobbered without force", async () => {
-		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
+		await startPlan({ plan: "p.md", cycle: "demo" });
 		corruptSidecar("p.md", (p) => {
 			p.status = "bogus";
 		});
 		const status = await run(cycleStatus, { plan: "p.md" });
 		expect(status.initialized).toBe(false);
 		expect(status.malformed).toBe(true);
-		await expect(run(cycleStartPlan, { plan: "p.md", cycle: "demo" })).rejects.toThrow("malformed");
-		expect((await run(cycleStartPlan, { plan: "p.md", cycle: "demo", force: true })).step).toBe("a");
+		await expect(startPlan({ plan: "p.md", cycle: "demo" })).rejects.toThrow("malformed");
+		expect((await startPlan({ plan: "p.md", cycle: "demo", force: true })).step).toBe("a");
 	});
 
 	it("lists available cycle definitions", async () => {
@@ -190,7 +199,7 @@ describe("cycle items mode", () => {
 		JSON.parse(fs.readFileSync(path.join(cwd, "plans", `${name}.cycle.json`), "utf8"));
 
 	it("writes the queue + spec sidecar and injects the first batch", async () => {
-		const start = await run(cycleStartItems, {
+		const start = await startItems({
 			name: "migrate",
 			cycle: "demo",
 			spec: "Add a header to each file",
@@ -215,21 +224,19 @@ describe("cycle items mode", () => {
 	});
 
 	it("defaults batchSize to 1 and clamps batchEnd to the queue length", async () => {
-		const start = await run(cycleStartItems, { name: "tiny", cycle: "demo", spec: "x", items: ["only.ts"] });
+		const start = await startItems({ name: "tiny", cycle: "demo", spec: "x", items: ["only.ts"] });
 		expect(start.batchSize).toBe(1);
 		expect(itemsSidecar("tiny").batchEnd).toBe(1);
 	});
 
 	it("rejects an empty queue and a path-traversal name", async () => {
-		await expect(run(cycleStartItems, { name: "ok", cycle: "demo", spec: "x", items: [] })).rejects.toThrow();
-		await expect(
-			run(cycleStartItems, { name: "../escape", cycle: "demo", spec: "x", items: ["a"] }),
-		).rejects.toThrow();
+		await expect(startItems({ name: "ok", cycle: "demo", spec: "x", items: [] })).rejects.toThrow();
+		await expect(startItems({ name: "../escape", cycle: "demo", spec: "x", items: ["a"] })).rejects.toThrow();
 	});
 
 	it("refuses to clobber an active run under the same name", async () => {
-		await run(cycleStartItems, { name: "busy", cycle: "demo", spec: "x", items: ["a"] });
-		await expect(run(cycleStartItems, { name: "busy", cycle: "demo", spec: "y", items: ["b"] })).rejects.toThrow(
+		await startItems({ name: "busy", cycle: "demo", spec: "x", items: ["a"] });
+		await expect(startItems({ name: "busy", cycle: "demo", spec: "y", items: ["b"] })).rejects.toThrow(
 			"already active",
 		);
 	});
@@ -242,7 +249,7 @@ describe("cycle items mode", () => {
 	};
 
 	it("loop advances batch to batch, preserving the queue (load-bearing fix)", async () => {
-		await run(cycleStartItems, {
+		await startItems({
 			name: "keep",
 			cycle: "demo",
 			spec: "x",
@@ -263,7 +270,7 @@ describe("cycle items mode", () => {
 	});
 
 	it("drains on the final loop and prompts append-or-done, keeping the sidecar", async () => {
-		await run(cycleStartItems, { name: "drain", cycle: "demo", spec: "x", items: ["only"] });
+		await startItems({ name: "drain", cycle: "demo", spec: "x", items: ["only"] });
 		await runBatchSteps("drain");
 		const drained = await run(cycleCheckpoint, { plan: "plans/drain.md", decision: "loop", summary: "last" });
 		expect(drained.drained).toBe(true);
@@ -279,7 +286,7 @@ describe("cycle items mode", () => {
 	});
 
 	it("processes a partial final batch before draining (no item lost)", async () => {
-		await run(cycleStartItems, {
+		await startItems({
 			name: "five",
 			cycle: "demo",
 			spec: "x",
@@ -302,7 +309,7 @@ describe("cycle items mode", () => {
 	});
 
 	it("batchSize override on loop changes the next batch width", async () => {
-		await run(cycleStartItems, {
+		await startItems({
 			name: "bs",
 			cycle: "demo",
 			spec: "x",
@@ -318,7 +325,7 @@ describe("cycle items mode", () => {
 	});
 
 	it("re-injects spec + batch context on each step (mid-batch grounding)", async () => {
-		await run(cycleStartItems, {
+		await startItems({
 			name: "inj",
 			cycle: "demo",
 			spec: "do the thing",
@@ -333,7 +340,7 @@ describe("cycle items mode", () => {
 	});
 
 	it("cycleStatus surfaces the queue for a cold resume", async () => {
-		await run(cycleStartItems, {
+		await startItems({
 			name: "stat",
 			cycle: "demo",
 			spec: "do x",
@@ -349,7 +356,7 @@ describe("cycle items mode", () => {
 	});
 
 	it("cycleAppendItems feeds a drained run, which then resumes through the new items", async () => {
-		await run(cycleStartItems, { name: "feed", cycle: "demo", spec: "x", items: ["i1"] });
+		await startItems({ name: "feed", cycle: "demo", spec: "x", items: ["i1"] });
 		await runBatchSteps("feed");
 		const drained = await run(cycleCheckpoint, { plan: "plans/feed.md", decision: "loop", summary: "b1" });
 		expect(drained.drained).toBe(true);
@@ -364,7 +371,7 @@ describe("cycle items mode", () => {
 	});
 
 	it("skip records the item, and noDup drops queued items but re-allows a skipped one", async () => {
-		await run(cycleStartItems, { name: "skip", cycle: "demo", spec: "x", items: ["a", "b", "c"], batchSize: 1 });
+		await startItems({ name: "skip", cycle: "demo", spec: "x", items: ["a", "b", "c"], batchSize: 1 });
 		await runBatchSteps("skip"); // batch [0,1) = "a"
 		await run(cycleCheckpoint, { plan: "plans/skip.md", decision: "loop", summary: "skip a", skip: [0] });
 		expect(itemsSidecar("skip").skipped).toEqual([0]);
@@ -376,14 +383,14 @@ describe("cycle items mode", () => {
 	});
 
 	it("cycleAppendItems errors on a missing or plan-mode run", async () => {
-		await run(cycleStartItems, { name: "real", cycle: "demo", spec: "x", items: ["i1"] }); // creates plans/
+		await startItems({ name: "real", cycle: "demo", spec: "x", items: ["i1"] }); // creates plans/
 		await expect(run(cycleAppendItems, { name: "nope", items: ["x"] })).rejects.toThrow("no items run");
-		await run(cycleStartPlan, { plan: "plans/pm.md", cycle: "demo" });
+		await startPlan({ plan: "plans/pm.md", cycle: "demo" });
 		await expect(run(cycleAppendItems, { name: "pm", items: ["x"] })).rejects.toThrow("not an items queue");
 	});
 
 	it("a cold resume replays the exact in-flight batch window", async () => {
-		await run(cycleStartItems, {
+		await startItems({
 			name: "resume",
 			cycle: "demo",
 			spec: "x",
@@ -402,7 +409,7 @@ describe("cycle items mode", () => {
 	});
 
 	it("skip is clamped to the current batch and merges across checkpoints", async () => {
-		await run(cycleStartItems, { name: "sk", cycle: "demo", spec: "x", items: ["i1", "i2", "i3"], batchSize: 1 });
+		await startItems({ name: "sk", cycle: "demo", spec: "x", items: ["i1", "i2", "i3"], batchSize: 1 });
 		await runBatchSteps("sk"); // batch [0,1)
 		await run(cycleCheckpoint, { plan: "plans/sk.md", decision: "loop", summary: "s", skip: [0] }); // -> [1,2)
 		await runBatchSteps("sk");
@@ -421,7 +428,7 @@ describe("per-run step subset", () => {
 		});
 
 	it("cycleStatus total and advancement use the subset, not the full def", async () => {
-		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" }); // def steps a,b,c
+		await startPlan({ plan: "p.md", cycle: "demo" }); // def steps a,b,c
 		setSubset("p.md", ["a", "c"]); // omit b
 		expect((await run(cycleStatus, { plan: "p.md" })).total).toBe(2);
 		// advancing from a skips the omitted b straight to c, then c is the last kept step -> lapEnd
@@ -430,7 +437,7 @@ describe("per-run step subset", () => {
 	});
 
 	it("cycleGoto to a skipped step auto-advances with a note", async () => {
-		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
+		await startPlan({ plan: "p.md", cycle: "demo" });
 		setSubset("p.md", ["a", "c"]); // b omitted
 		const goto = await run(cycleGoto, { plan: "p.md", step: "b" });
 		expect(goto.step).toBe("c"); // next kept step at/after b
@@ -438,14 +445,14 @@ describe("per-run step subset", () => {
 	});
 
 	it("cycleGoto to a kept step is normal; an unknown step errors", async () => {
-		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
+		await startPlan({ plan: "p.md", cycle: "demo" });
 		setSubset("p.md", ["a", "c"]);
 		expect((await run(cycleGoto, { plan: "p.md", step: "a" })).step).toBe("a");
 		await expect(run(cycleGoto, { plan: "p.md", step: "zzz" })).rejects.toThrow("no step");
 	});
 
 	it("checkpoint loop wraps to the subset's first step, not the def's", async () => {
-		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" }); // def [a,b,c]
+		await startPlan({ plan: "p.md", cycle: "demo" }); // def [a,b,c]
 		setSubset("p.md", ["b", "c"]); // subset[0]=b != def[0]=a
 		await run(cycleGoto, { plan: "p.md", step: "b" }); // current=b, in subset
 		await run(cycleNext, { plan: "p.md", completed: "b" });
@@ -453,6 +460,83 @@ describe("per-run step subset", () => {
 		const looped = await run(cycleCheckpoint, { plan: "p.md", decision: "loop", summary: "lap" });
 		expect(looped.step).toBe("b"); // wrapped to subset[0], not def[0]
 		expect(looped.lap).toBe(2);
+	});
+});
+
+describe("configurable steps (includeSteps)", () => {
+	const planSidecar = (plan: string) =>
+		JSON.parse(fs.readFileSync(path.join(cwd, plan.replace(/\.md$/, ".cycle.json")), "utf8"));
+
+	it("bounces for confirmation when includeSteps is omitted, writing no sidecar", async () => {
+		const r = await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
+		expect(r.bounce).toBe("confirm-steps");
+		expect(r.steps).toEqual(["a", "b", "c"]);
+		expect(r.message).toContain("ask which steps to skip");
+		expect(fs.existsSync(path.join(cwd, "p.cycle.json"))).toBe(false);
+	});
+
+	it('["all"] starts the full suite with no persisted subset', async () => {
+		const r = await run(cycleStartPlan, { plan: "p.md", cycle: "demo", includeSteps: ["all"] });
+		expect(r.step).toBe("a");
+		expect(r.steps).toEqual(["a", "b", "c"]);
+		expect("steps" in planSidecar("p.md")).toBe(false);
+	});
+
+	it("a valid subset starts at the kept first step, persists, and runs only kept steps", async () => {
+		const r = await run(cycleStartPlan, { plan: "p.md", cycle: "demo", includeSteps: ["b", "c"] });
+		expect(r.step).toBe("b"); // a omitted -> starts at b
+		expect(r.steps).toEqual(["b", "c"]);
+		expect(planSidecar("p.md").steps).toEqual(["b", "c"]);
+		expect((await run(cycleNext, { plan: "p.md", completed: "b" })).step).toBe("c");
+		expect((await run(cycleNext, { plan: "p.md", completed: "c" })).lapEnd).toBe(true);
+	});
+
+	it("canonicalizes case + def order, ignores listing order, dedups", async () => {
+		const r = await run(cycleStartPlan, { plan: "p.md", cycle: "demo", includeSteps: ["C", "a", "a"] });
+		expect(r.steps).toEqual(["a", "c"]); // def order, case-folded, deduped
+	});
+
+	it("unknown ids bounce with the valid list, rejecting the whole call", async () => {
+		const r = await run(cycleStartPlan, { plan: "p.md", cycle: "demo", includeSteps: ["a", "zzz"] });
+		expect(r.bounce).toBe("unknown-steps");
+		expect(r.unknownSteps).toEqual(["zzz"]);
+		expect(r.message).toContain("a, b, c");
+		expect(fs.existsSync(path.join(cwd, "p.cycle.json"))).toBe(false);
+	});
+
+	it("includeSteps also gates cycleStartItems (bounce before any fs)", async () => {
+		const r = await run(cycleStartItems, { name: "it", cycle: "demo", spec: "x", items: ["i1"] });
+		expect(r.bounce).toBe("confirm-steps");
+		expect(fs.existsSync(path.join(cwd, "plans"))).toBe(false); // mkdir not reached on a bounce
+	});
+
+	it("an empty includeSteps array also bounces for confirmation", async () => {
+		const r = await run(cycleStartPlan, { plan: "p.md", cycle: "demo", includeSteps: [] });
+		expect(r.bounce).toBe("confirm-steps");
+	});
+
+	it("naming every step (not 'all') runs the full suite with no persisted subset", async () => {
+		const r = await run(cycleStartPlan, { plan: "p.md", cycle: "demo", includeSteps: ["c", "b", "a"] });
+		expect(r.steps).toEqual(["a", "b", "c"]); // def order
+		expect("steps" in planSidecar("p.md")).toBe(false); // length == def -> no persist
+	});
+
+	it("includeSteps composes with items mode (subset drives the per-batch steps)", async () => {
+		const r = await run(cycleStartItems, {
+			name: "is",
+			cycle: "demo",
+			spec: "x",
+			items: ["i1", "i2"],
+			batchSize: 2,
+			includeSteps: ["b", "c"],
+		});
+		expect(r.step).toBe("b"); // subset[0]
+		expect(r.steps).toEqual(["b", "c"]);
+		const sc = JSON.parse(fs.readFileSync(path.join(cwd, "plans", "is.cycle.json"), "utf8"));
+		expect(sc.mode).toBe("items");
+		expect(sc.steps).toEqual(["b", "c"]);
+		expect((await run(cycleNext, { plan: "plans/is.md", completed: "b" })).step).toBe("c");
+		expect((await run(cycleNext, { plan: "plans/is.md", completed: "c" })).lapEnd).toBe(true);
 	});
 });
 

@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 import { writeFileAtomic } from "./atomicWrite.ts";
+import { findStep } from "./computeNext.ts";
 import { extractSection } from "./extractSection.ts";
 import { type CycleDef, loadCycleDef } from "./resolveCycleDef.ts";
 import { resolvePlanPath } from "./resolvePlanPath.ts";
@@ -104,6 +105,60 @@ export function writeProgress(planFile: PlanFile, progress: StoredProgress): voi
 // nothing should linger to resume, and a later cycleStartPlan starts clean without needing force.
 export function deleteSidecar(planFile: PlanFile): void {
 	if (fs.existsSync(planFile.sidecarPath)) fs.rmSync(planFile.sidecarPath);
+}
+
+// A start tool returns one of these instead of a started cycle when the step selection needs the
+// human: either confirm the full suite, or fix unrecognized ids. The agent tests `bounce` to know it
+// must stop and relay rather than treat the cycle as started.
+export const StepBounceSchema = z.object({
+	bounce: z.enum(["confirm-steps", "unknown-steps"]),
+	cycle: z.string(),
+	steps: z.array(z.string()),
+	message: z.string(),
+	unknownSteps: z.array(z.string()).optional(),
+});
+export type StepBounce = z.infer<typeof StepBounceSchema>;
+
+// Resolve a start tool's includeSteps against the def's steps. Returns a bounce (stop + relay) or the
+// effective subset to persist. Absent/empty -> confirm bounce; ["all"] -> full suite; any unknown id
+// -> unknown bounce (whole call rejected); otherwise the def-filtered, deduped, canonical-order subset.
+export function resolveSteps(
+	cycle: string,
+	defSteps: string[],
+	includeSteps: string[] | undefined,
+): { bounce: StepBounce } | { steps: string[] } {
+	const menu = defSteps.map((s, i) => `${i + 1}. ${s}`).join(", ");
+	if (includeSteps === undefined || includeSteps.length === 0) {
+		return {
+			bounce: {
+				bounce: "confirm-steps",
+				cycle,
+				steps: defSteps,
+				message: `This is the cycle that will run. Full suite unless you skip some: ${menu}. Show this to the user and ask which steps to skip; do not choose for them. Re-call includeSteps with the kept steps (or ["all"] for the full suite).`,
+			},
+		};
+	}
+	// Any "all" token means the full suite (forgiving: ["all"], or ["all", ...] also resolves to full).
+	if (includeSteps.some((s) => s.trim().toLowerCase() === "all")) {
+		return { steps: defSteps };
+	}
+	const matched = includeSteps.map((raw) => ({ raw, canonical: findStep(defSteps, raw) }));
+	const unknown = matched.filter((m) => m.canonical === null).map((m) => m.raw);
+	if (unknown.length > 0) {
+		const recognized = matched.flatMap((m) => (m.canonical ? [m.canonical] : []));
+		return {
+			bounce: {
+				bounce: "unknown-steps",
+				cycle,
+				steps: defSteps,
+				unknownSteps: unknown,
+				message: `Unrecognized step(s): ${unknown.join(", ")}. Recognized: ${recognized.join(", ") || "none"}. Valid steps are: ${defSteps.join(", ")}. Re-call with valid ids.`,
+			},
+		};
+	}
+	// All valid: filter the def (canonical order, dedup by construction).
+	const kept = new Set(matched.map((m) => m.canonical));
+	return { steps: defSteps.filter((s) => kept.has(s)) };
 }
 
 export interface ResolvedDef {
