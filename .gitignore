@@ -19,6 +19,7 @@ _test/
 /.claude/scheduled_tasks.lock
 debug*.log
 kubeconfig*
+plans/*.cycle.json
 
 #### OS
 Thumbs.db

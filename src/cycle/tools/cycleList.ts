@@ -17,8 +17,9 @@ const OutputSchema = z.object({
 export const cycleList = {
 	name: "cycleList",
 	title: "cycle-list",
-	description:
-		"List the cycle definitions available in the nyaaskills cycles library, with each one's steps. Use this to discover what cycles you can run with cycleStart.",
+	description: `
+List the cycle definitions available in the nyaaskills cycles library, with each one's steps. Use this to discover what cycles you can run with \`cycleStartPlan(...)\` or \`cycleStartItems(...)\`.
+`.trim(),
 	operation: "listing cycle definitions",
 	schema,
 	async handler(_cwd: string, args: z.infer<typeof schema>) {

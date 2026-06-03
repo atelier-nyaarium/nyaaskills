@@ -2,24 +2,62 @@ import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 import { writeFileAtomic } from "./atomicWrite.ts";
-import { hashBody } from "./computeNext.ts";
+import { findStep } from "./computeNext.ts";
 import { extractSection } from "./extractSection.ts";
 import { type CycleDef, loadCycleDef } from "./resolveCycleDef.ts";
 import { resolvePlanPath } from "./resolvePlanPath.ts";
 
 // Cycle progress lives in a JSON sidecar next to the plan, NOT in the plan itself, so the tools
 // never touch the document the author is editing (no file-write race against pending body edits).
-export const ProgressSchema = z.object({
+const baseProgressFields = {
 	name: z.string().min(1),
 	current: z.string().min(1),
 	index: z.number().int().nonnegative(),
 	lap: z.number().int().positive(),
-	unchanged_laps: z.number().int().nonnegative(),
-	body_hash: z.string().min(1),
 	status: z.enum(["active", "done", "stopped"]),
 	summary: z.string().optional(),
-	converged_at_lap: z.number().int().optional(),
+	// Per-run step subset (Feature: configurable steps). Absent = the def's full step list. When set,
+	// it IS the effective sequence the tools advance over (index is relative to this list), so a run
+	// can omit steps. Must be persisted here or z.object would strip it on the next read.
+	steps: z.array(z.string().min(1)).min(1).optional(),
+};
+
+// Plan mode: the spec is the plan .md the agent edits; no work queue in the sidecar.
+const PlanProgress = z.object({ ...baseProgressFields, mode: z.literal("plan") });
+
+// The work-queue fields, shared by items mode and phases mode. A co-required group (all present
+// together) so a half-written record fails validation. `cursor` is the next unprocessed index;
+// [batchStart, batchEnd) is the in-flight batch (persisted so an interrupted batch resumes to the
+// exact same window); `skipped` records entries disposed without doing.
+const queueFields = {
+	spec: z.string().min(1),
+	items: z.array(z.string()),
+	cursor: z.number().int().nonnegative(),
+	batchStart: z.number().int().nonnegative(),
+	batchEnd: z.number().int().nonnegative(),
+	batchSize: z.number().int().positive(),
+	skipped: z.array(z.number().int().nonnegative()),
+};
+
+// Items mode: an explicit work queue lives in the sidecar.
+const ItemsProgress = z.object({ ...baseProgressFields, mode: z.literal("items"), ...queueFields });
+
+// Phases mode: a plan run that tracks the plan's phases. Reuses the queue machinery (one phase per
+// lap, batchSize 1) where `items` holds each phase's section body, plus `planPath` for addressing and
+// honest status (a phases run must NOT masquerade as items mode).
+const PhasesProgress = z.object({
+	...baseProgressFields,
+	mode: z.literal("phases"),
+	planPath: z.string().min(1),
+	...queueFields,
 });
+
+// Sidecars written before the discriminant existed carry no `mode`; default them to plan mode so
+// existing runs keep parsing while the discriminant stays required for new records.
+export const ProgressSchema = z.preprocess(
+	(raw) => (raw && typeof raw === "object" && !("mode" in raw) ? { ...raw, mode: "plan" } : raw),
+	z.discriminatedUnion("mode", [PlanProgress, ItemsProgress, PhasesProgress]),
+);
 
 export type StoredProgress = z.infer<typeof ProgressSchema>;
 
@@ -29,10 +67,9 @@ export function sidecarPathFor(planPath: string): string {
 	return `${planPath.replace(/\.(md|mdx|markdown)$/i, "")}.cycle.json`;
 }
 
-export interface Subject {
+export interface PlanFile {
 	planPath: string;
 	sidecarPath: string;
-	content: string; // the plan doc (for the convergence hash); "" if it does not exist yet
 	sidecarMtimeMs?: number;
 	progress: StoredProgress | null;
 	// True when the sidecar exists but is unreadable/invalid. Lets callers distinguish "corrupted
@@ -40,16 +77,14 @@ export interface Subject {
 	malformed: boolean;
 }
 
-// Read the plan doc (for hashing) and its progress sidecar (null when uninitialized/missing/malformed).
-export function readSubject(cwd: string, plan: string): Subject {
+// Read a plan file's progress sidecar (null when uninitialized/missing/malformed).
+export function readPlanFile(cwd: string, plan: string): PlanFile {
 	const planPath = resolvePlanPath(cwd, plan);
 	const sidecarPath = sidecarPathFor(planPath);
 
 	if (fs.existsSync(sidecarPath) && fs.lstatSync(sidecarPath).isSymbolicLink()) {
 		throw new Error(`refusing to use a symlinked cycle sidecar: ${path.basename(sidecarPath)}`);
 	}
-
-	const content = fs.existsSync(planPath) ? fs.readFileSync(planPath, "utf8") : "";
 
 	let progress: StoredProgress | null = null;
 	let malformed = false;
@@ -65,22 +100,75 @@ export function readSubject(cwd: string, plan: string): Subject {
 		}
 	}
 
-	return { planPath, sidecarPath, content, sidecarMtimeMs, progress, malformed };
+	return { planPath, sidecarPath, sidecarMtimeMs, progress, malformed };
 }
 
-// Persist progress to the sidecar atomically (unless dryRun). The mtime guard refuses the write if
-// the sidecar changed since it was read.
-export function writeProgress(subject: Subject, progress: StoredProgress, dryRun: boolean): void {
-	if (dryRun) return;
-	writeFileAtomic(subject.sidecarPath, `${JSON.stringify(progress, null, 2)}\n`, {
-		expectedMtimeMs: subject.sidecarMtimeMs,
+// Persist progress to the sidecar atomically. The mtime guard refuses the write if the sidecar
+// changed since it was read.
+export function writeProgress(planFile: PlanFile, progress: StoredProgress): void {
+	writeFileAtomic(planFile.sidecarPath, `${JSON.stringify(progress, null, 2)}\n`, {
+		expectedMtimeMs: planFile.sidecarMtimeMs,
 	});
 }
 
-// Hash the whole plan doc for the convergence signal. The tools never write the plan, so any change
-// is the author's.
-export function bodyHashOf(content: string): string {
-	return hashBody(content);
+// Remove the progress sidecar. Used when a cycle finishes "done": the plan is fully consumed, so
+// nothing should linger to resume, and a later cycleStartPlan starts clean without needing force.
+export function deleteSidecar(planFile: PlanFile): void {
+	if (fs.existsSync(planFile.sidecarPath)) fs.rmSync(planFile.sidecarPath);
+}
+
+// A start tool returns one of these instead of a started cycle when the step selection needs the
+// human: either confirm the full suite, or fix unrecognized ids. The agent tests `bounce` to know it
+// must stop and relay rather than treat the cycle as started.
+export const StepBounceSchema = z.object({
+	bounce: z.enum(["confirm-steps", "unknown-steps"]),
+	cycle: z.string(),
+	steps: z.array(z.string()),
+	message: z.string(),
+	unknownSteps: z.array(z.string()).optional(),
+});
+export type StepBounce = z.infer<typeof StepBounceSchema>;
+
+// Resolve a start tool's includeSteps against the def's steps. Returns a bounce (stop + relay) or the
+// effective subset to persist. Absent/empty -> confirm bounce; ["all"] -> full suite; any unknown id
+// -> unknown bounce (whole call rejected); otherwise the def-filtered, deduped, canonical-order subset.
+export function resolveSteps(
+	cycle: string,
+	defSteps: string[],
+	includeSteps: string[] | undefined,
+): { bounce: StepBounce } | { steps: string[] } {
+	const menu = defSteps.map((s, i) => `${i + 1}. ${s}`).join(", ");
+	if (includeSteps === undefined || includeSteps.length === 0) {
+		return {
+			bounce: {
+				bounce: "confirm-steps",
+				cycle,
+				steps: defSteps,
+				message: `This is the cycle that will run. Full suite unless you skip some: ${menu}. Show this to the user and ask which steps to skip; do not choose for them. Re-call includeSteps with the kept steps (or ["all"] for the full suite).`,
+			},
+		};
+	}
+	// Any "all" token means the full suite (forgiving: ["all"], or ["all", ...] also resolves to full).
+	if (includeSteps.some((s) => s.trim().toLowerCase() === "all")) {
+		return { steps: defSteps };
+	}
+	const matched = includeSteps.map((raw) => ({ raw, canonical: findStep(defSteps, raw) }));
+	const unknown = matched.filter((m) => m.canonical === null).map((m) => m.raw);
+	if (unknown.length > 0) {
+		const recognized = matched.flatMap((m) => (m.canonical ? [m.canonical] : []));
+		return {
+			bounce: {
+				bounce: "unknown-steps",
+				cycle,
+				steps: defSteps,
+				unknownSteps: unknown,
+				message: `Unrecognized step(s): ${unknown.join(", ")}. Recognized: ${recognized.join(", ") || "none"}. Valid steps are: ${defSteps.join(", ")}. Re-call with valid ids.`,
+			},
+		};
+	}
+	// All valid: filter the def (canonical order, dedup by construction).
+	const kept = new Set(matched.map((m) => m.canonical));
+	return { steps: defSteps.filter((s) => kept.has(s)) };
 }
 
 export interface ResolvedDef {
@@ -88,14 +176,14 @@ export interface ResolvedDef {
 	instructions(step: string): string;
 }
 
-// Load the definition a subject is running and give a step -> instructions resolver.
+// Load the definition a plan is running and give a step -> instructions resolver.
 export function resolveDef(name: string): ResolvedDef {
 	const def = loadCycleDef(name);
 	return { def, instructions: (step: string) => extractSection(def.body, step) };
 }
 
 export interface CycleRun {
-	subject: Subject;
+	planFile: PlanFile;
 	progress: StoredProgress;
 	def: CycleDef;
 	steps: string[];
@@ -103,24 +191,101 @@ export interface CycleRun {
 }
 
 // Single source of truth for "load a running cycle": the precondition bundle every stateful tool
-// needs (subject exists, has a cycle, optionally active) plus its resolved definition. Keeping it
+// needs (plan file exists, has a cycle, optionally active) plus its resolved definition. Keeping it
 // here means the tools cannot drift on what counts as runnable or on the error wording.
 export function loadCycleRun(cwd: string, plan: string, opts: { requireActive: boolean }): CycleRun {
-	const subject = readSubject(cwd, plan);
-	if (!subject.progress) throw new Error("no cycle on this subject; call cycleStart first");
-	const progress = subject.progress;
+	const planFile = readPlanFile(cwd, plan);
+	if (!planFile.progress)
+		throw new Error("no cycle on this plan; call `cycleStartPlan(...)` or `cycleStartItems(...)` first");
+	const progress = planFile.progress;
 	if (opts.requireActive && progress.status !== "active") {
-		throw new Error(`cycle is ${progress.status}; reopen it with cycleGoto before continuing`);
+		throw new Error(`cycle is ${progress.status}; reopen it with \`cycleGoto(...)\` before continuing`);
 	}
 	const { def, instructions } = resolveDef(progress.name);
-	return { subject, progress, def, steps: def.steps, instructions };
+	// The effective sequence is the per-run subset if set, else the def's full list. Every stateful
+	// tool advances over this, not def.steps, so a configured run runs only its kept steps.
+	return { planFile, progress, def, steps: progress.steps ?? def.steps, instructions };
 }
 
 // The literal next call travels with the instructions so it stays in the agent's working context.
 export function appendStepCall(instructions: string, plan: string, step: string): string {
-	return `${instructions}\n\n>> When this step's work is done, call cycleNext({ plan: "${plan}", completed: "${step}" }) to conclude it and move to the next step. This is normal forward progress; do not use cycleGoto to advance.`;
+	return `${instructions}\n\n>> When this step's work is done, call \`cycleNext({ plan: "${plan}", completed: "${step}" })\` to conclude it and move to the next step. This is normal forward progress; do not use \`cycleGoto(...)\` to advance.`;
 }
 
 export function checkpointCall(plan: string): string {
-	return `All steps complete. Call cycleCheckpoint({ plan: "${plan}", decision, summary }) with decision = "done" | "loop" | "critical-stop".`;
+	return `All steps complete. Call \`cycleCheckpoint({ plan: "${plan}", decision, summary })\`: \`loop\` to continue straight into the next phase (the default - do not stop to ask between phases), \`done\` only when all the work is genuinely complete, or \`critical-stop\` only for a real blocker that needs a human.`;
+}
+
+// Prepended to the first step's instructions at start, so the agent knows it is inside a paced,
+// repeating step-runner and should work one step at a time instead of doing the whole plan up front.
+// The definition supplies any domain framing (e.g. "one lap = one phase"); this stays generic.
+export function cyclePreamble(cycleName: string): string {
+	return [
+		`**Cycle \`${cycleName}\`** - a repeating step-runner that paces you through fixed steps.`,
+		`Do only the current step's work, then call \`cycleNext(...)\`. After the last step,`,
+		`\`cycleCheckpoint(...)\` decides: \`loop\` (run the steps again) or \`done\` (finished).`,
+		`Work one step at a time as written; do not run ahead and do the whole plan at once.`,
+	].join(" ");
+}
+
+// The spec and current batch, re-injected into items-mode instructions so the agent stays grounded
+// each step without leaning on conversation memory (which compaction erases). Empty for plan mode.
+export function itemsContext(progress: StoredProgress): string {
+	if (progress.mode === "plan") return "";
+	const { spec, items, batchStart, batchEnd } = progress;
+	if (progress.mode === "phases") {
+		// One phase per lap; the item IS the phase's plan section, injected so a cold resume has the
+		// real detail rather than a pointer to the plan file.
+		return [
+			`Spec: ${spec}`,
+			`Current phase ${batchStart + 1} of ${items.length}:`,
+			items[batchStart] ?? "",
+			"Do this phase's work, concluding each step with `cycleNext(...)`; `cycleCheckpoint(...)` advances to the next phase.",
+		].join("\n\n");
+	}
+	const list = items
+		.slice(batchStart, batchEnd)
+		.map((item, i) => `  ${batchStart + i + 1}. ${item}`)
+		.join("\n");
+	return [
+		`Spec: ${spec}`,
+		`Current batch - items ${batchStart + 1}-${batchEnd} of ${items.length}:`,
+		list,
+		"Apply the spec to only this batch's items. Conclude each step with `cycleNext(...)`; `cycleCheckpoint(...)` advances to the next batch.",
+	].join("\n");
+}
+
+// Canonical form for noDup comparison: trim plus strip trailing slashes. Items are treated as opaque
+// strings (often paths), so this is the documented identity rather than full path resolution.
+export function normalizeItem(s: string): string {
+	return s.trim().replace(/\/+$/, "");
+}
+
+export interface AppendResult {
+	items: string[];
+	added: number;
+	dropped: number;
+}
+
+// Append to the queue. With noDup, drop any incoming item whose normalized form already exists among
+// the NON-skipped queue items (so a deliberately re-queued skipped item is allowed through), and dedup
+// the incoming batch against itself. Returns the new queue plus added/dropped counts.
+export function appendItems(existing: string[], skipped: number[], newItems: string[], noDup: boolean): AppendResult {
+	if (!noDup) return { items: [...existing, ...newItems], added: newItems.length, dropped: 0 };
+	const skippedSet = new Set(skipped);
+	const seen = new Set(existing.filter((_, i) => !skippedSet.has(i)).map(normalizeItem));
+	const items = [...existing];
+	let added = 0;
+	let dropped = 0;
+	for (const item of newItems) {
+		const n = normalizeItem(item);
+		if (seen.has(n)) {
+			dropped++;
+			continue;
+		}
+		seen.add(n);
+		items.push(item);
+		added++;
+	}
+	return { items, added, dropped };
 }

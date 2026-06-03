@@ -6,7 +6,7 @@ function isWithin(root: string, target: string): boolean {
 	return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
 }
 
-// Resolve a subject-doc path against the MCP client root and refuse anything that escapes it.
+// Resolve a plan-file path against the MCP client root and refuse anything that escapes it.
 // This is the first repo tool to write arbitrary project files, so containment is realpath-based
 // (defeats symlinked parent dirs) and a symlinked target file is refused outright.
 export function resolvePlanPath(cwd: string, plan: string): string {

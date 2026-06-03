@@ -1,8 +1,12 @@
 import { z } from "zod";
-import { bodyHashOf, readSubject, resolveDef } from "../lib/run.ts";
+import { readPlanFile, resolveDef } from "../lib/run.ts";
 
 const schema = z.object({
-	plan: z.string().describe("Path to the subject doc."),
+	plan: z.string().describe(
+		`
+Path to the plan file.
+`.trim(),
+	),
 });
 
 const OutputSchema = z.object({
@@ -14,8 +18,13 @@ const OutputSchema = z.object({
 	total: z.number().optional(),
 	lap: z.number().optional(),
 	status: z.string().optional(),
-	unchangedLaps: z.number().optional(),
-	bodyChangedSinceLastLap: z.boolean().optional(),
+	mode: z.string().optional(),
+	spec: z.string().optional(),
+	cursor: z.number().optional(),
+	totalItems: z.number().optional(),
+	remaining: z.number().optional(),
+	currentBatch: z.array(z.string()).optional(),
+	skipped: z.number().optional(),
 	instructions: z.string().optional(),
 	malformed: z.boolean().optional(),
 	error: z.string().optional(),
@@ -24,24 +33,41 @@ const OutputSchema = z.object({
 export const cycleStatus = {
 	name: "cycleStatus",
 	title: "cycle-status",
-	description:
-		"Report where a subject is in its cycle without mutating anything: current step, index, lap, status, and the convergence signal. Use this to resume, or to tell whether a cycle finished, stopped, or stalled.",
+	description: `
+Report where a plan is in its cycle without mutating anything: current step, index, lap, and status. Use this to resume, or to tell whether a cycle finished, stopped, or stalled.
+`.trim(),
 	operation: "reading cycle status",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
 		const { plan } = schema.parse(args);
-		const subject = readSubject(cwd, plan);
-		if (!subject.progress) {
+		const planFile = readPlanFile(cwd, plan);
+		if (!planFile.progress) {
 			return {
 				data: OutputSchema.parse({
 					plan,
 					initialized: false,
-					...(subject.malformed ? { malformed: true, error: "cycle block is present but malformed" } : {}),
+					...(planFile.malformed ? { malformed: true, error: "cycle block is present but malformed" } : {}),
 				}),
 			};
 		}
-		const progress = subject.progress;
+		const progress = planFile.progress;
+		// In items/phases mode, surface the queue so a cold resume is inspectable without reading the
+		// sidecar. For phases, `currentBatch` holds the current phase's body and `totalItems` is the
+		// phase count; `mode` tells the two apart.
+		const itemsInfo =
+			progress.mode !== "plan"
+				? {
+						mode: progress.mode,
+						spec: progress.spec,
+						cursor: progress.cursor,
+						totalItems: progress.items.length,
+						remaining: progress.items.length - progress.cursor,
+						currentBatch: progress.items.slice(progress.batchStart, progress.batchEnd),
+						skipped: progress.skipped.length,
+					}
+				: { mode: "plan" };
 		const base = {
+			...itemsInfo,
 			plan,
 			initialized: true,
 			cycle: progress.name,
@@ -49,21 +75,21 @@ export const cycleStatus = {
 			index: progress.index,
 			lap: progress.lap,
 			status: progress.status,
-			unchangedLaps: progress.unchanged_laps,
-			bodyChangedSinceLastLap: bodyHashOf(subject.content) !== progress.body_hash,
 		};
 		// Status is the diagnostic tool, so it must not throw when the definition drifted or vanished.
 		try {
 			const { def, instructions } = resolveDef(progress.name);
-			const known = def.steps.includes(progress.current);
+			// Report against the effective step list (the per-run subset if set), not the def's full list.
+			const effectiveSteps = progress.steps ?? def.steps;
+			const known = effectiveSteps.includes(progress.current);
 			return {
 				data: OutputSchema.parse({
 					...base,
-					total: def.steps.length,
+					total: effectiveSteps.length,
 					...(known
 						? { instructions: instructions(progress.current) }
 						: {
-								error: `current step "${progress.current}" is no longer in cycle "${progress.name}"; steps: ${def.steps.join(", ")}`,
+								error: `current step "${progress.current}" is no longer in cycle "${progress.name}"; steps: ${effectiveSteps.join(", ")}`,
 							}),
 				}),
 			};

@@ -44,18 +44,25 @@ Ships with `plan-refinement` and `audited-implementation`.
 
 ### Tools
 
-| Tool | Description | Mutable | dryRun |
-|------|-------------|---------|--------|
-| `cycleStart` | Initialize a named cycle on a subject doc | Yes | Yes |
-| `cycleNext` | Advance one step (confirm-then-advance via `completed`) | Yes | Yes |
-| `cycleCheckpoint` | End-of-lap decision: done / loop / critical-stop | Yes | Yes |
-| `cycleStatus` | Report cycle position and convergence signal | No | - |
-| `cycleGoto` | Jump to a step, or reopen a finished cycle | Yes | Yes |
-| `cycleList` | List available cycle definitions | No | - |
+| Tool | Description | Mutable |
+|------|-------------|---------|
+| `cycleStartPlan` | Initialize a cycle on a plan file; optional `phases` tracks the plan's phases | Yes |
+| `cycleStartItems` | Initialize a cycle over an explicit work queue (items mode) | Yes |
+| `cycleAppendItems` | Append items to a running items queue (noDup, mtime-guarded) | Yes |
+| `cycleNext` | Advance one step (confirm-then-advance via `completed`) | Yes |
+| `cycleCheckpoint` | End-of-lap decision: done / loop / critical-stop | Yes |
+| `cycleStatus` | Report cycle position (step, lap, status) | No |
+| `cycleGoto` | Jump to a step, or reopen a finished cycle | Yes |
+| `cycleList` | List available cycle definitions | No |
 
 Laps are 1-indexed; the soft `maxLaps` cap trips when a loop would exceed it (override per call
-with `acknowledgeOverrun`). Convergence is signalled by a whole-document body hash that counts
-consecutive unchanged laps.
+with `acknowledgeOverrun`).
+
+Both start tools take `includeSteps` to run a subset of the cycle's steps: omit it and the tool
+returns a confirm bounce listing the full suite for the user to trim, pass `["all"]` for everything,
+or name the steps to keep. `cycleStartPlan` also takes `phases` (labels matching the plan's `##`
+headers) to track plan phases one per lap, with each phase's section body persisted for crash
+recovery.
 
 ## Development
 

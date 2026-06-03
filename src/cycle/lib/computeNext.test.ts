@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { advance, applyLoop, type CycleProgress, findStep, hashBody } from "./computeNext.ts";
+import { advance, applyLoop, type CycleProgress, findStep } from "./computeNext.ts";
 
 const steps = ["propose", "audit", "triage", "rethink"];
 
@@ -40,40 +40,48 @@ describe("applyLoop", () => {
 		current: "rethink",
 		index: 3,
 		lap: 1,
-		unchanged_laps: 0,
-		body_hash: "H",
 		status: "active",
 	};
 
 	it("wraps to the first step and bumps the lap", () => {
-		const r = applyLoop(base, steps, "H2", 8);
+		const r = applyLoop(base, steps, 8);
 		expect(r.progress.current).toBe("propose");
 		expect(r.progress.index).toBe(0);
 		expect(r.progress.lap).toBe(2);
-		expect(r.progress.unchanged_laps).toBe(0);
 		expect(r.lapLimitReached).toBe(false);
 	});
-	it("increments unchanged_laps when the body did not change", () => {
-		expect(applyLoop(base, steps, "H", 8).progress.unchanged_laps).toBe(1);
+	it("carries mode-specific fields (incl. in-flight batch) through the loop", () => {
+		const items = {
+			mode: "items",
+			items: ["a", "b"],
+			cursor: 1,
+			spec: "do x",
+			batchStart: 0,
+			batchEnd: 1,
+			batchSize: 1,
+			skipped: [3],
+		};
+		const r = applyLoop({ ...base, ...items }, steps, 8);
+		expect(r.progress.items).toEqual(["a", "b"]);
+		expect(r.progress.cursor).toBe(1);
+		expect(r.progress.spec).toBe("do x");
+		expect(r.progress.batchStart).toBe(0);
+		expect(r.progress.batchEnd).toBe(1);
+		expect(r.progress.batchSize).toBe(1);
+		expect(r.progress.skipped).toEqual([3]);
+		expect(r.progress.current).toBe("propose");
 	});
 	it("allows the loop into the last permitted lap (laps 1..maxLaps)", () => {
-		const r = applyLoop({ ...base, lap: 7 }, steps, "H2", 8);
+		const r = applyLoop({ ...base, lap: 7 }, steps, 8);
 		expect(r.progress.lap).toBe(8);
 		expect(r.lapLimitReached).toBe(false);
 	});
 	it("flags lapLimitReached when the loop would exceed maxLaps", () => {
-		const r = applyLoop({ ...base, lap: 8 }, steps, "H2", 8);
+		const r = applyLoop({ ...base, lap: 8 }, steps, 8);
 		expect(r.progress.lap).toBe(9);
 		expect(r.lapLimitReached).toBe(true);
 	});
 	it("throws on an empty step list", () => {
-		expect(() => applyLoop(base, [], "H2", 8)).toThrow("empty");
-	});
-});
-
-describe("hashBody", () => {
-	it("is stable and sensitive to change", () => {
-		expect(hashBody("abc")).toBe(hashBody("abc"));
-		expect(hashBody("abc")).not.toBe(hashBody("abd"));
+		expect(() => applyLoop(base, [], 8)).toThrow("empty");
 	});
 });

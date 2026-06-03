@@ -15,7 +15,7 @@ export interface McpTool {
 
 const mcpServer = new McpServer({
 	name: "nyaaskills-mcp",
-	version: "3.0.0",
+	version: "3.1.0",
 });
 
 function registerTool(tool: McpTool) {
@@ -28,7 +28,7 @@ function registerTool(tool: McpTool) {
 		},
 		async (args) => {
 			try {
-				// Cycle tools resolve the subject plan relative to the MCP client's project root.
+				// Cycle tools resolve the plan file relative to the MCP client's project root.
 				let cwd: string;
 				try {
 					const roots = (await mcpServer.server.listRoots()) as { roots: Array<{ uri: string }> };

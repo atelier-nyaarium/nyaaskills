@@ -1,13 +1,13 @@
 ---
-steps: [implement, align, framework, red-team, commit]
+steps: [implement, align, framework, red-team, compliance, commit]
 maxLaps: 12
 ---
 
 # Audited Phase Implementation
 
-Implement one phase of a plan, then harden it through alignment, framework, and red-team passes
-before committing. One lap = one phase. Each audit pass analyzes and triages with NO edits first,
-then applies only the real findings.
+Implement a plan one phase at a time. For each phase: implement, then harden it through alignment,
+framework, and red-team passes before committing. Each audit pass analyzes and triages with NO edits
+first, then applies only the real findings.
 
 ## implement
 
@@ -17,7 +17,7 @@ to team agents only if the task is so simple they cannot fail.
 ## align
 
 Analysis first, no edits: plan alignment audit. Dispatch Agent(opus) -> compare the implementation
-vs the questionnaire and the plan. Report only, no edits. The agent runs its own `git diff` (no
+vs the questionaire and the plan. Report only, no edits. The agent runs its own `git diff` (no
 paste; the fresh-diff rule). Triage gate: real deviation vs plan ambiguity / intentional
 refinement. A confident tone is not evidence; verify against the code.
 
@@ -48,13 +48,28 @@ Triage gate each report on arrival: real gap vs overcautious / out-of-scope / ha
 Then fix the real issues and run smoke tests again. Watch out for: yes-manning, scope creep, drift
 from codebase patterns. If you fixed anything, re-run the red team; repeat until it comes back clean.
 
+## compliance
+
+Analysis first, no edits: /compliance skill (SOC2/GDPR/CPRA). Dispatch Agent(opus) running /compliance
+to audit the implementation for compliance gaps: access control, data handling/classification, audit
+trails, retention, data-subject rights. Report only, no edits. Triage gate: real gap vs out-of-scope /
+overcautious.
+
+Then close the real gaps. If a fix changed anything, re-run the audit; repeat until it comes back
+clean. This step is commonly skipped (via `includeSteps`) on projects with no compliance obligations.
+
 ## commit
 
-Update docs, then gitStage + gitCommit. If framework-first issues still remain, cycleGoto back to
-`framework` instead of ending the lap.
+Update docs, then gitStage + gitCommit. If framework-first issues still remain, `cycleGoto(...)` back
+to `framework` instead of ending the phase. On a resumed batch the work may already be partly done;
+check `git status` first and tolerate an already-clean tree (no empty commits, no re-editing
+already-correct files).
 
-Otherwise end the lap: call cycleCheckpoint with one of
+Otherwise the phase is complete: call `cycleCheckpoint(...)` with one of
 
 - `loop` - unfinished phases left in the plan; starts the next phase
 - `done` - all phases done
 - `critical-stop` - a critical blocker
+
+Default to `loop` and keep going phase after phase. Do not stop to ask the human between phases; only
+`critical-stop` for a genuine blocker, or `done` when every phase is complete.
