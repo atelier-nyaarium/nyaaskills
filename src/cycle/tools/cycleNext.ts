@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { advance, findStep } from "../lib/computeNext.ts";
-import { appendStepCall, checkpointCall, loadCycleRun, type StoredProgress, writeProgress } from "../lib/run.ts";
+import {
+	appendStepCall,
+	checkpointCall,
+	itemsContext,
+	loadCycleRun,
+	type StoredProgress,
+	writeProgress,
+} from "../lib/run.ts";
 
 const schema = z.object({
 	plan: z.string().describe(
@@ -53,6 +60,10 @@ Conclude the step you just finished and move to the next one. This IS normal for
 			lap: progress.lap,
 			status: progress.status,
 		};
+		// In items mode, re-inject the spec + current batch on every step so a mid-batch compaction
+		// cannot strand the agent without knowing what it is doing or to which items.
+		const withContext = (text: string) =>
+			progress.mode === "items" ? `${itemsContext(progress)}\n\n---\n\n${text}` : text;
 
 		// Resolve the move first so a current step that vanished from the definition is detected
 		// before we try to render its (now missing) instructions, regardless of `completed`.
@@ -80,7 +91,7 @@ Conclude the step you just finished and move to the next one. This IS normal for
 				step: progress.current,
 				index: progress.index,
 				advanced: false,
-				instructions: instructions(progress.current),
+				instructions: withContext(instructions(progress.current)),
 				nextAction: `Do the work for step "${progress.current}", then call \`cycleNext({ plan: "${plan}", completed: "${progress.current}" })\` to conclude it and move on. (\`cycleNext(...)\` is normal forward progress; you do not need \`cycleGoto(...)\` to advance.)`,
 			};
 			return { data: OutputSchema.parse(result) };
@@ -106,7 +117,7 @@ Conclude the step you just finished and move to the next one. This IS normal for
 			step: move.current,
 			index: move.index,
 			advanced: true,
-			instructions: appendStepCall(instructions(move.current), plan, move.current),
+			instructions: withContext(appendStepCall(instructions(move.current), plan, move.current)),
 			nextAction: `Now do the work for step "${move.current}", then call \`cycleNext({ plan: "${plan}", completed: "${move.current}" })\` to conclude it and continue.`,
 		};
 		return { data: OutputSchema.parse(result) };

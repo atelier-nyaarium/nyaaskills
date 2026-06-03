@@ -1,7 +1,14 @@
 import { z } from "zod";
-import { applyLoop } from "../lib/computeNext.ts";
+import { advanceBatch, applyLoop } from "../lib/computeNext.ts";
 import { notifyCycleEnd } from "../lib/notify.ts";
-import { appendStepCall, deleteSidecar, loadCycleRun, type StoredProgress, writeProgress } from "../lib/run.ts";
+import {
+	appendStepCall,
+	deleteSidecar,
+	itemsContext,
+	loadCycleRun,
+	type StoredProgress,
+	writeProgress,
+} from "../lib/run.ts";
 
 const schema = z.object({
 	plan: z.string().describe(
@@ -28,7 +35,17 @@ End-of-lap decision.
 		.default(false)
 		.describe(
 			`
-Required to loop past the cycle's maxLaps soft cap. Set this if you've found a critical reason to keep pushing.
+Required to loop past the cycle's maxLaps soft cap (plan mode only). Set this if you've found a critical reason to keep pushing.
+`.trim(),
+		),
+	batchSize: z
+		.number()
+		.int()
+		.positive()
+		.optional()
+		.describe(
+			`
+Items mode only: on a loop, set how many items the next batch hands over (overrides the run default). Use to back off to smaller batches when items are heavy.
 `.trim(),
 		),
 });
@@ -41,6 +58,9 @@ const OutputSchema = z.object({
 	lap: z.number(),
 	step: z.string(),
 	lapLimitReached: z.boolean().optional(),
+	drained: z.boolean().optional(),
+	remaining: z.number().optional(),
+	totalItems: z.number().optional(),
 	instructions: z.string(),
 	nextAction: z.string(),
 });
@@ -58,12 +78,70 @@ Fires a notify hook (if set) after the write.
 	operation: "deciding at a lap checkpoint",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
-		const { plan, decision, summary, acknowledgeOverrun } = schema.parse(args);
+		const { plan, decision, summary, acknowledgeOverrun, batchSize } = schema.parse(args);
 		const { planFile, progress, def, steps, instructions } = loadCycleRun(cwd, plan, { requireActive: true });
 
+		if (decision === "loop" && progress.mode === "items") {
+			// Items mode: a loop advances the queue by one batch. The queue (not maxLaps) bounds the run.
+			const nextBatchSize = batchSize ?? progress.batchSize;
+			const adv = advanceBatch(progress.batchEnd, progress.items.length, nextBatchSize);
+			if (adv.drained) {
+				// All items consumed. Keep the sidecar (an append could continue it; "queue empty" is not
+				// a terminator, an explicit done is), but normalize the window to the end so cycleStatus
+				// reports remaining 0 / empty batch and a later append resumes from items.length.
+				const drainedProgress: StoredProgress = {
+					...progress,
+					cursor: progress.items.length,
+					batchStart: progress.items.length,
+					batchEnd: progress.items.length,
+				};
+				writeProgress(planFile, drainedProgress);
+				const skippedNote = progress.skipped.length ? ` (${progress.skipped.length} skipped)` : "";
+				const result = {
+					plan,
+					cycle: progress.name,
+					decision,
+					status: "active",
+					lap: progress.lap,
+					step: progress.current,
+					drained: true,
+					remaining: 0,
+					totalItems: progress.items.length,
+					instructions: `Queue drained: all ${progress.items.length} items processed${skippedNote}.`,
+					nextAction: `Append with \`cycleAppendItems({ name, items: [...] })\` then loop again, or finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", summary })\`. Do not stop unless finishing or blocked.`,
+				};
+				return { data: OutputSchema.parse(result) };
+			}
+			// More items remain: wrap steps and bump the lap (preserving the queue), then slide the batch.
+			const looped = applyLoop(progress, steps, progress.items.length + 1).progress;
+			const next: StoredProgress = {
+				...looped,
+				cursor: adv.cursor,
+				batchStart: adv.batchStart,
+				batchEnd: adv.batchEnd,
+				batchSize: nextBatchSize,
+			};
+			writeProgress(planFile, next);
+			notifyCycleEnd({ decision, summary, plan, cycle: progress.name, lap: next.lap, status: "active" });
+			const remaining = progress.items.length - adv.batchStart;
+			const result = {
+				plan,
+				cycle: progress.name,
+				decision,
+				status: "active",
+				lap: next.lap,
+				step: next.current,
+				remaining,
+				totalItems: progress.items.length,
+				instructions: `${itemsContext(next)}\n\n---\n\n${appendStepCall(instructions(next.current), plan, next.current)}`,
+				nextAction: `Next batch (lap ${next.lap}, ${remaining} items left). Do step "${next.current}", then \`cycleNext({ plan: "${plan}", completed: "${next.current}" })\`. Keep going batch by batch; do not stop until the queue drains or you hit a critical blocker.`,
+			};
+			return { data: OutputSchema.parse(result) };
+		}
+
 		if (decision === "loop") {
-			// Pass the full record, not a narrow rebuild, so mode-specific fields (items queue, spec,
-			// cursor) survive the loop instead of being dropped.
+			// Plan mode: a loop wraps the steps and bumps the lap. Pass the full record so any extra
+			// fields survive; the def's maxLaps is a soft cap against churn-without-convergence.
 			const looped = applyLoop(progress, steps, def.maxLaps);
 			if (looped.lapLimitReached && !acknowledgeOverrun) {
 				const result = {
@@ -90,7 +168,7 @@ Fires a notify hook (if set) after the write.
 				lap: next.lap,
 				step: next.current,
 				instructions: appendStepCall(instructions(next.current), plan, next.current),
-				nextAction: `New lap ${next.lap} for \`${plan}\`. Do the work for step "${next.current}", then call \`cycleNext({ plan: "${plan}", completed: "${next.current}" })\` to continue.`,
+				nextAction: `New lap ${next.lap} for \`${plan}\`. Do step "${next.current}", then call \`cycleNext({ plan: "${plan}", completed: "${next.current}" })\`. Continue straight into the next phase; do not stop to ask between phases unless blocked.`,
 			};
 			return { data: OutputSchema.parse(result) };
 		}

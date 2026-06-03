@@ -18,6 +18,13 @@ const OutputSchema = z.object({
 	total: z.number().optional(),
 	lap: z.number().optional(),
 	status: z.string().optional(),
+	mode: z.string().optional(),
+	spec: z.string().optional(),
+	cursor: z.number().optional(),
+	totalItems: z.number().optional(),
+	remaining: z.number().optional(),
+	currentBatch: z.array(z.string()).optional(),
+	skipped: z.number().optional(),
 	instructions: z.string().optional(),
 	malformed: z.boolean().optional(),
 	error: z.string().optional(),
@@ -44,7 +51,21 @@ Report where a plan is in its cycle without mutating anything: current step, ind
 			};
 		}
 		const progress = planFile.progress;
+		// In items mode, surface the queue so a cold resume is inspectable without reading the sidecar.
+		const itemsInfo =
+			progress.mode === "items"
+				? {
+						mode: "items",
+						spec: progress.spec,
+						cursor: progress.cursor,
+						totalItems: progress.items.length,
+						remaining: progress.items.length - progress.cursor,
+						currentBatch: progress.items.slice(progress.batchStart, progress.batchEnd),
+						skipped: progress.skipped.length,
+					}
+				: { mode: "plan" };
 		const base = {
+			...itemsInfo,
 			plan,
 			initialized: true,
 			cycle: progress.name,

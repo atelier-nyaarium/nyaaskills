@@ -58,3 +58,6 @@ Otherwise the phase is complete: call `cycleCheckpoint(...)` with one of
 - `loop` - unfinished phases left in the plan; starts the next phase
 - `done` - all phases done
 - `critical-stop` - a critical blocker
+
+Default to `loop` and keep going phase after phase. Do not stop to ask the human between phases; only
+`critical-stop` for a genuine blocker, or `done` when every phase is complete.

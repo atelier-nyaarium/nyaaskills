@@ -233,17 +233,118 @@ describe("cycle items mode", () => {
 		);
 	});
 
-	it("advances and loops via the synthetic plan path, preserving the queue (load-bearing fix)", async () => {
-		await run(cycleStartItems, { name: "keep", cycle: "demo", spec: "x", items: ["a", "b"], batchSize: 2 });
-		expect((await run(cycleNext, { plan: "plans/keep.md", completed: "a" })).step).toBe("b");
-		await run(cycleNext, { plan: "plans/keep.md", completed: "b" });
-		await run(cycleNext, { plan: "plans/keep.md", completed: "c" });
-		await run(cycleCheckpoint, { plan: "plans/keep.md", decision: "loop", summary: "batch done" });
+	// Step through the demo cycle's a/b/c steps for one batch, ending at the lap checkpoint.
+	const runBatchSteps = async (name: string) => {
+		await run(cycleNext, { plan: `plans/${name}.md`, completed: "a" });
+		await run(cycleNext, { plan: `plans/${name}.md`, completed: "b" });
+		await run(cycleNext, { plan: `plans/${name}.md`, completed: "c" });
+	};
+
+	it("loop advances batch to batch, preserving the queue (load-bearing fix)", async () => {
+		await run(cycleStartItems, {
+			name: "keep",
+			cycle: "demo",
+			spec: "x",
+			items: ["i1", "i2", "i3", "i4"],
+			batchSize: 2,
+		});
+		await runBatchSteps("keep");
+		const looped = await run(cycleCheckpoint, { plan: "plans/keep.md", decision: "loop", summary: "batch 1" });
+		expect(looped.lap).toBe(2);
+		expect(looped.remaining).toBe(2);
+		expect(looped.instructions).toContain("i3");
+		expect(looped.instructions).toContain("i4");
 		const prog = itemsSidecar("keep");
-		expect(prog.mode).toBe("items");
-		expect(prog.items).toEqual(["a", "b"]); // survived the loop, not wiped to a narrow record
-		expect(prog.spec).toBe("x");
-		expect(prog.lap).toBe(2);
+		expect(prog.items).toEqual(["i1", "i2", "i3", "i4"]); // queue survived, not wiped to a narrow record
+		expect(prog.cursor).toBe(2);
+		expect(prog.batchStart).toBe(2);
+		expect(prog.batchEnd).toBe(4);
+	});
+
+	it("drains on the final loop and prompts append-or-done, keeping the sidecar", async () => {
+		await run(cycleStartItems, { name: "drain", cycle: "demo", spec: "x", items: ["only"] });
+		await runBatchSteps("drain");
+		const drained = await run(cycleCheckpoint, { plan: "plans/drain.md", decision: "loop", summary: "last" });
+		expect(drained.drained).toBe(true);
+		expect(drained.remaining).toBe(0);
+		// Drained keeps the sidecar (an append could continue it); it is not auto-deleted.
+		expect(fs.existsSync(path.join(cwd, "plans", "drain.cycle.json"))).toBe(true);
+		// The window is normalized to the end, so a cold-resume status reads consistently.
+		const st = await run(cycleStatus, { plan: "plans/drain.md" });
+		expect(st.initialized).toBe(true);
+		expect(st.remaining).toBe(0);
+		expect(st.currentBatch).toEqual([]);
+		expect(st.cursor).toBe(1);
+	});
+
+	it("processes a partial final batch before draining (no item lost)", async () => {
+		await run(cycleStartItems, {
+			name: "five",
+			cycle: "demo",
+			spec: "x",
+			items: ["i1", "i2", "i3", "i4", "i5"],
+			batchSize: 2,
+		});
+		await runBatchSteps("five"); // batch [0,2)
+		let cp = await run(cycleCheckpoint, { plan: "plans/five.md", decision: "loop", summary: "b1" });
+		expect(cp.remaining).toBe(3);
+		expect(itemsSidecar("five").batchEnd).toBe(4); // [2,4)
+		await runBatchSteps("five"); // batch [2,4)
+		cp = await run(cycleCheckpoint, { plan: "plans/five.md", decision: "loop", summary: "b2" });
+		expect(cp.remaining).toBe(1);
+		expect(itemsSidecar("five").batchStart).toBe(4);
+		expect(itemsSidecar("five").batchEnd).toBe(5); // partial final [4,5)
+		await runBatchSteps("five"); // batch [4,5)
+		cp = await run(cycleCheckpoint, { plan: "plans/five.md", decision: "loop", summary: "b3" });
+		expect(cp.drained).toBe(true); // i5 processed, now drained
+		expect(cp.remaining).toBe(0);
+	});
+
+	it("batchSize override on loop changes the next batch width", async () => {
+		await run(cycleStartItems, {
+			name: "bs",
+			cycle: "demo",
+			spec: "x",
+			items: ["i1", "i2", "i3", "i4"],
+			batchSize: 2,
+		});
+		await runBatchSteps("bs");
+		await run(cycleCheckpoint, { plan: "plans/bs.md", decision: "loop", summary: "s", batchSize: 1 });
+		const prog = itemsSidecar("bs");
+		expect(prog.batchSize).toBe(1);
+		expect(prog.batchStart).toBe(2);
+		expect(prog.batchEnd).toBe(3); // min(2+1, 4)
+	});
+
+	it("re-injects spec + batch context on each step (mid-batch grounding)", async () => {
+		await run(cycleStartItems, {
+			name: "inj",
+			cycle: "demo",
+			spec: "do the thing",
+			items: ["i1", "i2"],
+			batchSize: 2,
+		});
+		const stepB = await run(cycleNext, { plan: "plans/inj.md", completed: "a" });
+		expect(stepB.step).toBe("b");
+		expect(stepB.instructions).toContain("do the thing");
+		expect(stepB.instructions).toContain("i1");
+		expect(stepB.instructions).toContain("i2");
+	});
+
+	it("cycleStatus surfaces the queue for a cold resume", async () => {
+		await run(cycleStartItems, {
+			name: "stat",
+			cycle: "demo",
+			spec: "do x",
+			items: ["i1", "i2", "i3"],
+			batchSize: 2,
+		});
+		const st = await run(cycleStatus, { plan: "plans/stat.md" });
+		expect(st.mode).toBe("items");
+		expect(st.spec).toBe("do x");
+		expect(st.totalItems).toBe(3);
+		expect(st.remaining).toBe(3);
+		expect(st.currentBatch).toEqual(["i1", "i2"]);
 	});
 });
 

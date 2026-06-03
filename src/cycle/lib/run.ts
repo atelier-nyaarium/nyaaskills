@@ -142,7 +142,7 @@ export function appendStepCall(instructions: string, plan: string, step: string)
 }
 
 export function checkpointCall(plan: string): string {
-	return `All steps complete. Call \`cycleCheckpoint({ plan: "${plan}", decision, summary })\` with decision = "done" | "loop" | "critical-stop".`;
+	return `All steps complete. Call \`cycleCheckpoint({ plan: "${plan}", decision, summary })\`: \`loop\` to continue straight into the next phase (the default - do not stop to ask between phases), \`done\` only when all the work is genuinely complete, or \`critical-stop\` only for a real blocker that needs a human.`;
 }
 
 // Prepended to the first step's instructions at start, so the agent knows it is inside a paced,

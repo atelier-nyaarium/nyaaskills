@@ -54,3 +54,19 @@ export function applyLoop<T extends CycleProgress>(progress: T, steps: string[],
 		lapLimitReached: lap > maxLaps,
 	};
 }
+
+export interface BatchAdvance {
+	drained: boolean;
+	cursor: number;
+	batchStart: number;
+	batchEnd: number;
+}
+
+// Move the items cursor past the batch just finished. After processing [batchStart, batchEnd) the
+// cursor lands on batchEnd; if that reaches the end the queue is drained, otherwise the next batch is
+// [cursor, cursor+batchSize) clamped to the queue length.
+export function advanceBatch(prevBatchEnd: number, totalItems: number, batchSize: number): BatchAdvance {
+	const cursor = prevBatchEnd;
+	if (cursor >= totalItems) return { drained: true, cursor, batchStart: cursor, batchEnd: cursor };
+	return { drained: false, cursor, batchStart: cursor, batchEnd: Math.min(cursor + batchSize, totalItems) };
+}
