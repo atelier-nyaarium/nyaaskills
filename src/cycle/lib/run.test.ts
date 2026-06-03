@@ -59,4 +59,11 @@ describe("ProgressSchema mode discriminant", () => {
 		const halfItems = { ...planRecord, mode: "items", spec: "do x" };
 		expect(ProgressSchema.safeParse(halfItems).success).toBe(false);
 	});
+
+	it("persists a per-run step subset, and rejects an empty one", () => {
+		const parsed = ProgressSchema.safeParse({ ...planRecord, steps: ["implement", "commit"] });
+		expect(parsed.success).toBe(true);
+		if (parsed.success) expect(parsed.data.steps).toEqual(["implement", "commit"]);
+		expect(ProgressSchema.safeParse({ ...planRecord, steps: [] }).success).toBe(false);
+	});
 });

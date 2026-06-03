@@ -15,6 +15,10 @@ const baseProgressFields = {
 	lap: z.number().int().positive(),
 	status: z.enum(["active", "done", "stopped"]),
 	summary: z.string().optional(),
+	// Per-run step subset (Feature: configurable steps). Absent = the def's full step list. When set,
+	// it IS the effective sequence the tools advance over (index is relative to this list), so a run
+	// can omit steps. Must be persisted here or z.object would strip it on the next read.
+	steps: z.array(z.string().min(1)).min(1).optional(),
 };
 
 // Plan mode: the spec is the plan .md the agent edits; no work queue in the sidecar.
@@ -133,7 +137,9 @@ export function loadCycleRun(cwd: string, plan: string, opts: { requireActive: b
 		throw new Error(`cycle is ${progress.status}; reopen it with \`cycleGoto(...)\` before continuing`);
 	}
 	const { def, instructions } = resolveDef(progress.name);
-	return { planFile, progress, def, steps: def.steps, instructions };
+	// The effective sequence is the per-run subset if set, else the def's full list. Every stateful
+	// tool advances over this, not def.steps, so a configured run runs only its kept steps.
+	return { planFile, progress, def, steps: progress.steps ?? def.steps, instructions };
 }
 
 // The literal next call travels with the instructions so it stays in the agent's working context.

@@ -412,6 +412,50 @@ describe("cycle items mode", () => {
 	});
 });
 
+describe("per-run step subset", () => {
+	// The includeSteps entry point lands in a later phase; here we inject the subset directly to test
+	// the runtime: every tool must advance over progress.steps, not the def's full list.
+	const setSubset = (plan: string, steps: string[]) =>
+		corruptSidecar(plan, (p) => {
+			p.steps = steps;
+		});
+
+	it("cycleStatus total and advancement use the subset, not the full def", async () => {
+		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" }); // def steps a,b,c
+		setSubset("p.md", ["a", "c"]); // omit b
+		expect((await run(cycleStatus, { plan: "p.md" })).total).toBe(2);
+		// advancing from a skips the omitted b straight to c, then c is the last kept step -> lapEnd
+		expect((await run(cycleNext, { plan: "p.md", completed: "a" })).step).toBe("c");
+		expect((await run(cycleNext, { plan: "p.md", completed: "c" })).lapEnd).toBe(true);
+	});
+
+	it("cycleGoto to a skipped step auto-advances with a note", async () => {
+		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
+		setSubset("p.md", ["a", "c"]); // b omitted
+		const goto = await run(cycleGoto, { plan: "p.md", step: "b" });
+		expect(goto.step).toBe("c"); // next kept step at/after b
+		expect(goto.instructions).toContain("(auto-advanced from b)");
+	});
+
+	it("cycleGoto to a kept step is normal; an unknown step errors", async () => {
+		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
+		setSubset("p.md", ["a", "c"]);
+		expect((await run(cycleGoto, { plan: "p.md", step: "a" })).step).toBe("a");
+		await expect(run(cycleGoto, { plan: "p.md", step: "zzz" })).rejects.toThrow("no step");
+	});
+
+	it("checkpoint loop wraps to the subset's first step, not the def's", async () => {
+		await run(cycleStartPlan, { plan: "p.md", cycle: "demo" }); // def [a,b,c]
+		setSubset("p.md", ["b", "c"]); // subset[0]=b != def[0]=a
+		await run(cycleGoto, { plan: "p.md", step: "b" }); // current=b, in subset
+		await run(cycleNext, { plan: "p.md", completed: "b" });
+		await run(cycleNext, { plan: "p.md", completed: "c" }); // lapEnd
+		const looped = await run(cycleCheckpoint, { plan: "p.md", decision: "loop", summary: "lap" });
+		expect(looped.step).toBe("b"); // wrapped to subset[0], not def[0]
+		expect(looped.lap).toBe(2);
+	});
+});
+
 // Registration smoke test: mirrors what cycle-mcp.ts's registerTool loop requires of every tool, so
 // a tool missing its `schema` field (which crashes the whole stdio server on startup) is caught here.
 describe("toolsCycle registration shape", () => {
