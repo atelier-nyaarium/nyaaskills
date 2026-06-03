@@ -13,17 +13,10 @@ import {
 	writeProgress,
 } from "../lib/run.ts";
 
-// Build a phases-mode record: match each phase label to a ## header in the plan file and persist its
-// section body (so a cold resume injects real detail). Throws if the plan file is missing or a label
-// has no matching header.
-function buildPhasesProgress(
-	planPath: string,
-	plan: string,
-	cycle: string,
-	phases: string[],
-	currentStep: string,
-	stepsField: { steps?: string[] },
-): StoredProgress {
+// Validate phase labels against the plan's ## headers and return each phase as "<label>\n\n<body>".
+// Throws on a missing plan file or any unmatched label. Run BEFORE the step bounce so a run with bogus
+// phases errors rather than prompting the user to pick steps.
+function extractPhaseItems(planPath: string, plan: string, phases: string[]): string[] {
 	if (!fs.existsSync(planPath)) {
 		throw new Error(`phases mode needs the plan file "${plan}" to exist (it carries the phase sections).`);
 	}
@@ -41,6 +34,18 @@ function buildPhasesProgress(
 			`phase(s) not found as ## headers in "${plan}": ${unmatched.join(", ")}. Available: ${available}.`,
 		);
 	}
+	return items;
+}
+
+// Construct a phases-mode record from validated phase items. Each item is a phase's plan section, so a
+// cold resume injects real detail; batchSize 1 = one phase per lap; planPath keeps status honest.
+function buildPhasesRecord(
+	plan: string,
+	cycle: string,
+	items: string[],
+	currentStep: string,
+	stepsField: { steps?: string[] },
+): StoredProgress {
 	return {
 		mode: "phases",
 		name: cycle,
@@ -127,12 +132,6 @@ This may return a step-selection bounce instead of a started cycle: if the resul
 		const { plan, cycle, force, includeSteps, phases } = schema.parse(args);
 
 		const { def, instructions } = resolveDef(cycle);
-		// Resolve the step selection first: a blank/unknown includeSteps bounces back for the user to
-		// confirm, with zero side effects. Otherwise this is the effective per-run subset (def-order,
-		// deduped); a strict subset is persisted, a full run is not.
-		const resolution = resolveSteps(cycle, def.steps, includeSteps);
-		if ("bounce" in resolution) return { data: StepBounceSchema.parse(resolution.bounce) };
-		const steps = resolution.steps;
 
 		const planFile = readPlanFile(cwd, plan);
 		// Protect an existing run (active, or corrupted-but-present) before overwriting it.
@@ -147,9 +146,17 @@ This may return a step-selection bounce instead of a started cycle: if the resul
 			}
 		}
 
+		// Composition precedence: validate phases first (hard error) so a run with bogus phases never
+		// prompts for step selection. The step bounce (if any) follows; neither writes a sidecar.
+		const phaseItems = phases ? extractPhaseItems(planFile.planPath, plan, phases) : undefined;
+
+		const resolution = resolveSteps(cycle, def.steps, includeSteps);
+		if ("bounce" in resolution) return { data: StepBounceSchema.parse(resolution.bounce) };
+		const steps = resolution.steps;
+
 		const stepsField = steps.length < def.steps.length ? { steps } : {};
-		const progress: StoredProgress = phases
-			? buildPhasesProgress(planFile.planPath, plan, cycle, phases, steps[0], stepsField)
+		const progress: StoredProgress = phaseItems
+			? buildPhasesRecord(plan, cycle, phaseItems, steps[0], stepsField)
 			: { mode: "plan", name: cycle, current: steps[0], index: 0, lap: 1, status: "active", ...stepsField };
 		writeProgress(planFile, progress);
 

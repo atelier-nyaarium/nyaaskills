@@ -1,5 +1,5 @@
 ---
-steps: [implement, align, framework, red-team, commit]
+steps: [implement, align, framework, red-team, compliance, commit]
 maxLaps: 12
 ---
 
@@ -47,6 +47,16 @@ Triage gate each report on arrival: real gap vs overcautious / out-of-scope / ha
 
 Then fix the real issues and run smoke tests again. Watch out for: yes-manning, scope creep, drift
 from codebase patterns. If you fixed anything, re-run the red team; repeat until it comes back clean.
+
+## compliance
+
+Analysis first, no edits: /compliance skill (SOC2/GDPR/CPRA). Dispatch Agent(opus) running /compliance
+to audit the implementation for compliance gaps: access control, data handling/classification, audit
+trails, retention, data-subject rights. Report only, no edits. Triage gate: real gap vs out-of-scope /
+overcautious.
+
+Then close the real gaps. If a fix changed anything, re-run the audit; repeat until it comes back
+clean. This step is commonly skipped (via `includeSteps`) on projects with no compliance obligations.
 
 ## commit
 

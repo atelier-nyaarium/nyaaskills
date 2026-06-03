@@ -580,6 +580,35 @@ describe("plan-mode phases (mode: phases)", () => {
 		).rejects.toThrow("to exist");
 	});
 
+	it("validates phases before the step bounce (composition precedence)", async () => {
+		writePlan("comp.md", "## Real\nbody.\n");
+		// Bogus phase + absent includeSteps: errors on phases, does NOT bounce for step selection.
+		await expect(run(cycleStartPlan, { plan: "comp.md", cycle: "demo", phases: ["Nope"] })).rejects.toThrow(
+			"not found",
+		);
+	});
+
+	it("composes a step subset with phases (kept steps per phase, subset[0] on phase wrap)", async () => {
+		writePlan("ph-sub.md", "## A\nAlpha body.\n## B\nBeta body.\n");
+		const r = await run(cycleStartPlan, {
+			plan: "ph-sub.md",
+			cycle: "demo",
+			phases: ["A", "B"],
+			includeSteps: ["a", "c"],
+		});
+		expect(r.step).toBe("a");
+		expect(r.steps).toEqual(["a", "c"]);
+		const sc = sidecar("ph-sub.md");
+		expect(sc.mode).toBe("phases");
+		expect(sc.steps).toEqual(["a", "c"]);
+		expect(sc.items).toHaveLength(2);
+		expect((await run(cycleNext, { plan: "ph-sub.md", completed: "a" })).step).toBe("c"); // b skipped
+		expect((await run(cycleNext, { plan: "ph-sub.md", completed: "c" })).lapEnd).toBe(true);
+		const looped = await run(cycleCheckpoint, { plan: "ph-sub.md", decision: "loop", summary: "phase A" });
+		expect(looped.step).toBe("a"); // wrap to subset[0]
+		expect(looped.instructions).toContain("Beta body."); // phase B injected
+	});
+
 	it("status surfaces phases mode; loop advances to the next phase with its body", async () => {
 		writePlan("p3.md", "## One\nFirst.\n## Two\nSecond.\n");
 		await run(cycleStartPlan, { plan: "p3.md", cycle: "demo", includeSteps: ["all"], phases: ["One", "Two"] });
@@ -629,6 +658,21 @@ describe("plan-mode phases (mode: phases)", () => {
 		expect(drained.nextAction).not.toContain("cycleAppendItems");
 		await run(cycleCheckpoint, { plan: "dn.md", decision: "done", summary: "all done" });
 		expect(fs.existsSync(path.join(cwd, "dn.cycle.json"))).toBe(false);
+	});
+});
+
+describe("shipped cycle definitions", () => {
+	it("audited-implementation loads with the compliance step (frontmatter matches its section)", async () => {
+		// Use the real cycles/ dir (the suite otherwise points NYAASKILLS_CYCLES_DIR at a temp dir).
+		const saved = process.env.NYAASKILLS_CYCLES_DIR;
+		delete process.env.NYAASKILLS_CYCLES_DIR;
+		try {
+			const { loadCycleDef } = await import("../lib/resolveCycleDef.ts");
+			const def = loadCycleDef("audited-implementation");
+			expect(def.steps).toEqual(["implement", "align", "framework", "red-team", "compliance", "commit"]);
+		} finally {
+			if (saved !== undefined) process.env.NYAASKILLS_CYCLES_DIR = saved;
+		}
 	});
 });
 
