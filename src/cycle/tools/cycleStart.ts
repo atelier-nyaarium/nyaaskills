@@ -1,11 +1,33 @@
 import { z } from "zod";
-import { appendStepCall, bodyHashOf, readSubject, resolveDef, type StoredProgress, writeProgress } from "../lib/run.ts";
+import {
+	appendStepCall,
+	cyclePreamble,
+	readPlanFile,
+	resolveDef,
+	type StoredProgress,
+	writeProgress,
+} from "../lib/run.ts";
 
 const schema = z.object({
-	plan: z.string().describe("Path to the subject doc (relative to the project root) that carries cycle progress."),
-	cycle: z.string().describe("Name of the cycle definition to run (a *.md in the nyaaskills cycles library)."),
-	force: z.boolean().optional().default(false).describe("Restart even if the subject already has an active cycle."),
-	dryRun: z.boolean().optional().default(false).describe("Report what would be initialized without writing."),
+	plan: z.string().describe(
+		`
+Path to the plan file (relative to the project root) that carries cycle progress.
+`.trim(),
+	),
+	cycle: z.string().describe(
+		`
+Name of the cycle definition to run (a *.md in the nyaaskills cycles library).
+`.trim(),
+	),
+	force: z
+		.boolean()
+		.optional()
+		.default(false)
+		.describe(
+			`
+Restart even if the plan file already has an active cycle.
+`.trim(),
+		),
 });
 
 const OutputSchema = z.object({
@@ -18,29 +40,31 @@ const OutputSchema = z.object({
 	status: z.string(),
 	steps: z.array(z.string()),
 	instructions: z.string(),
-	dryRun: z.boolean().optional(),
 });
 
 export const cycleStart = {
 	name: "cycleStart",
 	title: "cycle-start",
-	description:
-		"Initialize a cycle on a subject doc. Loads the named cycle definition from the nyaaskills cycles library, validates it, writes the starting progress to a JSON sidecar next to the subject doc, and returns the first step's instructions. Refuses to clobber an already-active cycle unless force is set.",
+	description: `
+Initialize a controlled workflow cycle on a plan file. Loads the named cycle definition from the nyaaskills cycles library, validates it, writes the starting progress to a JSON sidecar next to the plan file, and returns the first step's instructions.
+
+When the user says something loose like "do cycles of implementation", check this series of tools.
+`.trim(),
 	operation: "starting a cycle",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
-		const { plan, cycle, force, dryRun } = schema.parse(args);
-		const subject = readSubject(cwd, plan);
+		const { plan, cycle, force } = schema.parse(args);
+		const planFile = readPlanFile(cwd, plan);
 
 		// Protect an existing run (active, or corrupted-but-present) before loading the new def.
 		if (!force) {
-			if (subject.progress?.status === "active") {
+			if (planFile.progress?.status === "active") {
 				throw new Error(
-					`subject already running cycle "${subject.progress.name}" (active, lap ${subject.progress.lap}). Pass force:true to restart.`,
+					`plan already running cycle "${planFile.progress.name}" (active, lap ${planFile.progress.lap}). Pass force:true to restart.`,
 				);
 			}
-			if (subject.malformed) {
-				throw new Error("subject has a malformed cycle block; pass force:true to overwrite it.");
+			if (planFile.malformed) {
+				throw new Error("plan has a malformed cycle block; pass force:true to overwrite it.");
 			}
 		}
 
@@ -51,11 +75,9 @@ export const cycleStart = {
 			current: steps[0],
 			index: 0,
 			lap: 1,
-			unchanged_laps: 0,
-			body_hash: bodyHashOf(subject.content),
 			status: "active",
 		};
-		writeProgress(subject, progress, dryRun);
+		writeProgress(planFile, progress);
 
 		const result = {
 			plan,
@@ -66,8 +88,7 @@ export const cycleStart = {
 			lap: 1,
 			status: "active",
 			steps,
-			instructions: appendStepCall(instructions(steps[0]), plan, steps[0]),
-			...(dryRun ? { dryRun: true } : {}),
+			instructions: `${cyclePreamble(cycle)}\n\n---\n\n${appendStepCall(instructions(steps[0]), plan, steps[0])}`,
 		};
 		return { data: OutputSchema.parse(result) };
 	},

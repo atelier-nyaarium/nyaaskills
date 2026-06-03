@@ -1,5 +1,3 @@
-import { createHash } from "node:crypto";
-
 export type CycleStatus = "active" | "done" | "stopped";
 
 export interface CycleProgress {
@@ -7,8 +5,6 @@ export interface CycleProgress {
 	current: string;
 	index: number;
 	lap: number;
-	unchanged_laps: number;
-	body_hash: string;
 	status: CycleStatus;
 }
 
@@ -39,33 +35,22 @@ export function advance(steps: string[], current: string, indexFallback: number)
 	return { kind: "lapEnd" };
 }
 
-export function hashBody(body: string): string {
-	return createHash("sha1").update(body).digest("hex").slice(0, 16);
-}
-
 export interface LoopResult {
 	progress: CycleProgress;
 	lapLimitReached: boolean;
 }
 
-// Wrap to the first step, bump the lap, and refresh the convergence signal (unchanged_laps
-// counts consecutive laps whose body did not change). Caller gates the actual write on
-// lapLimitReached unless the agent acknowledged the overrun. Note: this is a byte-equality
-// fixed-point detector. unchanged_laps == 0 means "the body changed", not "real progress was
-// made" - cosmetic churn (a reworded sentence) keeps it at 0, so callers must not treat 0 as
-// proof of progress; the soft maxLaps cap is the backstop against churn-without-convergence.
-export function applyLoop(progress: CycleProgress, steps: string[], newBodyHash: string, maxLaps: number): LoopResult {
+// Wrap to the first step and bump the lap. Caller gates the actual write on lapLimitReached
+// unless the agent acknowledged the overrun.
+export function applyLoop(progress: CycleProgress, steps: string[], maxLaps: number): LoopResult {
 	if (steps.length === 0) throw new Error("cannot loop an empty step list");
 	const lap = progress.lap + 1;
-	const unchanged = newBodyHash === progress.body_hash ? progress.unchanged_laps + 1 : 0;
 	return {
 		progress: {
 			...progress,
 			current: steps[0],
 			index: 0,
 			lap,
-			unchanged_laps: unchanged,
-			body_hash: newBodyHash,
 			status: "active",
 		},
 		// Laps are 1-indexed (lap 1 is the first lap), so a loop into lap maxLaps+1 trips the cap;

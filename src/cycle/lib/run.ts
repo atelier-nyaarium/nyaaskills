@@ -2,7 +2,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
 import { writeFileAtomic } from "./atomicWrite.ts";
-import { hashBody } from "./computeNext.ts";
 import { extractSection } from "./extractSection.ts";
 import { type CycleDef, loadCycleDef } from "./resolveCycleDef.ts";
 import { resolvePlanPath } from "./resolvePlanPath.ts";
@@ -14,11 +13,8 @@ export const ProgressSchema = z.object({
 	current: z.string().min(1),
 	index: z.number().int().nonnegative(),
 	lap: z.number().int().positive(),
-	unchanged_laps: z.number().int().nonnegative(),
-	body_hash: z.string().min(1),
 	status: z.enum(["active", "done", "stopped"]),
 	summary: z.string().optional(),
-	converged_at_lap: z.number().int().optional(),
 });
 
 export type StoredProgress = z.infer<typeof ProgressSchema>;
@@ -29,10 +25,9 @@ export function sidecarPathFor(planPath: string): string {
 	return `${planPath.replace(/\.(md|mdx|markdown)$/i, "")}.cycle.json`;
 }
 
-export interface Subject {
+export interface PlanFile {
 	planPath: string;
 	sidecarPath: string;
-	content: string; // the plan doc (for the convergence hash); "" if it does not exist yet
 	sidecarMtimeMs?: number;
 	progress: StoredProgress | null;
 	// True when the sidecar exists but is unreadable/invalid. Lets callers distinguish "corrupted
@@ -40,16 +35,14 @@ export interface Subject {
 	malformed: boolean;
 }
 
-// Read the plan doc (for hashing) and its progress sidecar (null when uninitialized/missing/malformed).
-export function readSubject(cwd: string, plan: string): Subject {
+// Read a plan file's progress sidecar (null when uninitialized/missing/malformed).
+export function readPlanFile(cwd: string, plan: string): PlanFile {
 	const planPath = resolvePlanPath(cwd, plan);
 	const sidecarPath = sidecarPathFor(planPath);
 
 	if (fs.existsSync(sidecarPath) && fs.lstatSync(sidecarPath).isSymbolicLink()) {
 		throw new Error(`refusing to use a symlinked cycle sidecar: ${path.basename(sidecarPath)}`);
 	}
-
-	const content = fs.existsSync(planPath) ? fs.readFileSync(planPath, "utf8") : "";
 
 	let progress: StoredProgress | null = null;
 	let malformed = false;
@@ -65,22 +58,21 @@ export function readSubject(cwd: string, plan: string): Subject {
 		}
 	}
 
-	return { planPath, sidecarPath, content, sidecarMtimeMs, progress, malformed };
+	return { planPath, sidecarPath, sidecarMtimeMs, progress, malformed };
 }
 
-// Persist progress to the sidecar atomically (unless dryRun). The mtime guard refuses the write if
-// the sidecar changed since it was read.
-export function writeProgress(subject: Subject, progress: StoredProgress, dryRun: boolean): void {
-	if (dryRun) return;
-	writeFileAtomic(subject.sidecarPath, `${JSON.stringify(progress, null, 2)}\n`, {
-		expectedMtimeMs: subject.sidecarMtimeMs,
+// Persist progress to the sidecar atomically. The mtime guard refuses the write if the sidecar
+// changed since it was read.
+export function writeProgress(planFile: PlanFile, progress: StoredProgress): void {
+	writeFileAtomic(planFile.sidecarPath, `${JSON.stringify(progress, null, 2)}\n`, {
+		expectedMtimeMs: planFile.sidecarMtimeMs,
 	});
 }
 
-// Hash the whole plan doc for the convergence signal. The tools never write the plan, so any change
-// is the author's.
-export function bodyHashOf(content: string): string {
-	return hashBody(content);
+// Remove the progress sidecar. Used when a cycle finishes "done": the plan is fully consumed, so
+// nothing should linger to resume, and a later cycleStart starts clean without needing force.
+export function deleteSidecar(planFile: PlanFile): void {
+	if (fs.existsSync(planFile.sidecarPath)) fs.rmSync(planFile.sidecarPath);
 }
 
 export interface ResolvedDef {
@@ -88,14 +80,14 @@ export interface ResolvedDef {
 	instructions(step: string): string;
 }
 
-// Load the definition a subject is running and give a step -> instructions resolver.
+// Load the definition a plan is running and give a step -> instructions resolver.
 export function resolveDef(name: string): ResolvedDef {
 	const def = loadCycleDef(name);
 	return { def, instructions: (step: string) => extractSection(def.body, step) };
 }
 
 export interface CycleRun {
-	subject: Subject;
+	planFile: PlanFile;
 	progress: StoredProgress;
 	def: CycleDef;
 	steps: string[];
@@ -103,24 +95,36 @@ export interface CycleRun {
 }
 
 // Single source of truth for "load a running cycle": the precondition bundle every stateful tool
-// needs (subject exists, has a cycle, optionally active) plus its resolved definition. Keeping it
+// needs (plan file exists, has a cycle, optionally active) plus its resolved definition. Keeping it
 // here means the tools cannot drift on what counts as runnable or on the error wording.
 export function loadCycleRun(cwd: string, plan: string, opts: { requireActive: boolean }): CycleRun {
-	const subject = readSubject(cwd, plan);
-	if (!subject.progress) throw new Error("no cycle on this subject; call cycleStart first");
-	const progress = subject.progress;
+	const planFile = readPlanFile(cwd, plan);
+	if (!planFile.progress) throw new Error("no cycle on this plan; call `cycleStart(...)` first");
+	const progress = planFile.progress;
 	if (opts.requireActive && progress.status !== "active") {
-		throw new Error(`cycle is ${progress.status}; reopen it with cycleGoto before continuing`);
+		throw new Error(`cycle is ${progress.status}; reopen it with \`cycleGoto(...)\` before continuing`);
 	}
 	const { def, instructions } = resolveDef(progress.name);
-	return { subject, progress, def, steps: def.steps, instructions };
+	return { planFile, progress, def, steps: def.steps, instructions };
 }
 
 // The literal next call travels with the instructions so it stays in the agent's working context.
 export function appendStepCall(instructions: string, plan: string, step: string): string {
-	return `${instructions}\n\n>> When this step's work is done, call cycleNext({ plan: "${plan}", completed: "${step}" }) to conclude it and move to the next step. This is normal forward progress; do not use cycleGoto to advance.`;
+	return `${instructions}\n\n>> When this step's work is done, call \`cycleNext({ plan: "${plan}", completed: "${step}" })\` to conclude it and move to the next step. This is normal forward progress; do not use \`cycleGoto(...)\` to advance.`;
 }
 
 export function checkpointCall(plan: string): string {
-	return `All steps complete. Call cycleCheckpoint({ plan: "${plan}", decision, summary }) with decision = "done" | "loop" | "critical-stop".`;
+	return `All steps complete. Call \`cycleCheckpoint({ plan: "${plan}", decision, summary })\` with decision = "done" | "loop" | "critical-stop".`;
+}
+
+// Prepended to the first step's instructions at start, so the agent knows it is inside a paced,
+// repeating step-runner and should work one step at a time instead of doing the whole plan up front.
+// The definition supplies any domain framing (e.g. "one lap = one phase"); this stays generic.
+export function cyclePreamble(cycleName: string): string {
+	return [
+		`**Cycle \`${cycleName}\`** - a repeating step-runner that paces you through fixed steps.`,
+		`Do only the current step's work, then call \`cycleNext(...)\`. After the last step,`,
+		`\`cycleCheckpoint(...)\` decides: \`loop\` (run the steps again) or \`done\` (finished).`,
+		`Work one step at a time as written; do not run ahead and do the whole plan at once.`,
+	].join(" ");
 }

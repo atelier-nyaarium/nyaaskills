@@ -86,7 +86,9 @@ describe("cycle tool lifecycle", () => {
 		const done = await run(cycleCheckpoint, { plan: "plan.md", decision: "done", summary: "solid" });
 		expect(done.status).toBe("done");
 
-		await expect(run(cycleNext, { plan: "plan.md", completed: "a" })).rejects.toThrow("reopen");
+		// "done" clears the sidecar: the plan reads as uninitialized and cannot be resumed.
+		expect((await run(cycleStatus, { plan: "plan.md" })).initialized).toBe(false);
+		await expect(run(cycleNext, { plan: "plan.md", completed: "a" })).rejects.toThrow("no cycle on this plan");
 	});
 
 	it("case-insensitive completed echo advances", async () => {
@@ -124,7 +126,7 @@ describe("cycle tool lifecycle", () => {
 		expect(ack.lap).toBe(2);
 	});
 
-	it("goto with resetLap zeroes the lap and convergence signal", async () => {
+	it("goto with resetLap resets the lap to 1", async () => {
 		await run(cycleStart, { plan: "p.md", cycle: "demo" });
 		await run(cycleNext, { plan: "p.md", completed: "a" });
 		await run(cycleNext, { plan: "p.md", completed: "b" });
@@ -135,7 +137,7 @@ describe("cycle tool lifecycle", () => {
 	});
 
 	it("errors when stepping before start", async () => {
-		await expect(run(cycleNext, { plan: "missing.md" })).rejects.toThrow("cycleStart first");
+		await expect(run(cycleNext, { plan: "missing.md" })).rejects.toThrow("no cycle on this plan");
 	});
 
 	it("returns needsResolution (not a throw) when the current step left the definition", async () => {

@@ -5,15 +5,16 @@ maxLaps: 8
 
 # Plan Refinement
 
-A convergence loop for hardening a plan or idea. Each lap proposes, audits from multiple angles,
-triages the findings, and rethinks, looping until the plan feels solid. The subject doc is the
-plan being refined; its body churns each lap while these steps stay fixed.
+Hardens a plan or idea by repeating propose / audit / triage / rethink until it converges. Each lap
+proposes, audits from multiple angles, triages the findings, and rethinks, repeating until the plan
+feels solid. The plan file is the document being refined; its body churns each lap while these steps
+stay fixed.
 
 ## propose
 
-Propose or refine the plan. Write the current state back into the plan (the subject doc this cycle
-was started on). If a proposal already exists (e.g. from the questionnaire), you may conclude this
-step immediately.
+Propose or refine the plan. Write the current state back into the plan file this cycle was started
+on. If a proposal already exists (e.g. from the questionaire), you may conclude this step
+immediately.
 
 ## audit
 
@@ -33,7 +34,7 @@ Triage each report on arrival. Real gap vs overcautious / out-of-scope / halluci
 After all return, rethink. Plan changed? Update the plan. Watch out for: yes-manning, scope creep,
 heavy drift (ask the human on large drifts).
 
-End the lap: call cycleCheckpoint with one of
+End the lap: call `cycleCheckpoint(...)` with one of
 
 - `done` - the plan feels solid; give a final report to the channel
 - `loop` - refine for another lap

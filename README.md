@@ -49,13 +49,12 @@ Ships with `plan-refinement` and `audited-implementation`.
 | `cycleStart` | Initialize a named cycle on a subject doc | Yes | Yes |
 | `cycleNext` | Advance one step (confirm-then-advance via `completed`) | Yes | Yes |
 | `cycleCheckpoint` | End-of-lap decision: done / loop / critical-stop | Yes | Yes |
-| `cycleStatus` | Report cycle position and convergence signal | No | - |
+| `cycleStatus` | Report cycle position (step, lap, status) | No | - |
 | `cycleGoto` | Jump to a step, or reopen a finished cycle | Yes | Yes |
 | `cycleList` | List available cycle definitions | No | - |
 
 Laps are 1-indexed; the soft `maxLaps` cap trips when a loop would exceed it (override per call
-with `acknowledgeOverrun`). Convergence is signalled by a whole-document body hash that counts
-consecutive unchanged laps.
+with `acknowledgeOverrun`).
 
 ## Development
 

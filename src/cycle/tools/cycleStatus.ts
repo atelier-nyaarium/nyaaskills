@@ -1,8 +1,12 @@
 import { z } from "zod";
-import { bodyHashOf, readSubject, resolveDef } from "../lib/run.ts";
+import { readPlanFile, resolveDef } from "../lib/run.ts";
 
 const schema = z.object({
-	plan: z.string().describe("Path to the subject doc."),
+	plan: z.string().describe(
+		`
+Path to the plan file.
+`.trim(),
+	),
 });
 
 const OutputSchema = z.object({
@@ -14,8 +18,6 @@ const OutputSchema = z.object({
 	total: z.number().optional(),
 	lap: z.number().optional(),
 	status: z.string().optional(),
-	unchangedLaps: z.number().optional(),
-	bodyChangedSinceLastLap: z.boolean().optional(),
 	instructions: z.string().optional(),
 	malformed: z.boolean().optional(),
 	error: z.string().optional(),
@@ -24,23 +26,24 @@ const OutputSchema = z.object({
 export const cycleStatus = {
 	name: "cycleStatus",
 	title: "cycle-status",
-	description:
-		"Report where a subject is in its cycle without mutating anything: current step, index, lap, status, and the convergence signal. Use this to resume, or to tell whether a cycle finished, stopped, or stalled.",
+	description: `
+Report where a plan is in its cycle without mutating anything: current step, index, lap, and status. Use this to resume, or to tell whether a cycle finished, stopped, or stalled.
+`.trim(),
 	operation: "reading cycle status",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
 		const { plan } = schema.parse(args);
-		const subject = readSubject(cwd, plan);
-		if (!subject.progress) {
+		const planFile = readPlanFile(cwd, plan);
+		if (!planFile.progress) {
 			return {
 				data: OutputSchema.parse({
 					plan,
 					initialized: false,
-					...(subject.malformed ? { malformed: true, error: "cycle block is present but malformed" } : {}),
+					...(planFile.malformed ? { malformed: true, error: "cycle block is present but malformed" } : {}),
 				}),
 			};
 		}
-		const progress = subject.progress;
+		const progress = planFile.progress;
 		const base = {
 			plan,
 			initialized: true,
@@ -49,8 +52,6 @@ export const cycleStatus = {
 			index: progress.index,
 			lap: progress.lap,
 			status: progress.status,
-			unchangedLaps: progress.unchanged_laps,
-			bodyChangedSinceLastLap: bodyHashOf(subject.content) !== progress.body_hash,
 		};
 		// Status is the diagnostic tool, so it must not throw when the definition drifted or vanished.
 		try {
