@@ -56,13 +56,36 @@ trails, retention, data-subject rights. Report only, no edits. Triage gate: real
 overcautious.
 
 Then close the real gaps. If a fix changed anything, re-run the audit; repeat until it comes back
-clean. This step is commonly skipped (via `includeSteps`) on projects with no compliance obligations.
+clean.
+
+## documentation
+
+Cleanup comments according to /coding rules. Update docs if needed.
+
+Code docs rules:
+- Some level of jsdoc/tsdoc/etc above everything major system or class
+
+Project docs/ rules:
+- Keep somewhat brief while introducing important systems and files.
+Dont
+- Dont mention line numbers. Those move too quickly. Mention names instead (function names, class names, etc).
+
+Both rules:
+- Ensure not too dense
+- Must be clear enough that humancan skim and take over
+- Do not dup docs. You don't need both human docs and AI docs in another obscure.
 
 ## commit
 
 Update docs, then gitStage + gitCommit. On a resumed batch the work may already be partly done;
 check `git status` first and tolerate an already-clean tree (no empty commits, no re-editing
 already-correct files).
+
+Commit description rules: One short phrase or sentence. Start with a verb. Describe only what changed, not process.
+- No prefixes or tags of any kind at the front, e.g. "[sandbox]", "feat:", "chore:", "wip:".
+- Don't include plan/cycle/slice/lap labels or progress narrative anywhere, e.g. "[sandbox] Testing things", "(slice 4)", "(some phase name)".
+- Do not use words like "fix" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like "attempt" or "try" instead. This rule also goes double when you end and report to user.
+- If related to issues, end with (fixes #N) for bugfixes, (closes #N) for completed tasks, (related #N) to link without closing.
 
 If framework-first issues still remain, `cycleGoto(...)` back to `framework` instead of ending the
 phase.
