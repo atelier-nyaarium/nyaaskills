@@ -60,32 +60,29 @@ clean.
 
 ## documentation
 
-Cleanup comments according to /coding rules. Update docs if needed.
+Update `docs/` and jsdoc/tsdoc/etc above major functional systems and classes. And cleanup comments according to /coding rules and update docs if needed.
 
-Code docs rules:
-- Some level of jsdoc/tsdoc/etc above everything major system or class
-
-Project docs/ rules:
-- Keep somewhat brief while introducing important systems and files.
-Dont
-- Dont mention line numbers. Those move too quickly. Mention names instead (function names, class names, etc).
-
-Both rules:
-- Ensure not too dense
-- Must be clear enough that humancan skim and take over
-- Do not dup docs. You don't need both human docs and AI docs in another obscure.
+General rules:
+- Must be clear enough that human can skim and take over. Clear, but not dense.
+- Don't dupe docs. You don't need massive detail repeated in both docs/ and code docs. Just point them to the file and class name or something.
+- Don't include plan/cycle/slice/lap labels or progress narrative anywhere, e.g. "(slice 4)", "(some phase name)", "[sandbox] Testing things",.
+- Don't mention line numbers. Those are moving targets. Mention names instead (function names, class names, etc).
+- Fix documentation violations as you come across them.
 
 ## commit
 
-Update docs, then gitStage + gitCommit. On a resumed batch the work may already be partly done;
-check `git status` first and tolerate an already-clean tree (no empty commits, no re-editing
-already-correct files).
+If this project is git tracked, gitStage + gitCommit.
+
+On a resumed batch the work may already be partly done: check gitStatus first.
 
 Commit description rules: One short phrase or sentence. Start with a verb. Describe only what changed, not process.
-- No prefixes or tags of any kind at the front, e.g. "[sandbox]", "feat:", "chore:", "wip:".
-- Don't include plan/cycle/slice/lap labels or progress narrative anywhere, e.g. "[sandbox] Testing things", "(slice 4)", "(some phase name)".
+- No prefixes or tags, "feat:", "chore:", "wip:", "[sandbox]".
+- Don't include plan/cycle/slice/lap labels or progress narrative anywhere, e.g. "(slice 4)", "(some phase name)", "[sandbox] Testing things",.
 - Do not use words like "fix" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like "attempt" or "try" instead. This rule also goes double when you end and report to user.
 - If related to issues, end with (fixes #N) for bugfixes, (closes #N) for completed tasks, (related #N) to link without closing.
 
-If framework-first issues still remain, `cycleGoto(...)` back to `framework` instead of ending the
-phase.
+## framework-loop
+
+If framework-first issues still remain, `cycleGoto(...)` back to `framework` now instead of indefinitely shelving it.
+
+Otherwise end the phase with `cycleNext`.
