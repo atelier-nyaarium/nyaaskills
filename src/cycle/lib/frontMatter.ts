@@ -1,5 +1,5 @@
-// Hand-rolled, fail-closed, read-only front matter parsing for cycle definition files (steps,
-// maxLaps). No YAML dep on purpose; we only read a narrow modeled subset.
+// Hand-rolled, fail-closed, read-only front matter parsing for cycle definition files (steps).
+// No YAML dep on purpose; we only read a narrow modeled subset.
 
 export type Eol = "\n" | "\r\n";
 

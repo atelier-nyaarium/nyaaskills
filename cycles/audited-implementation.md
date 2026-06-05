@@ -1,6 +1,5 @@
 ---
 steps: [implement, align, framework, red-team, compliance, commit]
-maxLaps: 12
 ---
 
 # Audited Phase Implementation

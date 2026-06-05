@@ -8,7 +8,6 @@ const OutputSchema = z.object({
 		z.object({
 			name: z.string(),
 			steps: z.array(z.string()).optional(),
-			maxLaps: z.number().optional(),
 			error: z.string().optional(),
 		}),
 	),
@@ -27,7 +26,7 @@ List the cycle definitions available in the nyaaskills cycles library, with each
 		const cycles = listCycleDefs().map((name) => {
 			try {
 				const def = loadCycleDef(name);
-				return { name, steps: def.steps, maxLaps: def.maxLaps };
+				return { name, steps: def.steps };
 			} catch (error) {
 				return { name, error: (error as Error).message };
 			}

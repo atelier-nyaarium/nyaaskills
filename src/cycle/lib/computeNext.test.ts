@@ -44,11 +44,10 @@ describe("applyLoop", () => {
 	};
 
 	it("wraps to the first step and bumps the lap", () => {
-		const r = applyLoop(base, steps, 8);
-		expect(r.progress.current).toBe("propose");
-		expect(r.progress.index).toBe(0);
-		expect(r.progress.lap).toBe(2);
-		expect(r.lapLimitReached).toBe(false);
+		const r = applyLoop(base, steps);
+		expect(r.current).toBe("propose");
+		expect(r.index).toBe(0);
+		expect(r.lap).toBe(2);
 	});
 	it("carries mode-specific fields (incl. in-flight batch) through the loop", () => {
 		const items = {
@@ -61,27 +60,21 @@ describe("applyLoop", () => {
 			batchSize: 1,
 			skipped: [3],
 		};
-		const r = applyLoop({ ...base, ...items }, steps, 8);
-		expect(r.progress.items).toEqual(["a", "b"]);
-		expect(r.progress.cursor).toBe(1);
-		expect(r.progress.spec).toBe("do x");
-		expect(r.progress.batchStart).toBe(0);
-		expect(r.progress.batchEnd).toBe(1);
-		expect(r.progress.batchSize).toBe(1);
-		expect(r.progress.skipped).toEqual([3]);
-		expect(r.progress.current).toBe("propose");
+		const r = applyLoop({ ...base, ...items }, steps);
+		expect(r.items).toEqual(["a", "b"]);
+		expect(r.cursor).toBe(1);
+		expect(r.spec).toBe("do x");
+		expect(r.batchStart).toBe(0);
+		expect(r.batchEnd).toBe(1);
+		expect(r.batchSize).toBe(1);
+		expect(r.skipped).toEqual([3]);
+		expect(r.current).toBe("propose");
 	});
-	it("allows the loop into the last permitted lap (laps 1..maxLaps)", () => {
-		const r = applyLoop({ ...base, lap: 7 }, steps, 8);
-		expect(r.progress.lap).toBe(8);
-		expect(r.lapLimitReached).toBe(false);
-	});
-	it("flags lapLimitReached when the loop would exceed maxLaps", () => {
-		const r = applyLoop({ ...base, lap: 8 }, steps, 8);
-		expect(r.progress.lap).toBe(9);
-		expect(r.lapLimitReached).toBe(true);
+	it("bumps the lap without any cap", () => {
+		const r = applyLoop({ ...base, lap: 99 }, steps);
+		expect(r.lap).toBe(100);
 	});
 	it("throws on an empty step list", () => {
-		expect(() => applyLoop(base, [], 8)).toThrow("empty");
+		expect(() => applyLoop(base, [])).toThrow("empty");
 	});
 });

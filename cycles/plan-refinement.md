@@ -1,6 +1,5 @@
 ---
 steps: [propose, audit, triage, rethink]
-maxLaps: 8
 ---
 
 # Plan Refinement

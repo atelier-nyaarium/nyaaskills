@@ -7,11 +7,8 @@ import { parseFrontMatter } from "./frontMatter.ts";
 export interface CycleDef {
 	name: string;
 	steps: string[];
-	maxLaps: number;
 	body: string;
 }
-
-export const DEFAULT_MAX_LAPS = 8;
 
 // Reusable cycle definitions ship in the plugin's cycles/ directory. Resolution order:
 //   1. NYAASKILLS_CYCLES_DIR  - explicit override for tests or a custom library.
@@ -81,9 +78,5 @@ export function loadCycleDef(name: string): CycleDef {
 	// Every step must resolve to exactly one section (extractSection throws on missing/duplicate).
 	for (const step of steps) extractSection(body, step);
 
-	const maxLaps =
-		typeof fields.maxLaps === "number" && Number.isInteger(fields.maxLaps) && fields.maxLaps > 0
-			? fields.maxLaps
-			: DEFAULT_MAX_LAPS;
-	return { name, steps, maxLaps, body };
+	return { name, steps, body };
 }

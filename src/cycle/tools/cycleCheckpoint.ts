@@ -29,15 +29,6 @@ End-of-lap decision.
 1-2 sentences: what this lap did and the outcome.
 `.trim(),
 		),
-	acknowledgeOverrun: z
-		.boolean()
-		.optional()
-		.default(false)
-		.describe(
-			`
-Required to loop past the cycle's maxLaps soft cap (plan mode only). Set this if you've found a critical reason to keep pushing.
-`.trim(),
-		),
 	batchSize: z
 		.number()
 		.int()
@@ -65,7 +56,6 @@ const OutputSchema = z.object({
 	status: z.string(),
 	lap: z.number(),
 	step: z.string(),
-	lapLimitReached: z.boolean().optional(),
 	drained: z.boolean().optional(),
 	remaining: z.number().optional(),
 	totalItems: z.number().optional(),
@@ -79,18 +69,17 @@ export const cycleCheckpoint = {
 	description: `
 The end-of-lap decision, made after the last step. Give a 1-2 sentence summary of the lap, plus one decision:
 - \`loop\` - do another lap (the default; keep going)
-- \`done\` - the work is genuinely complete
+- \`done\` - the work is complete, or another lap would add only minimal gains
 - \`critical-stop\` - a real blocker needs a human
 `.trim(),
 	operation: "deciding at a lap checkpoint",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
-		const { plan, decision, summary, acknowledgeOverrun, batchSize, skip } = schema.parse(args);
-		const { planFile, progress, def, steps, instructions } = loadCycleRun(cwd, plan, { requireActive: true });
+		const { plan, decision, summary, batchSize, skip } = schema.parse(args);
+		const { planFile, progress, steps, instructions } = loadCycleRun(cwd, plan, { requireActive: true });
 
 		if (decision === "loop" && progress.mode !== "plan") {
-			// Items/phases mode: a loop advances the queue by one batch (one phase). The queue (not
-			// maxLaps) bounds the run.
+			// Items/phases mode: a loop advances the queue by one batch (one phase). The queue bounds the run.
 			const isPhases = progress.mode === "phases";
 			// Phases are definitionally one-per-lap: ignore the items-only batchSize override and skip,
 			// or a batchSize > 1 would slide the window past unvisited phases and silently drop them.
@@ -140,7 +129,7 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 				return { data: OutputSchema.parse(result) };
 			}
 			// More items remain: wrap steps and bump the lap (preserving the queue), then slide the batch.
-			const looped = applyLoop(progress, steps, progress.items.length + 1).progress;
+			const looped = applyLoop(progress, steps);
 			const next: StoredProgress = {
 				...looped,
 				cursor: adv.cursor,
@@ -169,23 +158,8 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 
 		if (decision === "loop") {
 			// Plan mode: a loop wraps the steps and bumps the lap. Pass the full record so any extra
-			// fields survive; the def's maxLaps is a soft cap against churn-without-convergence.
-			const looped = applyLoop(progress, steps, def.maxLaps);
-			if (looped.lapLimitReached && !acknowledgeOverrun) {
-				const result = {
-					plan,
-					cycle: progress.name,
-					decision,
-					status: "active",
-					lap: progress.lap,
-					step: progress.current,
-					lapLimitReached: true,
-					instructions: `Reached the soft cap of ${def.maxLaps} laps. Prefer decision="done" unless you have a concrete gap to tackle.`,
-					nextAction: `To continue anyway: \`cycleCheckpoint({ plan: "${plan}", decision: "loop", summary, acknowledgeOverrun: true })\`.`,
-				};
-				return { data: OutputSchema.parse(result) };
-			}
-			const next: StoredProgress = looped.progress;
+			// fields survive.
+			const next: StoredProgress = applyLoop(progress, steps);
 			writeProgress(planFile, next);
 			notifyCycleEnd({ decision, summary, plan, cycle: progress.name, lap: next.lap, status: "active" });
 			const result = {

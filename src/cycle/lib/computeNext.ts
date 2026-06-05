@@ -35,24 +35,13 @@ export function advance(steps: string[], current: string, indexFallback: number)
 	return { kind: "lapEnd" };
 }
 
-export interface LoopResult<T extends CycleProgress> {
-	progress: T;
-	lapLimitReached: boolean;
-}
-
-// Wrap to the first step and bump the lap. Caller gates the actual write on lapLimitReached
-// unless the agent acknowledged the overrun. Generic over the progress shape so mode-specific fields
+// Wrap to the first step and bump the lap. Generic over the progress shape so mode-specific fields
 // (the items queue, spec, cursor) ride through the loop untouched; the cast covers the spread-override
 // widening, the runtime shape is exactly T with current/index/lap/status replaced.
-export function applyLoop<T extends CycleProgress>(progress: T, steps: string[], maxLaps: number): LoopResult<T> {
+export function applyLoop<T extends CycleProgress>(progress: T, steps: string[]): T {
 	if (steps.length === 0) throw new Error("cannot loop an empty step list");
 	const lap = progress.lap + 1;
-	return {
-		progress: { ...progress, current: steps[0], index: 0, lap, status: "active" } as T,
-		// Laps are 1-indexed (lap 1 is the first lap), so a loop into lap maxLaps+1 trips the cap;
-		// laps 1..maxLaps are allowed.
-		lapLimitReached: lap > maxLaps,
-	};
+	return { ...progress, current: steps[0], index: 0, lap, status: "active" } as T;
 }
 
 export interface BatchAdvance {

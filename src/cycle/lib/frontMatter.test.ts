@@ -16,8 +16,8 @@ describe("parseFrontMatterFields", () => {
 		expect(parseFrontMatterFields(fm)).toEqual({ cycle: { name: "x", index: 1, status: "active" } });
 	});
 	it("parses scalars, skips comments, unquotes", () => {
-		const fm = 'maxLaps: 8\n# comment line\nname: "hello world"\n';
-		expect(parseFrontMatterFields(fm)).toEqual({ maxLaps: 8, name: "hello world" });
+		const fm = 'count: 8\n# comment line\nname: "hello world"\n';
+		expect(parseFrontMatterFields(fm)).toEqual({ count: 8, name: "hello world" });
 	});
 	it("strips trailing inline comment on unquoted values", () => {
 		expect(parseFrontMatterFields("name: foo # note")).toEqual({ name: "foo" });

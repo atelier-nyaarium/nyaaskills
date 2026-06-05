@@ -220,7 +220,7 @@ export function checkpointCall(plan: string): string {
 		`All steps complete. Call \`cycleCheckpoint({ plan: "${plan}", decision, summary })\` with a 1-2 sentence summary and one decision:`,
 		"",
 		"- `loop` - do another lap. This is the default; keep going, do not stop to ask between laps.",
-		"- `done` - only when all the work is genuinely complete.",
+		"- `done` - the work is complete, or another lap would add only minimal gains.",
 		"- `critical-stop` - only for a real blocker that needs a human.",
 	].join("\n");
 }

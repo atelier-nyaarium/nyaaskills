@@ -46,7 +46,6 @@ beforeAll(() => {
 		path.join(cyclesDir, "demo.md"),
 		"---\nsteps: [a, b, c]\n---\n## a\nAlpha\n## b\nBeta\n## c\nGamma\n",
 	);
-	fs.writeFileSync(path.join(cyclesDir, "cap.md"), "---\nsteps: [x]\nmaxLaps: 1\n---\n## x\nOnly\n");
 });
 
 afterAll(() => {
@@ -122,21 +121,6 @@ describe("cycle tool lifecycle", () => {
 		expect(goto.status).toBe("active");
 	});
 
-	it("enforces the maxLaps soft cap, then honors acknowledgeOverrun", async () => {
-		await startPlan({ plan: "p.md", cycle: "cap" });
-		await run(cycleNext, { plan: "p.md", completed: "x" });
-		const capped = await run(cycleCheckpoint, { plan: "p.md", decision: "loop", summary: "lap" });
-		expect(capped.lapLimitReached).toBe(true);
-		expect(capped.lap).toBe(1);
-		const ack = await run(cycleCheckpoint, {
-			plan: "p.md",
-			decision: "loop",
-			summary: "lap",
-			acknowledgeOverrun: true,
-		});
-		expect(ack.lap).toBe(2);
-	});
-
 	it("goto with resetLap resets the lap to 1", async () => {
 		await startPlan({ plan: "p.md", cycle: "demo" });
 		await run(cycleNext, { plan: "p.md", completed: "a" });
@@ -190,7 +174,6 @@ describe("cycle tool lifecycle", () => {
 		const list = await run(cycleList, {});
 		const names = list.cycles.map((c: { name: string }) => c.name);
 		expect(names).toContain("demo");
-		expect(names).toContain("cap");
 	});
 });
 
