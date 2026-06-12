@@ -69,7 +69,7 @@ export const cycleCheckpoint = {
 	description: `
 The end-of-lap decision, made after the last step. Give a 1-2 sentence summary of the lap, plus one decision:
 - \`loop\` - do another lap (the default; keep going)
-- \`done\` - the work is complete, or another lap would add only minimal gains
+- \`done\` - the work is complete, or another lap would add only minimal gains. This is the run's cleanup: it clears the run state and sends the end-of-run notification, so a finished run is not over until \`done\` is called.
 - \`critical-stop\` - a real blocker needs a human
 `.trim(),
 	operation: "deciding at a lap checkpoint",
