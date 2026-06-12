@@ -5,13 +5,13 @@
     "": {
       "name": "nyaaskills",
       "dependencies": {
-        "@modelcontextprotocol/sdk": "latest",
-        "zod": "latest",
+        "@modelcontextprotocol/sdk": "1.29.0",
+        "zod": "4.4.3",
       },
       "devDependencies": {
-        "@biomejs/biome": "latest",
-        "bun-types": "latest",
-        "typescript": "latest",
+        "@biomejs/biome": "2.4.16",
+        "bun-types": "1.3.14",
+        "typescript": "6.0.3",
       },
     },
   },
