@@ -1,11 +1,16 @@
-import path from "node:path";
 import { z } from "zod";
 import { advanceBatch, applyLoop } from "../lib/computeNext.ts";
-import { notifyCycleEnd } from "../lib/notify.ts";
+import {
+	autoContext,
+	buildNotifyHuman,
+	type NotifyHuman,
+	NotifyHumanSchema,
+	notifyCycleEnd,
+	relayInstruction,
+} from "../lib/notify.ts";
 import {
 	appendStepCall,
 	deleteSidecar,
-	humanElapsed,
 	itemsContext,
 	loadCycleRun,
 	type StoredProgress,
@@ -84,13 +89,6 @@ Items mode only: indices (from the current batch) to set aside without completin
 		),
 });
 
-const NotifyHumanSchema = z.object({
-	tiny: z.string(),
-	full: z.string(),
-	attachments: z.array(z.string()).optional(),
-	urgent: z.boolean(),
-});
-
 const OutputSchema = z.object({
 	plan: z.string(),
 	cycle: z.string(),
@@ -105,69 +103,6 @@ const OutputSchema = z.object({
 	instructions: z.string(),
 	nextAction: z.string(),
 });
-
-interface NotifyContext {
-	cwd: string;
-	decision: "done" | "loop" | "critical-stop";
-	tiny: string;
-	summary: string;
-	full?: string;
-	attachments?: string[];
-	whatToDecide?: string;
-	plan: string;
-	progress: StoredProgress;
-	lap: number;
-}
-
-/** Auto context the server already has: project, elapsed, items counts. */
-function autoContext(ctx: NotifyContext) {
-	const project = path.basename(ctx.cwd);
-	const elapsedMs = ctx.progress.startedAt ? Date.now() - ctx.progress.startedAt : undefined;
-	const itemCounts =
-		ctx.progress.mode === "plan"
-			? undefined
-			: {
-					processed: ctx.progress.cursor,
-					remaining: ctx.progress.items.length - ctx.progress.cursor,
-					deferred: ctx.progress.deferredItemIndexes.length,
-				};
-	return { project, elapsedMs, itemCounts };
-}
-
-/** Pre-composed payload the agent relays verbatim to a notify_human-style tool.
- * Composed server-side so notifications stay uniform and the agent cannot
- * under-report: tiny is the bar line, full is a markdown report with the run's
- * identity, elapsed time, queue counts, the summary, and any authored report. */
-function buildNotifyHuman(ctx: NotifyContext): z.infer<typeof NotifyHumanSchema> {
-	const { project, elapsedMs, itemCounts } = autoContext(ctx);
-	const urgent = ctx.decision === "critical-stop";
-	const meta = [
-		`- Project: \`${project}\` - plan \`${ctx.plan}\` - cycle \`${ctx.progress.name}\` - lap ${ctx.lap}`,
-		`- Decision: **${ctx.decision}**${elapsedMs !== undefined ? ` - elapsed ${humanElapsed(elapsedMs)}` : ""}`,
-	];
-	if (itemCounts) {
-		meta.push(
-			`- Items: ${itemCounts.processed} done, ${itemCounts.remaining} remaining, ${itemCounts.deferred} deferred`,
-		);
-	}
-	const sections = [`# ${ctx.tiny}`, "", ...meta, ""];
-	if (ctx.whatToDecide) sections.push(`**Decision needed:** ${ctx.whatToDecide}`, "");
-	sections.push(ctx.summary);
-	if (ctx.full) sections.push("", "---", "", ctx.full);
-	return {
-		tiny: urgent ? `[NEEDS YOU] ${ctx.tiny}` : ctx.tiny,
-		full: sections.join("\n"),
-		attachments: ctx.attachments?.length ? ctx.attachments : undefined,
-		urgent,
-	};
-}
-
-/** The agent-side relay sentence. Plugins compose through the agent: this result
- * tells it to forward the payload IF a notification tool exists; a cycles-only
- * setup simply skips it. */
-function relayInstruction(): string {
-	return `A human notification payload is in \`notifyHuman\`. If a \`notify_human\` tool is available, call it NOW with that payload's tiny/full/attachments before continuing; if no such tool exists, skip this silently.`;
-}
 
 export const cycleCheckpoint = {
 	name: "cycleCheckpoint",
@@ -186,23 +121,15 @@ The end-of-lap decision, made after the last step. Give a one-phrase \`tiny\` he
 
 		// done/critical-stop always notify; lap ends only when the run opted in.
 		const notifyOnLoop = (progress.notify ?? "done") === "laps";
-		const makeNotify = (lap: number): z.infer<typeof NotifyHumanSchema> =>
+		const makeNotify = (lap: number): NotifyHuman =>
 			buildNotifyHuman({ cwd, decision, tiny, summary, full, attachments, whatToDecide, plan, progress, lap });
-		const eventExtras = (lap: number) => {
-			const { project, elapsedMs, itemCounts } = autoContext({
-				cwd,
-				decision,
-				tiny,
-				summary,
-				full,
-				attachments,
-				whatToDecide,
-				plan,
-				progress,
-				lap,
-			});
-			return { tiny, full, attachments, whatToDecide, project, elapsedMs, itemCounts };
-		};
+		const eventExtras = () => ({
+			tiny,
+			full,
+			attachments,
+			whatToDecide,
+			...autoContext({ cwd, progress }),
+		});
 
 		if (decision === "loop" && progress.mode !== "plan") {
 			// Items/phases mode: a loop advances the queue by one batch (one phase). The queue bounds the run.
@@ -272,7 +199,7 @@ The end-of-lap decision, made after the last step. Give a one-phrase \`tiny\` he
 				cycle: progress.name,
 				lap: next.lap,
 				status: "active",
-				...eventExtras(next.lap),
+				...eventExtras(),
 			});
 			const remaining = progress.items.length - adv.batchStart;
 			const notifyHuman = notifyOnLoop ? makeNotify(progress.lap) : undefined;
@@ -304,7 +231,7 @@ The end-of-lap decision, made after the last step. Give a one-phrase \`tiny\` he
 				cycle: progress.name,
 				lap: next.lap,
 				status: "active",
-				...eventExtras(next.lap),
+				...eventExtras(),
 			});
 			const notifyHuman = notifyOnLoop ? makeNotify(progress.lap) : undefined;
 			const result = {
@@ -325,7 +252,7 @@ The end-of-lap decision, made after the last step. Give a one-phrase \`tiny\` he
 		// Notification context is built BEFORE the sidecar is cleared, so done still
 		// reports elapsed time and counts.
 		const notifyHuman = makeNotify(progress.lap);
-		const extras = eventExtras(progress.lap);
+		const extras = eventExtras();
 		if (decision === "done") {
 			// Plan fully consumed: clear the sidecar so nothing lingers to resume and a later
 			// cycleStartPlan begins clean without needing force.
