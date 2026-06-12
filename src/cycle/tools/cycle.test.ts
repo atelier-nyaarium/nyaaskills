@@ -84,7 +84,12 @@ describe("cycle tool lifecycle", () => {
 		expect(end.lapEnd).toBe(true);
 		expect(end.advanced).toBe(false);
 
-		const looped = await run(cycleCheckpoint, { plan: "plan.md", decision: "loop", summary: "did a lap" });
+		const looped = await run(cycleCheckpoint, {
+			plan: "plan.md",
+			decision: "loop",
+			tiny: "t",
+			summary: "did a lap",
+		});
 		expect(looped.lap).toBe(2);
 		expect(looped.step).toBe("a");
 
@@ -93,7 +98,7 @@ describe("cycle tool lifecycle", () => {
 		expect(status.lap).toBe(2);
 		expect(status.step).toBe("a");
 
-		const done = await run(cycleCheckpoint, { plan: "plan.md", decision: "done", summary: "solid" });
+		const done = await run(cycleCheckpoint, { plan: "plan.md", decision: "done", tiny: "t", summary: "solid" });
 		expect(done.status).toBe("done");
 
 		// "done" clears the sidecar: the plan reads as uninitialized and cannot be resumed.
@@ -115,7 +120,7 @@ describe("cycle tool lifecycle", () => {
 
 	it("goto jumps to a step case-insensitively and reopens a finished cycle", async () => {
 		await startPlan({ plan: "p.md", cycle: "demo" });
-		await run(cycleCheckpoint, { plan: "p.md", decision: "critical-stop", summary: "halt" });
+		await run(cycleCheckpoint, { plan: "p.md", decision: "critical-stop", tiny: "t", summary: "halt" });
 		const goto = await run(cycleGoto, { plan: "p.md", step: "C" });
 		expect(goto.step).toBe("c");
 		expect(goto.status).toBe("active");
@@ -126,7 +131,7 @@ describe("cycle tool lifecycle", () => {
 		await run(cycleNext, { plan: "p.md", completed: "a" });
 		await run(cycleNext, { plan: "p.md", completed: "b" });
 		await run(cycleNext, { plan: "p.md", completed: "c" });
-		await run(cycleCheckpoint, { plan: "p.md", decision: "loop", summary: "lap" });
+		await run(cycleCheckpoint, { plan: "p.md", decision: "loop", tiny: "t", summary: "lap" });
 		const reset = await run(cycleGoto, { plan: "p.md", step: "a", resetLap: true });
 		expect(reset.lap).toBe(1);
 	});
@@ -261,7 +266,12 @@ describe("cycle items mode", () => {
 			batchSize: 2,
 		});
 		await runBatchSteps("keep");
-		const looped = await run(cycleCheckpoint, { plan: "plans/keep.md", decision: "loop", summary: "batch 1" });
+		const looped = await run(cycleCheckpoint, {
+			plan: "plans/keep.md",
+			decision: "loop",
+			tiny: "t",
+			summary: "batch 1",
+		});
 		expect(looped.lap).toBe(2);
 		expect(looped.remaining).toBe(2);
 		expect(looped.instructions).toContain("i3");
@@ -276,7 +286,12 @@ describe("cycle items mode", () => {
 	it("drains on the final loop and prompts append-or-done, keeping the sidecar", async () => {
 		await startItems({ name: "drain", cycle: "demo", spec: "x", items: ["only"] });
 		await runBatchSteps("drain");
-		const drained = await run(cycleCheckpoint, { plan: "plans/drain.md", decision: "loop", summary: "last" });
+		const drained = await run(cycleCheckpoint, {
+			plan: "plans/drain.md",
+			decision: "loop",
+			tiny: "t",
+			summary: "last",
+		});
 		expect(drained.drained).toBe(true);
 		expect(drained.remaining).toBe(0);
 		// Drained keeps the sidecar (an append could continue it); it is not auto-deleted.
@@ -298,16 +313,16 @@ describe("cycle items mode", () => {
 			batchSize: 2,
 		});
 		await runBatchSteps("five"); // batch [0,2)
-		let cp = await run(cycleCheckpoint, { plan: "plans/five.md", decision: "loop", summary: "b1" });
+		let cp = await run(cycleCheckpoint, { plan: "plans/five.md", decision: "loop", tiny: "t", summary: "b1" });
 		expect(cp.remaining).toBe(3);
 		expect(itemsSidecar("five").batchEnd).toBe(4); // [2,4)
 		await runBatchSteps("five"); // batch [2,4)
-		cp = await run(cycleCheckpoint, { plan: "plans/five.md", decision: "loop", summary: "b2" });
+		cp = await run(cycleCheckpoint, { plan: "plans/five.md", decision: "loop", tiny: "t", summary: "b2" });
 		expect(cp.remaining).toBe(1);
 		expect(itemsSidecar("five").batchStart).toBe(4);
 		expect(itemsSidecar("five").batchEnd).toBe(5); // partial final [4,5)
 		await runBatchSteps("five"); // batch [4,5)
-		cp = await run(cycleCheckpoint, { plan: "plans/five.md", decision: "loop", summary: "b3" });
+		cp = await run(cycleCheckpoint, { plan: "plans/five.md", decision: "loop", tiny: "t", summary: "b3" });
 		expect(cp.drained).toBe(true); // i5 processed, now drained
 		expect(cp.remaining).toBe(0);
 	});
@@ -321,7 +336,7 @@ describe("cycle items mode", () => {
 			batchSize: 2,
 		});
 		await runBatchSteps("bs");
-		await run(cycleCheckpoint, { plan: "plans/bs.md", decision: "loop", summary: "s", batchSize: 1 });
+		await run(cycleCheckpoint, { plan: "plans/bs.md", decision: "loop", tiny: "t", summary: "s", batchSize: 1 });
 		const prog = itemsSidecar("bs");
 		expect(prog.batchSize).toBe(1);
 		expect(prog.batchStart).toBe(2);
@@ -362,12 +377,22 @@ describe("cycle items mode", () => {
 	it("cycleAppendItems feeds a drained run, which then resumes through the new items", async () => {
 		await startItems({ name: "feed", cycle: "demo", spec: "x", items: ["i1"] });
 		await runBatchSteps("feed");
-		const drained = await run(cycleCheckpoint, { plan: "plans/feed.md", decision: "loop", summary: "b1" });
+		const drained = await run(cycleCheckpoint, {
+			plan: "plans/feed.md",
+			decision: "loop",
+			tiny: "t",
+			summary: "b1",
+		});
 		expect(drained.drained).toBe(true);
 		const app = await run(cycleAppendItems, { name: "feed", items: ["i2", "i3"] });
 		expect(app.added).toBe(2);
 		expect(app.totalItems).toBe(3);
-		const looped = await run(cycleCheckpoint, { plan: "plans/feed.md", decision: "loop", summary: "after append" });
+		const looped = await run(cycleCheckpoint, {
+			plan: "plans/feed.md",
+			decision: "loop",
+			tiny: "t",
+			summary: "after append",
+		});
 		expect(looped.drained).toBeUndefined(); // resumed, not drained
 		expect(looped.remaining).toBe(2);
 		expect(itemsSidecar("feed").batchStart).toBe(1);
@@ -377,7 +402,13 @@ describe("cycle items mode", () => {
 	it("defer records the item, and dedupe drops queued items but re-allows a deferred one", async () => {
 		await startItems({ name: "skip", cycle: "demo", spec: "x", items: ["a", "b", "c"], batchSize: 1 });
 		await runBatchSteps("skip"); // batch [0,1) = "a"
-		await run(cycleCheckpoint, { plan: "plans/skip.md", decision: "loop", summary: "defer a", defer: [0] });
+		await run(cycleCheckpoint, {
+			plan: "plans/skip.md",
+			decision: "loop",
+			tiny: "t",
+			summary: "defer a",
+			defer: [0],
+		});
 		expect(itemsSidecar("skip").deferredItemIndexes).toEqual([0]);
 		// "a" (index 0) is deferred so it may be re-added; "b" (index 1, active) is a duplicate; "d" is new.
 		const app = await run(cycleAppendItems, { name: "skip", items: ["a", "b", "d"], dedupe: true });
@@ -402,7 +433,7 @@ describe("cycle items mode", () => {
 			batchSize: 2,
 		});
 		await runBatchSteps("resume"); // batch [0,2)
-		await run(cycleCheckpoint, { plan: "plans/resume.md", decision: "loop", summary: "b1" }); // -> [2,4)
+		await run(cycleCheckpoint, { plan: "plans/resume.md", decision: "loop", tiny: "t", summary: "b1" }); // -> [2,4)
 		// Fresh read (cold resume) reads the persisted window, not a recomputed one.
 		const st = await run(cycleStatus, { plan: "plans/resume.md" });
 		expect(st.currentBatch).toEqual(["i3", "i4"]);
@@ -415,10 +446,10 @@ describe("cycle items mode", () => {
 	it("skip is clamped to the current batch and merges across checkpoints", async () => {
 		await startItems({ name: "sk", cycle: "demo", spec: "x", items: ["i1", "i2", "i3"], batchSize: 1 });
 		await runBatchSteps("sk"); // batch [0,1)
-		await run(cycleCheckpoint, { plan: "plans/sk.md", decision: "loop", summary: "s", defer: [0] }); // -> [1,2)
+		await run(cycleCheckpoint, { plan: "plans/sk.md", decision: "loop", tiny: "t", summary: "s", defer: [0] }); // -> [1,2)
 		await runBatchSteps("sk");
 		// defer [1] is in-batch (recorded); the out-of-batch 0 is ignored (already recorded last lap anyway).
-		await run(cycleCheckpoint, { plan: "plans/sk.md", decision: "loop", summary: "s", defer: [1, 2] });
+		await run(cycleCheckpoint, { plan: "plans/sk.md", decision: "loop", tiny: "t", summary: "s", defer: [1, 2] });
 		expect(itemsSidecar("sk").deferredItemIndexes).toEqual([0, 1]); // merged + sorted; index 2 (future) clamped out
 	});
 });
@@ -461,7 +492,7 @@ describe("per-run step subset", () => {
 		await run(cycleGoto, { plan: "p.md", step: "b" }); // current=b, in subset
 		await run(cycleNext, { plan: "p.md", completed: "b" });
 		await run(cycleNext, { plan: "p.md", completed: "c" }); // lapEnd
-		const looped = await run(cycleCheckpoint, { plan: "p.md", decision: "loop", summary: "lap" });
+		const looped = await run(cycleCheckpoint, { plan: "p.md", decision: "loop", tiny: "t", summary: "lap" });
 		expect(looped.step).toBe("b"); // wrapped to subset[0], not def[0]
 		expect(looped.lap).toBe(2);
 	});
@@ -609,7 +640,12 @@ describe("plan-mode phases (mode: phases)", () => {
 		expect(sc.items).toHaveLength(2);
 		expect((await run(cycleNext, { plan: "ph-sub.md", completed: "a" })).step).toBe("c"); // b skipped
 		expect((await run(cycleNext, { plan: "ph-sub.md", completed: "c" })).lapEnd).toBe(true);
-		const looped = await run(cycleCheckpoint, { plan: "ph-sub.md", decision: "loop", summary: "phase A" });
+		const looped = await run(cycleCheckpoint, {
+			plan: "ph-sub.md",
+			decision: "loop",
+			tiny: "t",
+			summary: "phase A",
+		});
 		expect(looped.step).toBe("a"); // wrap to subset[0]
 		expect(looped.instructions).toContain("Beta body."); // phase B injected
 	});
@@ -624,7 +660,7 @@ describe("plan-mode phases (mode: phases)", () => {
 		await run(cycleNext, { plan: "p3.md", completed: "a" });
 		await run(cycleNext, { plan: "p3.md", completed: "b" });
 		await run(cycleNext, { plan: "p3.md", completed: "c" });
-		const looped = await run(cycleCheckpoint, { plan: "p3.md", decision: "loop", summary: "phase 1" });
+		const looped = await run(cycleCheckpoint, { plan: "p3.md", decision: "loop", tiny: "t", summary: "phase 1" });
 		expect(looped.instructions).toContain("Second."); // second phase injected
 		expect(looped.nextAction).toContain("phase");
 	});
@@ -642,7 +678,7 @@ describe("plan-mode phases (mode: phases)", () => {
 			await run(cycleNext, { plan: "bsp.md", completed: "a" });
 			await run(cycleNext, { plan: "bsp.md", completed: "b" });
 			await run(cycleNext, { plan: "bsp.md", completed: "c" });
-			return run(cycleCheckpoint, { plan: "bsp.md", decision: "loop", summary: "p", batchSize: 5 }); // try to widen
+			return run(cycleCheckpoint, { plan: "bsp.md", decision: "loop", tiny: "t", summary: "p", batchSize: 5 }); // try to widen
 		};
 		const l1 = await loopPhase();
 		expect(l1.instructions).toContain("Two."); // advanced exactly one phase
@@ -657,11 +693,11 @@ describe("plan-mode phases (mode: phases)", () => {
 		await run(cycleNext, { plan: "dn.md", completed: "a" });
 		await run(cycleNext, { plan: "dn.md", completed: "b" });
 		await run(cycleNext, { plan: "dn.md", completed: "c" });
-		const drained = await run(cycleCheckpoint, { plan: "dn.md", decision: "loop", summary: "p" });
+		const drained = await run(cycleCheckpoint, { plan: "dn.md", decision: "loop", tiny: "t", summary: "p" });
 		expect(drained.drained).toBe(true);
 		expect(drained.instructions).toContain("phases done");
 		expect(drained.nextAction).not.toContain("cycleAppendItems");
-		await run(cycleCheckpoint, { plan: "dn.md", decision: "done", summary: "all done" });
+		await run(cycleCheckpoint, { plan: "dn.md", decision: "done", tiny: "t", summary: "all done" });
 		expect(fs.existsSync(path.join(cwd, "dn.cycle.json"))).toBe(false);
 	});
 });
@@ -720,4 +756,107 @@ describe("toolsCycle registration shape", () => {
 			expect(typeof t.schema?.shape).toBe("object");
 		});
 	}
+});
+
+describe("human notification tiers (notify option + payload)", () => {
+	async function completeLap(plan: string): Promise<void> {
+		await run(cycleNext, { plan, completed: "a" });
+		await run(cycleNext, { plan, completed: "b" });
+		await run(cycleNext, { plan, completed: "c" });
+	}
+
+	it("defaults to notify=done: loop carries no payload, done always does", async () => {
+		await startPlan({ plan: "n1.md", cycle: "demo" });
+		const sidecar = JSON.parse(fs.readFileSync(path.join(cwd, "n1.cycle.json"), "utf8"));
+		expect(sidecar.notify).toBe("done");
+		expect(sidecar.startedAt).toBeGreaterThan(0);
+
+		await completeLap("n1.md");
+		const looped = await run(cycleCheckpoint, { plan: "n1.md", decision: "loop", tiny: "lap fine", summary: "s" });
+		expect(looped.notifyHuman).toBeUndefined();
+		expect(looped.nextAction).not.toContain("notify_human");
+
+		await completeLap("n1.md");
+		const done = await run(cycleCheckpoint, { plan: "n1.md", decision: "done", tiny: "all shipped", summary: "s" });
+		expect(done.notifyHuman).toBeDefined();
+		expect(done.notifyHuman.tiny).toBe("all shipped");
+		expect(done.notifyHuman.urgent).toBe(false);
+		// English header sentence, then the summary below a blank line.
+		expect(done.notifyHuman.full).toContain("has completed its run after 2 laps in ");
+		expect(done.notifyHuman.full).toContain("\n\ns");
+		expect(done.nextAction).toContain("notify_human");
+	});
+
+	it("notify=laps embeds the payload on every loop", async () => {
+		await startPlan({ plan: "n2.md", cycle: "demo", notify: "laps" });
+		await completeLap("n2.md");
+		const looped = await run(cycleCheckpoint, {
+			plan: "n2.md",
+			decision: "loop",
+			tiny: "lap 1 ok",
+			summary: "s",
+			full: "## report\n\ndetail",
+		});
+		expect(looped.notifyHuman).toBeDefined();
+		expect(looped.notifyHuman.tiny).toBe("lap 1 ok");
+		expect(looped.notifyHuman.full).toContain("## report");
+		expect(looped.nextAction).toContain("notify_human");
+	});
+
+	it("critical-stop always notifies, marked urgent, with whatToDecide", async () => {
+		await startPlan({ plan: "n3.md", cycle: "demo" }); // default notify=done
+		await completeLap("n3.md");
+		const stop = await run(cycleCheckpoint, {
+			plan: "n3.md",
+			decision: "critical-stop",
+			tiny: "blocked on creds",
+			summary: "s",
+			whatToDecide: "Provide the API key or approve mock mode",
+		});
+		expect(stop.notifyHuman.urgent).toBe(true);
+		// tiny is verbatim; urgency rides the flag, not the text.
+		expect(stop.notifyHuman.tiny).toBe("blocked on creds");
+		expect(stop.notifyHuman.full).toContain("ran into an issue that needs your attention.");
+		expect(stop.notifyHuman.full).toContain("Decision needed:");
+		expect(stop.notifyHuman.full).toContain("approve mock mode");
+	});
+
+	it("items mode payload carries queue counts and attachments pass through", async () => {
+		await startItems({ name: "nq", cycle: "demo", spec: "do", items: ["x", "y", "z"], notify: "laps" });
+		await completeLap("plans/nq.md");
+		const looped = await run(cycleCheckpoint, {
+			plan: "plans/nq.md",
+			decision: "loop",
+			tiny: "x done",
+			summary: "s",
+			attachments: ["/tmp/shot.png"],
+		});
+		expect(looped.notifyHuman.full).toContain("finished a batch (1 of 3 items done) and is continuing.");
+		expect(looped.notifyHuman.attachments).toEqual(["/tmp/shot.png"]);
+	});
+
+	it("a pre-existing sidecar without notify/startedAt loads and behaves as notify=done", async () => {
+		await startPlan({ plan: "n4.md", cycle: "demo" });
+		corruptSidecar("n4.md", (p) => {
+			delete p.notify;
+			delete p.startedAt;
+		});
+		await completeLap("n4.md");
+		const looped = await run(cycleCheckpoint, { plan: "n4.md", decision: "loop", tiny: "t", summary: "s" });
+		expect(looped.notifyHuman).toBeUndefined();
+		await completeLap("n4.md");
+		const done = await run(cycleCheckpoint, { plan: "n4.md", decision: "done", tiny: "t", summary: "s" });
+		expect(done.notifyHuman).toBeDefined();
+		// No startedAt -> no elapsed claim rather than a bogus one.
+		expect(done.notifyHuman.full).toContain("after 2 laps.");
+		expect(done.notifyHuman.full).not.toContain("laps in ");
+	});
+
+	it("phases mode loop header names the finished and next phase", async () => {
+		fs.writeFileSync(path.join(cwd, "np.md"), "## Schema\nBuild it.\n## Tools\nWire them.\n");
+		await startPlan({ plan: "np.md", cycle: "demo", phases: ["Schema", "Tools"], notify: "laps" });
+		await completeLap("np.md");
+		const looped = await run(cycleCheckpoint, { plan: "np.md", decision: "loop", tiny: "schema in", summary: "s" });
+		expect(looped.notifyHuman.full).toContain('completed phase "Schema" and is continuing on phase "Tools".');
+	});
 });
