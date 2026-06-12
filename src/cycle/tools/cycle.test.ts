@@ -158,6 +158,25 @@ describe("cycle tool lifecycle", () => {
 		expect(status.error).toContain("unknown cycle");
 	});
 
+	it("a hand-corrupted sidecar surfaces a precise malformed error mid-run, not 'no cycle'", async () => {
+		await startPlan({ plan: "p.md", cycle: "demo", phases: undefined });
+		// The real-world trap: a human edits `skipped` (numeric item indices) with step names.
+		corruptSidecar("p.md", (p) => {
+			p.mode = "items";
+			p.spec = "x";
+			p.items = ["one"];
+			p.cursor = 0;
+			p.batchStart = 0;
+			p.batchEnd = 1;
+			p.batchSize = 1;
+			p.skipped = ["align-fix"];
+		});
+		await expect(run(cycleNext, { plan: "p.md", completed: "a" })).rejects.toThrow(/malformed.*skipped/s);
+		const status = await run(cycleStatus, { plan: "p.md" });
+		expect(status.malformed).toBe(true);
+		expect(status.error).toContain("skipped");
+	});
+
 	it("guards a malformed cycle block from being clobbered without force", async () => {
 		await startPlan({ plan: "p.md", cycle: "demo" });
 		corruptSidecar("p.md", (p) => {
@@ -454,15 +473,16 @@ describe("configurable steps (includeSteps)", () => {
 		const r = await run(cycleStartPlan, { plan: "p.md", cycle: "demo" });
 		expect(r.bounce).toBe("confirm-steps");
 		expect(r.steps).toEqual(["a", "b", "c"]);
-		expect(r.message).toContain("ask which steps to skip");
+		expect(r.message).toContain("ask which steps to run or skip");
 		expect(fs.existsSync(path.join(cwd, "p.cycle.json"))).toBe(false);
 	});
 
-	it('["all"] starts the full suite with no persisted subset', async () => {
+	it('["all"] starts the full suite and persists the full step list', async () => {
 		const r = await run(cycleStartPlan, { plan: "p.md", cycle: "demo", includeSteps: ["all"] });
 		expect(r.step).toBe("a");
 		expect(r.steps).toEqual(["a", "b", "c"]);
-		expect("steps" in planSidecar("p.md")).toBe(false);
+		// Always persisted, even for the full suite, so a human can trim it mid-run.
+		expect(planSidecar("p.md").steps).toEqual(["a", "b", "c"]);
 	});
 
 	it("a valid subset starts at the kept first step, persists, and runs only kept steps", async () => {
@@ -498,10 +518,10 @@ describe("configurable steps (includeSteps)", () => {
 		expect(r.bounce).toBe("confirm-steps");
 	});
 
-	it("naming every step (not 'all') runs the full suite with no persisted subset", async () => {
+	it("naming every step (not 'all') runs the full suite in def order", async () => {
 		const r = await run(cycleStartPlan, { plan: "p.md", cycle: "demo", includeSteps: ["c", "b", "a"] });
 		expect(r.steps).toEqual(["a", "b", "c"]); // def order
-		expect("steps" in planSidecar("p.md")).toBe(false); // length == def -> no persist
+		expect(planSidecar("p.md").steps).toEqual(["a", "b", "c"]); // always persisted
 	});
 
 	it("includeSteps composes with items mode (subset drives the per-batch steps)", async () => {
@@ -645,14 +665,29 @@ describe("plan-mode phases (mode: phases)", () => {
 });
 
 describe("shipped cycle definitions", () => {
-	it("audited-implementation loads with the compliance step (frontmatter matches its section)", async () => {
+	it("audited-implementation loads with its full step suite (frontmatter matches the sections)", async () => {
 		// Use the real cycles/ dir (the suite otherwise points NYAASKILLS_CYCLES_DIR at a temp dir).
 		const saved = process.env.NYAASKILLS_CYCLES_DIR;
 		delete process.env.NYAASKILLS_CYCLES_DIR;
 		try {
 			const { loadCycleDef } = await import("../lib/resolveCycleDef.ts");
 			const def = loadCycleDef("audited-implementation");
-			expect(def.steps).toEqual(["implement", "align", "framework", "red-team", "compliance", "commit"]);
+			expect(def.steps).toEqual([
+				"implement-phase",
+				"align-fan-out",
+				"align-fix",
+				"red-team-fan-out",
+				"red-team-fix",
+				"implementation-commit",
+				"framework-fan-out",
+				"framework-fix",
+				"framework-commit",
+				"compliance-fan-out",
+				"compliance-fix",
+				"compliance-commit",
+				"documentation",
+				"plan-completeness",
+			]);
 		} finally {
 			if (saved !== undefined) process.env.NYAASKILLS_CYCLES_DIR = saved;
 		}

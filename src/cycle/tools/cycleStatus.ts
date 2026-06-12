@@ -46,7 +46,12 @@ Report where a plan is in its cycle without mutating anything: current step, ind
 				data: OutputSchema.parse({
 					plan,
 					initialized: false,
-					...(planFile.malformed ? { malformed: true, error: "cycle block is present but malformed" } : {}),
+					...(planFile.malformed
+						? {
+								malformed: true,
+								error: `cycle sidecar is malformed (${planFile.malformedReason ?? "unreadable"}); fix the JSON at ${planFile.sidecarPath} or restart with force:true`,
+							}
+						: {}),
 				}),
 			};
 		}

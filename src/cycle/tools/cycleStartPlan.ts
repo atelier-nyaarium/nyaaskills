@@ -39,17 +39,11 @@ function extractPhaseItems(planPath: string, plan: string, phases: string[]): st
 
 // Construct a phases-mode record from validated phase items. Each item is a phase's plan section, so a
 // cold resume injects real detail; batchSize 1 = one phase per lap; planPath keeps status honest.
-function buildPhasesRecord(
-	plan: string,
-	cycle: string,
-	items: string[],
-	currentStep: string,
-	stepsField: { steps?: string[] },
-): StoredProgress {
+function buildPhasesRecord(plan: string, cycle: string, items: string[], steps: string[]): StoredProgress {
 	return {
 		mode: "phases",
 		name: cycle,
-		current: currentStep,
+		current: steps[0],
 		index: 0,
 		lap: 1,
 		status: "active",
@@ -61,7 +55,7 @@ function buildPhasesRecord(
 		batchEnd: 1,
 		batchSize: 1,
 		skipped: [],
-		...stepsField,
+		steps,
 	};
 }
 
@@ -90,7 +84,7 @@ Restart even if the plan file already has an active cycle.
 		.optional()
 		.describe(
 			`
-Steps to run by name (others are skipped). Omit to get a confirm-bounce listing the full step suite to show the user; pass ["all"] for the full suite; unknown ids bounce with the valid list.
+Steps to run, by name; the rest are skipped. If you aren't sure what the user wants, call without includeSteps: the result carries the step menu to put in front of the user. Pass ["all"] only when the user explicitly wants the full suite.
 `.trim(),
 		),
 	phases: z
@@ -120,11 +114,11 @@ export const cycleStartPlan = {
 	name: "cycleStartPlan",
 	title: "cycle-start-plan",
 	description: `
-Start a cycle on a plan file: you drive the plan .md and decide how to split the work into phases. Name a cycle definition to run (see \`cycleList(...)\`); the first step's instructions come back. For an explicit, tool-tracked work queue instead, use \`cycleStartItems(...)\`.
+Start a cycle on a plan file: you drive the plan .md and decide how to split the work into phases. Name a cycle definition to run; the first step's instructions come back.
 
-When the user says something loose like "do cycles of implementation", reach for this tool family.
+When the user says something loose like "do cycles of implementation", this is the tool.
 
-If the result has a \`bounce\` field instead of a started cycle, relay its \`message\` to the user and re-call with their chosen \`includeSteps\` (or \`["all"]\` for the full suite). Do not treat the cycle as started or call \`cycleNext(...)\` on a bounce.
+A result with a \`bounce\` field means the cycle did NOT start; follow the bounce's \`message\`.
 `.trim(),
 	operation: "starting a cycle",
 	schema,
@@ -142,7 +136,9 @@ If the result has a \`bounce\` field instead of a started cycle, relay its \`mes
 				);
 			}
 			if (planFile.malformed) {
-				throw new Error("plan has a malformed cycle block; pass force:true to overwrite it.");
+				throw new Error(
+					`plan has a malformed cycle sidecar (${planFile.malformedReason ?? "unreadable"}); fix the JSON or pass force:true to overwrite it.`,
+				);
 			}
 		}
 
@@ -154,10 +150,11 @@ If the result has a \`bounce\` field instead of a started cycle, relay its \`mes
 		if ("bounce" in resolution) return { data: StepBounceSchema.parse(resolution.bounce) };
 		const steps = resolution.steps;
 
-		const stepsField = steps.length < def.steps.length ? { steps } : {};
+		// `steps` is persisted even for a full-suite run, so the sidecar always shows the editable
+		// knob: a human can trim this list mid-run to drop steps.
 		const progress: StoredProgress = phaseItems
-			? buildPhasesRecord(plan, cycle, phaseItems, steps[0], stepsField)
-			: { mode: "plan", name: cycle, current: steps[0], index: 0, lap: 1, status: "active", ...stepsField };
+			? buildPhasesRecord(plan, cycle, phaseItems, steps)
+			: { mode: "plan", name: cycle, current: steps[0], index: 0, lap: 1, status: "active", steps };
 		writeProgress(planFile, progress);
 
 		const ctx = itemsContext(progress); // the first phase's detail (empty for a freeform plan run)

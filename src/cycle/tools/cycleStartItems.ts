@@ -60,7 +60,7 @@ How many items to hand over per batch. Default 1. Keep small for heavy per-item 
 		.optional()
 		.describe(
 			`
-Steps to run by name (others are skipped). Omit to get a confirm-bounce listing the full step suite to show the user; pass ["all"] for the full suite; unknown ids bounce with the valid list.
+Steps to run, by name; the rest are skipped. If you aren't sure what the user wants, call without includeSteps: the result carries the step menu to put in front of the user. Pass ["all"] only when the user explicitly wants the full suite.
 `.trim(),
 		),
 });
@@ -84,9 +84,9 @@ export const cycleStartItems = {
 	name: "cycleStartItems",
 	title: "cycle-start-items",
 	description: `
-Start a cycle over an explicit work queue (items mode). You give an ordered item list and a per-item spec; it runs the cycle once per batch of items and tracks progress item by item, so a long job survives compaction and restarts. Resume or advance by passing \`plan: "plans/<name>.md"\` to the other cycle tools. For a freeform plan you split into phases yourself, use \`cycleStartPlan(...)\`.
+Start a cycle over an explicit work queue (items mode). You give an ordered item list and a per-item spec; the cycle runs once per batch of items and progress is tracked item by item, so a long job survives compaction and restarts.
 
-If the result has a \`bounce\` field instead of a started cycle, relay its \`message\` to the user and re-call with their chosen \`includeSteps\` (or \`["all"]\` for the full suite). Do not treat the cycle as started on a bounce.
+A result with a \`bounce\` field means the cycle did NOT start; follow the bounce's \`message\`.
 `.trim(),
 	operation: "starting an items cycle",
 	schema,
@@ -111,7 +111,9 @@ If the result has a \`bounce\` field instead of a started cycle, relay its \`mes
 			);
 		}
 		if (planFile.malformed) {
-			throw new Error(`a malformed cycle sidecar already exists for "${name}"; pick a new name or remove it.`);
+			throw new Error(
+				`a malformed cycle sidecar already exists for "${name}" (${planFile.malformedReason ?? "unreadable"}); pick a new name or remove it.`,
+			);
 		}
 
 		const progress: StoredProgress = {
@@ -128,7 +130,8 @@ If the result has a \`bounce\` field instead of a started cycle, relay its \`mes
 			batchEnd: Math.min(batchSize, items.length),
 			batchSize,
 			skipped: [],
-			...(steps.length < def.steps.length ? { steps } : {}),
+			// Persisted even for a full-suite run, so the sidecar always shows the editable knob.
+			steps,
 		};
 		writeProgress(planFile, progress);
 

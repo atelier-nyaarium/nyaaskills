@@ -16,9 +16,10 @@ const baseProgressFields = {
 	lap: z.number().int().positive(),
 	status: z.enum(["active", "done", "stopped"]),
 	summary: z.string().optional(),
-	// Per-run step subset (Feature: configurable steps). Absent = the def's full step list. When set,
-	// it IS the effective sequence the tools advance over (index is relative to this list), so a run
-	// can omit steps. Must be persisted here or z.object would strip it on the next read.
+	// The effective step sequence for this run (index is relative to this list). The start tools
+	// always persist it - even for a full-suite run - so a human editing the sidecar mid-run has a
+	// visible, obvious knob for dropping steps. Still optional on read for older sidecars (absent =
+	// the def's full step list).
 	steps: z.array(z.string().min(1)).min(1).optional(),
 };
 
@@ -75,6 +76,9 @@ export interface PlanFile {
 	// True when the sidecar exists but is unreadable/invalid. Lets callers distinguish "corrupted
 	// run" from "no run" so a single bad field cannot be silently overwritten.
 	malformed: boolean;
+	// What failed validation, so a hand-edit gone wrong is fixable without diffing the schema
+	// (e.g. `skipped.0: expected number, received string`).
+	malformedReason?: string;
 }
 
 // Read a plan file's progress sidecar (null when uninitialized/missing/malformed).
@@ -88,19 +92,26 @@ export function readPlanFile(cwd: string, plan: string): PlanFile {
 
 	let progress: StoredProgress | null = null;
 	let malformed = false;
+	let malformedReason: string | undefined;
 	let sidecarMtimeMs: number | undefined;
 	if (fs.existsSync(sidecarPath)) {
 		sidecarMtimeMs = fs.statSync(sidecarPath).mtimeMs;
 		try {
 			const parsed = ProgressSchema.safeParse(JSON.parse(fs.readFileSync(sidecarPath, "utf8")));
 			if (parsed.success) progress = parsed.data;
-			else malformed = true;
-		} catch {
+			else {
+				malformed = true;
+				malformedReason = parsed.error.issues
+					.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
+					.join("; ");
+			}
+		} catch (error) {
 			malformed = true;
+			malformedReason = `not valid JSON: ${(error as Error).message}`;
 		}
 	}
 
-	return { planPath, sidecarPath, sidecarMtimeMs, progress, malformed };
+	return { planPath, sidecarPath, sidecarMtimeMs, progress, malformed, malformedReason };
 }
 
 // Persist progress to the sidecar atomically. The mtime guard refuses the write if the sidecar
@@ -144,7 +155,7 @@ export function resolveSteps(
 				bounce: "confirm-steps",
 				cycle,
 				steps: defSteps,
-				message: `This is the cycle that will run. Full suite unless you skip some: ${menu}. Show this to the user and ask which steps to skip; do not choose for them. Re-call includeSteps with the kept steps (or ["all"] for the full suite).`,
+				message: `Cycle "${cycle}" has these steps: ${menu}. Show this menu to the user and ask which steps to run or skip; do not choose for them. Then re-call with includeSteps set to the kept steps (["all"] if they want the full suite).`,
 			},
 		};
 	}
@@ -195,6 +206,14 @@ export interface CycleRun {
 // here means the tools cannot drift on what counts as runnable or on the error wording.
 export function loadCycleRun(cwd: string, plan: string, opts: { requireActive: boolean }): CycleRun {
 	const planFile = readPlanFile(cwd, plan);
+	// A malformed sidecar is a live run with a bad edit, not a missing run; saying "no cycle" here
+	// sends the agent off to restart and lose the state. Point at the file and the failing field.
+	if (planFile.malformed) {
+		throw new Error(
+			`the cycle sidecar at ${planFile.sidecarPath} is malformed (${planFile.malformedReason ?? "unreadable"}). ` +
+				`Fix that JSON by hand to resume, or restart the cycle with force:true.`,
+		);
+	}
 	if (!planFile.progress)
 		throw new Error("no cycle on this plan; call `cycleStartPlan(...)` or `cycleStartItems(...)` first");
 	const progress = planFile.progress;

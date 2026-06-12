@@ -56,6 +56,11 @@ Append items to a running items-mode queue. Use to load a large job in chunks, o
 		let lastErr: unknown;
 		for (let attempt = 0; attempt < 3; attempt++) {
 			const planFile = readPlanFile(cwd, plan);
+			if (planFile.malformed) {
+				throw new Error(
+					`the cycle sidecar for "${name}" is malformed (${planFile.malformedReason ?? "unreadable"}); fix the JSON at ${planFile.sidecarPath}.`,
+				);
+			}
 			if (!planFile.progress) {
 				throw new Error(`no items run named "${name}"; start one with \`cycleStartItems(...)\` first.`);
 			}

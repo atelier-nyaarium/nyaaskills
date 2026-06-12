@@ -45,7 +45,7 @@ export const cycleNext = {
 	name: "cycleNext",
 	title: "cycle-next",
 	description: `
-Conclude the step you just finished and advance to the next. Do the current step's work, then call this with \`completed\` set to that step's name. This is normal forward progress; you do not need \`cycleGoto(...)\` to move forward.
+Conclude the step you just finished and advance to the next. Do the current step's work, then call this with \`completed\` set to that step's name. This is the normal way forward.
 `.trim(),
 	operation: "concluding a step",
 	schema,

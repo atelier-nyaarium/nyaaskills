@@ -17,7 +17,7 @@ export const cycleList = {
 	name: "cycleList",
 	title: "cycle-list",
 	description: `
-List the cycle definitions available in the nyaaskills cycles library, with each one's steps. Use this to discover what cycles you can run with \`cycleStartPlan(...)\` or \`cycleStartItems(...)\`.
+List the cycle definitions available in the nyaaskills cycles library, with each one's steps.
 `.trim(),
 	operation: "listing cycle definitions",
 	schema,
