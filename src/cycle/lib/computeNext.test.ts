@@ -58,7 +58,7 @@ describe("applyLoop", () => {
 			batchStart: 0,
 			batchEnd: 1,
 			batchSize: 1,
-			skipped: [3],
+			deferredItemIndexes: [3],
 		};
 		const r = applyLoop({ ...base, ...items }, steps);
 		expect(r.items).toEqual(["a", "b"]);
@@ -67,7 +67,7 @@ describe("applyLoop", () => {
 		expect(r.batchStart).toBe(0);
 		expect(r.batchEnd).toBe(1);
 		expect(r.batchSize).toBe(1);
-		expect(r.skipped).toEqual([3]);
+		expect(r.deferredItemIndexes).toEqual([3]);
 		expect(r.current).toBe("propose");
 	});
 	it("bumps the lap without any cap", () => {

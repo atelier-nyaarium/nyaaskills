@@ -16,11 +16,11 @@ const baseProgressFields = {
 	lap: z.number().int().positive(),
 	status: z.enum(["active", "done", "stopped"]),
 	summary: z.string().optional(),
-	// The effective step sequence for this run (index is relative to this list). The start tools
-	// always persist it - even for a full-suite run - so a human editing the sidecar mid-run has a
-	// visible, obvious knob for dropping steps. Still optional on read for older sidecars (absent =
-	// the def's full step list).
-	steps: z.array(z.string().min(1)).min(1).optional(),
+	// The effective step sequence for this run (index is relative to this list). Named after the
+	// start tools' includeSteps param and always persisted - even for a full-suite run - so a human
+	// editing the sidecar mid-run has a visible, obvious knob for dropping steps. Still optional on
+	// read for older sidecars (absent = the def's full step list).
+	includeSteps: z.array(z.string().min(1)).min(1).optional(),
 };
 
 // Plan mode: the spec is the plan .md the agent edits; no work queue in the sidecar.
@@ -29,7 +29,7 @@ const PlanProgress = z.object({ ...baseProgressFields, mode: z.literal("plan") }
 // The work-queue fields, shared by items mode and phases mode. A co-required group (all present
 // together) so a half-written record fails validation. `cursor` is the next unprocessed index;
 // [batchStart, batchEnd) is the in-flight batch (persisted so an interrupted batch resumes to the
-// exact same window); `skipped` records entries disposed without doing.
+// exact same window); `deferredItemIndexes` records queue positions set aside without doing.
 const queueFields = {
 	spec: z.string().min(1),
 	items: z.array(z.string()),
@@ -37,7 +37,7 @@ const queueFields = {
 	batchStart: z.number().int().nonnegative(),
 	batchEnd: z.number().int().nonnegative(),
 	batchSize: z.number().int().positive(),
-	skipped: z.array(z.number().int().nonnegative()),
+	deferredItemIndexes: z.array(z.number().int().nonnegative()),
 };
 
 // Items mode: an explicit work queue lives in the sidecar.
@@ -53,10 +53,23 @@ const PhasesProgress = z.object({
 	...queueFields,
 });
 
-// Sidecars written before the discriminant existed carry no `mode`; default them to plan mode so
-// existing runs keep parsing while the discriminant stays required for new records.
+// Tolerate older sidecars: default the missing `mode` discriminant to plan mode, and map the
+// pre-rename field names (`steps`, `skipped`) onto their positive successors.
 export const ProgressSchema = z.preprocess(
-	(raw) => (raw && typeof raw === "object" && !("mode" in raw) ? { ...raw, mode: "plan" } : raw),
+	(raw) => {
+		if (!raw || typeof raw !== "object") return raw;
+		const r = { ...(raw as Record<string, unknown>) };
+		if (!("mode" in r)) r.mode = "plan";
+		if ("steps" in r && !("includeSteps" in r)) {
+			r.includeSteps = r.steps;
+			delete r.steps;
+		}
+		if ("skipped" in r && !("deferredItemIndexes" in r)) {
+			r.deferredItemIndexes = r.skipped;
+			delete r.skipped;
+		}
+		return r;
+	},
 	z.discriminatedUnion("mode", [PlanProgress, ItemsProgress, PhasesProgress]),
 );
 
@@ -77,7 +90,7 @@ export interface PlanFile {
 	// run" from "no run" so a single bad field cannot be silently overwritten.
 	malformed: boolean;
 	// What failed validation, so a hand-edit gone wrong is fixable without diffing the schema
-	// (e.g. `skipped.0: expected number, received string`).
+	// (e.g. `deferredItemIndexes.0: expected number, received string`).
 	malformedReason?: string;
 }
 
@@ -223,7 +236,7 @@ export function loadCycleRun(cwd: string, plan: string, opts: { requireActive: b
 	const { def, instructions } = resolveDef(progress.name);
 	// The effective sequence is the per-run subset if set, else the def's full list. Every stateful
 	// tool advances over this, not def.steps, so a configured run runs only its kept steps.
-	return { planFile, progress, def, steps: progress.steps ?? def.steps, instructions };
+	return { planFile, progress, def, steps: progress.includeSteps ?? def.steps, instructions };
 }
 
 // The literal next call travels with the instructions so it stays in the agent's working context.
@@ -280,7 +293,7 @@ export function itemsContext(progress: StoredProgress): string {
 	].join("\n");
 }
 
-// Canonical form for noDup comparison: trim plus strip trailing slashes. Items are treated as opaque
+// Canonical form for dedupe comparison: trim plus strip trailing slashes. Items are treated as opaque
 // strings (often paths), so this is the documented identity rather than full path resolution.
 export function normalizeItem(s: string): string {
 	return s.trim().replace(/\/+$/, "");
@@ -289,28 +302,34 @@ export function normalizeItem(s: string): string {
 export interface AppendResult {
 	items: string[];
 	added: number;
-	dropped: number;
+	duplicates: number;
 }
 
-// Append to the queue. With noDup, drop any incoming item whose normalized form already exists among
-// the NON-skipped queue items (so a deliberately re-queued skipped item is allowed through), and dedup
-// the incoming batch against itself. Returns the new queue plus added/dropped counts.
-export function appendItems(existing: string[], skipped: number[], newItems: string[], noDup: boolean): AppendResult {
-	if (!noDup) return { items: [...existing, ...newItems], added: newItems.length, dropped: 0 };
-	const skippedSet = new Set(skipped);
-	const seen = new Set(existing.filter((_, i) => !skippedSet.has(i)).map(normalizeItem));
+// Append to the queue. With dedupe, an incoming item whose normalized form already exists among the
+// active (non-deferred) queue items counts as a duplicate (so a deliberately re-queued deferred item
+// is allowed through), and the incoming batch is deduped against itself. Returns the new queue plus
+// added/duplicate counts.
+export function appendItems(
+	existing: string[],
+	deferredIndexes: number[],
+	newItems: string[],
+	dedupe: boolean,
+): AppendResult {
+	if (!dedupe) return { items: [...existing, ...newItems], added: newItems.length, duplicates: 0 };
+	const deferred = new Set(deferredIndexes);
+	const seen = new Set(existing.filter((_, i) => !deferred.has(i)).map(normalizeItem));
 	const items = [...existing];
 	let added = 0;
-	let dropped = 0;
+	let duplicates = 0;
 	for (const item of newItems) {
 		const n = normalizeItem(item);
 		if (seen.has(n)) {
-			dropped++;
+			duplicates++;
 			continue;
 		}
 		seen.add(n);
 		items.push(item);
 		added++;
 	}
-	return { items, added, dropped };
+	return { items, added, duplicates };
 }

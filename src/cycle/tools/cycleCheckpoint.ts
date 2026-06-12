@@ -39,12 +39,12 @@ End-of-lap decision.
 Items mode only: on a loop, set how many items the next batch hands over (overrides the run default). Use to back off to smaller batches when items are heavy.
 `.trim(),
 		),
-	skip: z
+	defer: z
 		.array(z.number().int().nonnegative())
 		.optional()
 		.describe(
 			`
-Items mode only: indices (from the current batch) you could not complete and are skipping. Recorded so they are not re-done, and a later cycleAppendItems can deliberately re-queue them.
+Items mode only: indices (from the current batch) to set aside without completing. Deferred items are not re-done by the queue; re-queue one deliberately by appending it again.
 `.trim(),
 		),
 });
@@ -75,26 +75,26 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 	operation: "deciding at a lap checkpoint",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
-		const { plan, decision, summary, batchSize, skip } = schema.parse(args);
+		const { plan, decision, summary, batchSize, defer } = schema.parse(args);
 		const { planFile, progress, steps, instructions } = loadCycleRun(cwd, plan, { requireActive: true });
 
 		if (decision === "loop" && progress.mode !== "plan") {
 			// Items/phases mode: a loop advances the queue by one batch (one phase). The queue bounds the run.
 			const isPhases = progress.mode === "phases";
-			// Phases are definitionally one-per-lap: ignore the items-only batchSize override and skip,
+			// Phases are definitionally one-per-lap: ignore the items-only batchSize override and defer,
 			// or a batchSize > 1 would slide the window past unvisited phases and silently drop them.
 			const nextBatchSize = isPhases ? 1 : (batchSize ?? progress.batchSize);
-			// Only items in the just-finished batch can be skipped, so a stray future index cannot mark an
-			// unreached item and then let noDup re-queue it into a double-process.
-			const mergedSkipped =
-				!isPhases && skip?.length
+			// Only items in the just-finished batch can be deferred, so a stray future index cannot mark
+			// an unreached item and then let dedupe re-queue it into a double-process.
+			const mergedDeferred =
+				!isPhases && defer?.length
 					? [
 							...new Set([
-								...progress.skipped,
-								...skip.filter((i) => i >= progress.batchStart && i < progress.batchEnd),
+								...progress.deferredItemIndexes,
+								...defer.filter((i) => i >= progress.batchStart && i < progress.batchEnd),
 							]),
 						].sort((a, b) => a - b)
-					: progress.skipped;
+					: progress.deferredItemIndexes;
 			const adv = advanceBatch(progress.batchEnd, progress.items.length, nextBatchSize);
 			if (adv.drained) {
 				// All items consumed. Keep the sidecar (an append could continue it; "queue empty" is not
@@ -105,10 +105,10 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 					cursor: progress.items.length,
 					batchStart: progress.items.length,
 					batchEnd: progress.items.length,
-					skipped: mergedSkipped,
+					deferredItemIndexes: mergedDeferred,
 				};
 				writeProgress(planFile, drainedProgress);
-				const skippedNote = mergedSkipped.length ? ` (${mergedSkipped.length} skipped)` : "";
+				const deferredNote = mergedDeferred.length ? ` (${mergedDeferred.length} deferred)` : "";
 				const result = {
 					plan,
 					cycle: progress.name,
@@ -120,8 +120,8 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 					remaining: 0,
 					totalItems: progress.items.length,
 					instructions: isPhases
-						? `All ${progress.items.length} phases done${skippedNote}.`
-						: `Queue drained: all ${progress.items.length} items processed${skippedNote}.`,
+						? `All ${progress.items.length} phases done${deferredNote}.`
+						: `Queue drained: all ${progress.items.length} items processed${deferredNote}.`,
 					nextAction: isPhases
 						? `Finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", summary })\`. Do not stop unless finishing or blocked.`
 						: `Append with \`cycleAppendItems({ name, items: [...] })\` then loop again, or finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", summary })\`. Do not stop unless finishing or blocked.`,
@@ -136,7 +136,7 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 				batchStart: adv.batchStart,
 				batchEnd: adv.batchEnd,
 				batchSize: nextBatchSize,
-				skipped: mergedSkipped,
+				deferredItemIndexes: mergedDeferred,
 			};
 			writeProgress(planFile, next);
 			notifyCycleEnd({ decision, summary, plan, cycle: progress.name, lap: next.lap, status: "active" });

@@ -160,7 +160,7 @@ describe("cycle tool lifecycle", () => {
 
 	it("a hand-corrupted sidecar surfaces a precise malformed error mid-run, not 'no cycle'", async () => {
 		await startPlan({ plan: "p.md", cycle: "demo", phases: undefined });
-		// The real-world trap: a human edits `skipped` (numeric item indices) with step names.
+		// The real-world trap: a human edits the item-index list with step names.
 		corruptSidecar("p.md", (p) => {
 			p.mode = "items";
 			p.spec = "x";
@@ -169,12 +169,14 @@ describe("cycle tool lifecycle", () => {
 			p.batchStart = 0;
 			p.batchEnd = 1;
 			p.batchSize = 1;
-			p.skipped = ["align-fix"];
+			p.deferredItemIndexes = ["align-fix"];
 		});
-		await expect(run(cycleNext, { plan: "p.md", completed: "a" })).rejects.toThrow(/malformed.*skipped/s);
+		await expect(run(cycleNext, { plan: "p.md", completed: "a" })).rejects.toThrow(
+			/malformed.*deferredItemIndexes/s,
+		);
 		const status = await run(cycleStatus, { plan: "p.md" });
 		expect(status.malformed).toBe(true);
-		expect(status.error).toContain("skipped");
+		expect(status.error).toContain("deferredItemIndexes");
 	});
 
 	it("guards a malformed cycle block from being clobbered without force", async () => {
@@ -372,15 +374,15 @@ describe("cycle items mode", () => {
 		expect(itemsSidecar("feed").batchEnd).toBe(2);
 	});
 
-	it("skip records the item, and noDup drops queued items but re-allows a skipped one", async () => {
+	it("defer records the item, and dedupe drops queued items but re-allows a deferred one", async () => {
 		await startItems({ name: "skip", cycle: "demo", spec: "x", items: ["a", "b", "c"], batchSize: 1 });
 		await runBatchSteps("skip"); // batch [0,1) = "a"
-		await run(cycleCheckpoint, { plan: "plans/skip.md", decision: "loop", summary: "skip a", skip: [0] });
-		expect(itemsSidecar("skip").skipped).toEqual([0]);
-		// "a" (index 0) is skipped so it may be re-added; "b" (index 1, not skipped) is dropped; "d" is new.
-		const app = await run(cycleAppendItems, { name: "skip", items: ["a", "b", "d"], noDup: true });
+		await run(cycleCheckpoint, { plan: "plans/skip.md", decision: "loop", summary: "defer a", defer: [0] });
+		expect(itemsSidecar("skip").deferredItemIndexes).toEqual([0]);
+		// "a" (index 0) is deferred so it may be re-added; "b" (index 1, active) is a duplicate; "d" is new.
+		const app = await run(cycleAppendItems, { name: "skip", items: ["a", "b", "d"], dedupe: true });
 		expect(app.added).toBe(2);
-		expect(app.dropped).toBe(1);
+		expect(app.duplicates).toBe(1);
 		expect(itemsSidecar("skip").items).toEqual(["a", "b", "c", "a", "d"]);
 	});
 
@@ -413,20 +415,20 @@ describe("cycle items mode", () => {
 	it("skip is clamped to the current batch and merges across checkpoints", async () => {
 		await startItems({ name: "sk", cycle: "demo", spec: "x", items: ["i1", "i2", "i3"], batchSize: 1 });
 		await runBatchSteps("sk"); // batch [0,1)
-		await run(cycleCheckpoint, { plan: "plans/sk.md", decision: "loop", summary: "s", skip: [0] }); // -> [1,2)
+		await run(cycleCheckpoint, { plan: "plans/sk.md", decision: "loop", summary: "s", defer: [0] }); // -> [1,2)
 		await runBatchSteps("sk");
-		// skip [1] is in-batch (recorded); the out-of-batch 0 is dropped (already recorded last lap anyway).
-		await run(cycleCheckpoint, { plan: "plans/sk.md", decision: "loop", summary: "s", skip: [1, 2] });
-		expect(itemsSidecar("sk").skipped).toEqual([0, 1]); // merged + sorted; index 2 (future) clamped out
+		// defer [1] is in-batch (recorded); the out-of-batch 0 is ignored (already recorded last lap anyway).
+		await run(cycleCheckpoint, { plan: "plans/sk.md", decision: "loop", summary: "s", defer: [1, 2] });
+		expect(itemsSidecar("sk").deferredItemIndexes).toEqual([0, 1]); // merged + sorted; index 2 (future) clamped out
 	});
 });
 
 describe("per-run step subset", () => {
 	// The includeSteps entry point lands in a later phase; here we inject the subset directly to test
-	// the runtime: every tool must advance over progress.steps, not the def's full list.
+	// the runtime: every tool must advance over progress.includeSteps, not the def's full list.
 	const setSubset = (plan: string, steps: string[]) =>
 		corruptSidecar(plan, (p) => {
-			p.steps = steps;
+			p.includeSteps = steps;
 		});
 
 	it("cycleStatus total and advancement use the subset, not the full def", async () => {
@@ -482,14 +484,14 @@ describe("configurable steps (includeSteps)", () => {
 		expect(r.step).toBe("a");
 		expect(r.steps).toEqual(["a", "b", "c"]);
 		// Always persisted, even for the full suite, so a human can trim it mid-run.
-		expect(planSidecar("p.md").steps).toEqual(["a", "b", "c"]);
+		expect(planSidecar("p.md").includeSteps).toEqual(["a", "b", "c"]);
 	});
 
 	it("a valid subset starts at the kept first step, persists, and runs only kept steps", async () => {
 		const r = await run(cycleStartPlan, { plan: "p.md", cycle: "demo", includeSteps: ["b", "c"] });
 		expect(r.step).toBe("b"); // a omitted -> starts at b
 		expect(r.steps).toEqual(["b", "c"]);
-		expect(planSidecar("p.md").steps).toEqual(["b", "c"]);
+		expect(planSidecar("p.md").includeSteps).toEqual(["b", "c"]);
 		expect((await run(cycleNext, { plan: "p.md", completed: "b" })).step).toBe("c");
 		expect((await run(cycleNext, { plan: "p.md", completed: "c" })).lapEnd).toBe(true);
 	});
@@ -521,7 +523,7 @@ describe("configurable steps (includeSteps)", () => {
 	it("naming every step (not 'all') runs the full suite in def order", async () => {
 		const r = await run(cycleStartPlan, { plan: "p.md", cycle: "demo", includeSteps: ["c", "b", "a"] });
 		expect(r.steps).toEqual(["a", "b", "c"]); // def order
-		expect(planSidecar("p.md").steps).toEqual(["a", "b", "c"]); // always persisted
+		expect(planSidecar("p.md").includeSteps).toEqual(["a", "b", "c"]); // always persisted
 	});
 
 	it("includeSteps composes with items mode (subset drives the per-batch steps)", async () => {
@@ -537,7 +539,7 @@ describe("configurable steps (includeSteps)", () => {
 		expect(r.steps).toEqual(["b", "c"]);
 		const sc = JSON.parse(fs.readFileSync(path.join(cwd, "plans", "is.cycle.json"), "utf8"));
 		expect(sc.mode).toBe("items");
-		expect(sc.steps).toEqual(["b", "c"]);
+		expect(sc.includeSteps).toEqual(["b", "c"]);
 		expect((await run(cycleNext, { plan: "plans/is.md", completed: "b" })).step).toBe("c");
 		expect((await run(cycleNext, { plan: "plans/is.md", completed: "c" })).lapEnd).toBe(true);
 	});
@@ -603,7 +605,7 @@ describe("plan-mode phases (mode: phases)", () => {
 		expect(r.steps).toEqual(["a", "c"]);
 		const sc = sidecar("ph-sub.md");
 		expect(sc.mode).toBe("phases");
-		expect(sc.steps).toEqual(["a", "c"]);
+		expect(sc.includeSteps).toEqual(["a", "c"]);
 		expect(sc.items).toHaveLength(2);
 		expect((await run(cycleNext, { plan: "ph-sub.md", completed: "a" })).step).toBe("c"); // b skipped
 		expect((await run(cycleNext, { plan: "ph-sub.md", completed: "c" })).lapEnd).toBe(true);

@@ -54,8 +54,8 @@ function buildPhasesRecord(plan: string, cycle: string, items: string[], steps: 
 		batchStart: 0,
 		batchEnd: 1,
 		batchSize: 1,
-		skipped: [],
-		steps,
+		deferredItemIndexes: [],
+		includeSteps: steps,
 	};
 }
 
@@ -150,11 +150,11 @@ A result with a \`bounce\` field means the cycle did NOT start; follow the bounc
 		if ("bounce" in resolution) return { data: StepBounceSchema.parse(resolution.bounce) };
 		const steps = resolution.steps;
 
-		// `steps` is persisted even for a full-suite run, so the sidecar always shows the editable
-		// knob: a human can trim this list mid-run to drop steps.
+		// `includeSteps` is persisted even for a full-suite run, so the sidecar always shows the
+		// editable knob: a human can trim this list mid-run to drop steps.
 		const progress: StoredProgress = phaseItems
 			? buildPhasesRecord(plan, cycle, phaseItems, steps)
-			: { mode: "plan", name: cycle, current: steps[0], index: 0, lap: 1, status: "active", steps };
+			: { mode: "plan", name: cycle, current: steps[0], index: 0, lap: 1, status: "active", includeSteps: steps };
 		writeProgress(planFile, progress);
 
 		const ctx = itemsContext(progress); // the first phase's detail (empty for a freeform plan run)

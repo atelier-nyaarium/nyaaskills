@@ -2,26 +2,26 @@ import { describe, expect, it } from "bun:test";
 import { appendItems, ProgressSchema } from "./run.ts";
 
 describe("appendItems dedup", () => {
-	it("without noDup, appends everything verbatim", () => {
+	it("without dedupe, appends everything verbatim", () => {
 		const r = appendItems(["a"], [], ["a", "a"], false);
 		expect(r.items).toEqual(["a", "a", "a"]);
 		expect(r.added).toBe(2);
-		expect(r.dropped).toBe(0);
+		expect(r.duplicates).toBe(0);
 	});
 
-	it("noDup normalizes (trim + trailing slash), dedups vs non-skipped, and re-allows a skipped item", () => {
-		// existing ["a", "b/"], index 0 ("a") is skipped. Incoming: "a" re-allowed, "b" == "b/" dropped,
-		// "c " normalizes to a fresh "c".
+	it("dedupe normalizes (trim + trailing slash), dedups vs active items, and re-allows a deferred one", () => {
+		// existing ["a", "b/"], index 0 ("a") is deferred. Incoming: "a" re-allowed, "b" == "b/" is a
+		// duplicate, "c " normalizes to a fresh "c".
 		const r = appendItems(["a", "b/"], [0], ["a", "b", "c "], true);
 		expect(r.items).toEqual(["a", "b/", "a", "c "]);
 		expect(r.added).toBe(2);
-		expect(r.dropped).toBe(1);
+		expect(r.duplicates).toBe(1);
 	});
 
-	it("noDup dedups the incoming batch against itself", () => {
+	it("dedupe dedups the incoming batch against itself", () => {
 		const r = appendItems([], [], ["x", "x", "y"], true);
 		expect(r.items).toEqual(["x", "y"]);
-		expect(r.dropped).toBe(1);
+		expect(r.duplicates).toBe(1);
 	});
 });
 
@@ -36,7 +36,7 @@ describe("ProgressSchema mode discriminant", () => {
 		batchStart: 0,
 		batchEnd: 1,
 		batchSize: 1,
-		skipped: [],
+		deferredItemIndexes: [],
 	};
 
 	it("defaults a modeless sidecar to plan mode (back-compat)", () => {
@@ -61,9 +61,30 @@ describe("ProgressSchema mode discriminant", () => {
 	});
 
 	it("persists a per-run step subset, and rejects an empty one", () => {
-		const parsed = ProgressSchema.safeParse({ ...planRecord, steps: ["implement", "commit"] });
+		const parsed = ProgressSchema.safeParse({ ...planRecord, includeSteps: ["implement", "commit"] });
 		expect(parsed.success).toBe(true);
-		if (parsed.success) expect(parsed.data.steps).toEqual(["implement", "commit"]);
-		expect(ProgressSchema.safeParse({ ...planRecord, steps: [] }).success).toBe(false);
+		if (parsed.success) expect(parsed.data.includeSteps).toEqual(["implement", "commit"]);
+		expect(ProgressSchema.safeParse({ ...planRecord, includeSteps: [] }).success).toBe(false);
+	});
+
+	it("maps the pre-rename field names onto their positive successors", () => {
+		const legacy = {
+			...planRecord,
+			mode: "items",
+			spec: "do x",
+			items: ["one"],
+			cursor: 0,
+			batchStart: 0,
+			batchEnd: 1,
+			batchSize: 1,
+			skipped: [0],
+			steps: ["implement"],
+		};
+		const parsed = ProgressSchema.safeParse(legacy);
+		expect(parsed.success).toBe(true);
+		if (parsed.success && parsed.data.mode === "items") {
+			expect(parsed.data.deferredItemIndexes).toEqual([0]);
+			expect(parsed.data.includeSteps).toEqual(["implement"]);
+		}
 	});
 });

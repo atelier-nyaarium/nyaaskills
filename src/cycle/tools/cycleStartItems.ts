@@ -129,9 +129,9 @@ A result with a \`bounce\` field means the cycle did NOT start; follow the bounc
 			batchStart: 0,
 			batchEnd: Math.min(batchSize, items.length),
 			batchSize,
-			skipped: [],
+			deferredItemIndexes: [],
 			// Persisted even for a full-suite run, so the sidecar always shows the editable knob.
-			steps,
+			includeSteps: steps,
 		};
 		writeProgress(planFile, progress);
 

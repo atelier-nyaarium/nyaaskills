@@ -24,7 +24,7 @@ const OutputSchema = z.object({
 	totalItems: z.number().optional(),
 	remaining: z.number().optional(),
 	currentBatch: z.array(z.string()).optional(),
-	skipped: z.number().optional(),
+	deferred: z.number().optional(),
 	instructions: z.string().optional(),
 	malformed: z.boolean().optional(),
 	error: z.string().optional(),
@@ -68,7 +68,7 @@ Report where a plan is in its cycle without mutating anything: current step, ind
 						totalItems: progress.items.length,
 						remaining: progress.items.length - progress.cursor,
 						currentBatch: progress.items.slice(progress.batchStart, progress.batchEnd),
-						skipped: progress.skipped.length,
+						deferred: progress.deferredItemIndexes.length,
 					}
 				: { mode: "plan" };
 		const base = {
@@ -85,7 +85,7 @@ Report where a plan is in its cycle without mutating anything: current step, ind
 		try {
 			const { def, instructions } = resolveDef(progress.name);
 			// Report against the effective step list (the per-run subset if set), not the def's full list.
-			const effectiveSteps = progress.steps ?? def.steps;
+			const effectiveSteps = progress.includeSteps ?? def.steps;
 			const known = effectiveSteps.includes(progress.current);
 			return {
 				data: OutputSchema.parse({
