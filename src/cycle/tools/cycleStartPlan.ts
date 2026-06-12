@@ -96,6 +96,15 @@ Steps to run, by name; the rest are skipped. If you aren't sure what the user wa
 Track the plan's phases for crash recovery. Each label must match a ## header in the plan file; one phase runs per lap and its detail is re-shown each step. Omit for a freeform plan run. The plan file must exist.
 `.trim(),
 		),
+	notify: z
+		.enum(["done", "laps"])
+		.optional()
+		.default("done")
+		.describe(
+			`
+When to relay a human notification: "done" (default) only when the run finishes, "laps" at every lap end. critical-stop always notifies.
+`.trim(),
+		),
 });
 
 const OutputSchema = z.object({
@@ -123,7 +132,7 @@ A result with a \`bounce\` field means the cycle did NOT start; follow the bounc
 	operation: "starting a cycle",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
-		const { plan, cycle, force, includeSteps, phases } = schema.parse(args);
+		const { plan, cycle, force, includeSteps, phases, notify } = schema.parse(args);
 
 		const { def, instructions } = resolveDef(cycle);
 
@@ -152,9 +161,10 @@ A result with a \`bounce\` field means the cycle did NOT start; follow the bounc
 
 		// `includeSteps` is persisted even for a full-suite run, so the sidecar always shows the
 		// editable knob: a human can trim this list mid-run to drop steps.
-		const progress: StoredProgress = phaseItems
+		const base: StoredProgress = phaseItems
 			? buildPhasesRecord(plan, cycle, phaseItems, steps)
 			: { mode: "plan", name: cycle, current: steps[0], index: 0, lap: 1, status: "active", includeSteps: steps };
+		const progress: StoredProgress = { ...base, notify, startedAt: Date.now() };
 		writeProgress(planFile, progress);
 
 		const ctx = itemsContext(progress); // the first phase's detail (empty for a freeform plan run)

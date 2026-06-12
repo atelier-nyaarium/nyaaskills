@@ -63,6 +63,15 @@ How many items to hand over per batch. Default 1. Keep small for heavy per-item 
 Steps to run, by name; the rest are skipped. If you aren't sure what the user wants, call without includeSteps: the result carries the step menu to put in front of the user. Pass ["all"] only when the user explicitly wants the full suite.
 `.trim(),
 		),
+	notify: z
+		.enum(["done", "laps"])
+		.optional()
+		.default("done")
+		.describe(
+			`
+When to relay a human notification: "done" (default) only when the run finishes, "laps" at every lap end. critical-stop always notifies.
+`.trim(),
+		),
 });
 
 const OutputSchema = z.object({
@@ -91,7 +100,7 @@ A result with a \`bounce\` field means the cycle did NOT start; follow the bounc
 	operation: "starting an items cycle",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
-		const { name, cycle, spec, items, batchSize, includeSteps } = schema.parse(args);
+		const { name, cycle, spec, items, batchSize, includeSteps, notify } = schema.parse(args);
 
 		const { def, instructions } = resolveDef(cycle);
 		// Resolve the step selection before touching the filesystem: a bounce writes nothing.
@@ -132,6 +141,8 @@ A result with a \`bounce\` field means the cycle did NOT start; follow the bounc
 			deferredItemIndexes: [],
 			// Persisted even for a full-suite run, so the sidecar always shows the editable knob.
 			includeSteps: steps,
+			notify,
+			startedAt: Date.now(),
 		};
 		writeProgress(planFile, progress);
 

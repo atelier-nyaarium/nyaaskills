@@ -21,6 +21,13 @@ const baseProgressFields = {
 	// editing the sidecar mid-run has a visible, obvious knob for dropping steps. Optional on read
 	// as a hand-edit affordance: deleting the field falls back to the def's full step list.
 	includeSteps: z.array(z.string().min(1)).min(1).optional(),
+	// Human-notification cadence: relay a notification on every lap end ("laps") or only when the
+	// run finishes ("done", the default). critical-stop always notifies regardless. Optional on
+	// read so pre-existing sidecars load; absent means "done".
+	notify: z.enum(["done", "laps"]).optional(),
+	// Epoch ms when the run started, for elapsed-time reporting in notifications. Optional on read
+	// for pre-existing sidecars (elapsed is simply omitted).
+	startedAt: z.number().int().positive().optional(),
 };
 
 // Plan mode: the spec is the plan .md the agent edits; no work queue in the sidecar.
@@ -231,12 +238,22 @@ export function appendStepCall(instructions: string, plan: string, step: string)
 // mechanics; the decision surfaces only when the agent actually reaches the end of the lap.
 export function checkpointCall(plan: string): string {
 	return [
-		`All steps complete. Call \`cycleCheckpoint({ plan: "${plan}", decision, summary })\` with a 1-2 sentence summary and one decision:`,
+		`All steps complete. Call \`cycleCheckpoint({ plan: "${plan}", decision, tiny, summary })\` with a one-phrase \`tiny\` headline, a summary (4 sentences max), and one decision:`,
 		"",
 		"- `loop` - do another lap. This is the default; keep going, do not stop to ask between laps.",
 		"- `done` - the work is complete, or another lap would add only minimal gains. This is the run's cleanup: it clears the run state and sends the end-of-run notification, so a finished run is not over until `done` is called.",
-		"- `critical-stop` - only for a real blocker that needs a human.",
+		"- `critical-stop` - only for a real blocker that needs a human (include `whatToDecide`).",
 	].join("\n");
+}
+
+/** Compact human elapsed: "2h 10m", "45m", "3m", "40s". */
+export function humanElapsed(ms: number): string {
+	const s = Math.max(0, Math.round(ms / 1000));
+	if (s < 60) return `${s}s`;
+	const m = Math.round(s / 60);
+	if (m < 60) return `${m}m`;
+	const h = Math.floor(m / 60);
+	return `${h}h ${m % 60}m`;
 }
 
 // Prepended to the first step's instructions at start, so the agent works one step at a time instead

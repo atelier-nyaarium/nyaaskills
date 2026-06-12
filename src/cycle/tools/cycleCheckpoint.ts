@@ -1,9 +1,11 @@
+import path from "node:path";
 import { z } from "zod";
 import { advanceBatch, applyLoop } from "../lib/computeNext.ts";
 import { notifyCycleEnd } from "../lib/notify.ts";
 import {
 	appendStepCall,
 	deleteSidecar,
+	humanElapsed,
 	itemsContext,
 	loadCycleRun,
 	type StoredProgress,
@@ -21,12 +23,45 @@ Path to the plan file.
 End-of-lap decision.
 `.trim(),
 	),
+	tiny: z
+		.string()
+		.min(1)
+		.max(100)
+		.describe(
+			`
+One phrase for a notification bar (~60 chars): the lap's outcome at a glance.
+`.trim(),
+		),
 	summary: z
 		.string()
 		.min(1)
 		.describe(
 			`
-1-2 sentences: what this lap did and the outcome.
+What this lap did and the outcome. 4 sentences max.
+`.trim(),
+		),
+	full: z
+		.string()
+		.optional()
+		.describe(
+			`
+Optional full markdown report (mermaid welcome) for the human notification. Encouraged on done and critical-stop.
+`.trim(),
+		),
+	attachments: z
+		.array(z.string())
+		.optional()
+		.describe(
+			`
+Optional absolute file paths (screenshots, logs) to ride along with the notification.
+`.trim(),
+		),
+	whatToDecide: z
+		.string()
+		.optional()
+		.describe(
+			`
+critical-stop only: the specific decision or approval the human must make.
 `.trim(),
 		),
 	batchSize: z
@@ -49,6 +84,13 @@ Items mode only: indices (from the current batch) to set aside without completin
 		),
 });
 
+const NotifyHumanSchema = z.object({
+	tiny: z.string(),
+	full: z.string(),
+	attachments: z.array(z.string()).optional(),
+	urgent: z.boolean(),
+});
+
 const OutputSchema = z.object({
 	plan: z.string(),
 	cycle: z.string(),
@@ -59,24 +101,108 @@ const OutputSchema = z.object({
 	drained: z.boolean().optional(),
 	remaining: z.number().optional(),
 	totalItems: z.number().optional(),
+	notifyHuman: NotifyHumanSchema.optional(),
 	instructions: z.string(),
 	nextAction: z.string(),
 });
+
+interface NotifyContext {
+	cwd: string;
+	decision: "done" | "loop" | "critical-stop";
+	tiny: string;
+	summary: string;
+	full?: string;
+	attachments?: string[];
+	whatToDecide?: string;
+	plan: string;
+	progress: StoredProgress;
+	lap: number;
+}
+
+/** Auto context the server already has: project, elapsed, items counts. */
+function autoContext(ctx: NotifyContext) {
+	const project = path.basename(ctx.cwd);
+	const elapsedMs = ctx.progress.startedAt ? Date.now() - ctx.progress.startedAt : undefined;
+	const itemCounts =
+		ctx.progress.mode === "plan"
+			? undefined
+			: {
+					processed: ctx.progress.cursor,
+					remaining: ctx.progress.items.length - ctx.progress.cursor,
+					deferred: ctx.progress.deferredItemIndexes.length,
+				};
+	return { project, elapsedMs, itemCounts };
+}
+
+/** Pre-composed payload the agent relays verbatim to a notify_human-style tool.
+ * Composed server-side so notifications stay uniform and the agent cannot
+ * under-report: tiny is the bar line, full is a markdown report with the run's
+ * identity, elapsed time, queue counts, the summary, and any authored report. */
+function buildNotifyHuman(ctx: NotifyContext): z.infer<typeof NotifyHumanSchema> {
+	const { project, elapsedMs, itemCounts } = autoContext(ctx);
+	const urgent = ctx.decision === "critical-stop";
+	const meta = [
+		`- Project: \`${project}\` - plan \`${ctx.plan}\` - cycle \`${ctx.progress.name}\` - lap ${ctx.lap}`,
+		`- Decision: **${ctx.decision}**${elapsedMs !== undefined ? ` - elapsed ${humanElapsed(elapsedMs)}` : ""}`,
+	];
+	if (itemCounts) {
+		meta.push(
+			`- Items: ${itemCounts.processed} done, ${itemCounts.remaining} remaining, ${itemCounts.deferred} deferred`,
+		);
+	}
+	const sections = [`# ${ctx.tiny}`, "", ...meta, ""];
+	if (ctx.whatToDecide) sections.push(`**Decision needed:** ${ctx.whatToDecide}`, "");
+	sections.push(ctx.summary);
+	if (ctx.full) sections.push("", "---", "", ctx.full);
+	return {
+		tiny: urgent ? `[NEEDS YOU] ${ctx.tiny}` : ctx.tiny,
+		full: sections.join("\n"),
+		attachments: ctx.attachments?.length ? ctx.attachments : undefined,
+		urgent,
+	};
+}
+
+/** The agent-side relay sentence. Plugins compose through the agent: this result
+ * tells it to forward the payload IF a notification tool exists; a cycles-only
+ * setup simply skips it. */
+function relayInstruction(): string {
+	return `A human notification payload is in \`notifyHuman\`. If a \`notify_human\` tool is available, call it NOW with that payload's tiny/full/attachments before continuing; if no such tool exists, skip this silently.`;
+}
 
 export const cycleCheckpoint = {
 	name: "cycleCheckpoint",
 	title: "cycle-checkpoint",
 	description: `
-The end-of-lap decision, made after the last step. Give a 1-2 sentence summary of the lap, plus one decision:
+The end-of-lap decision, made after the last step. Give a one-phrase \`tiny\` headline, a \`summary\` (4 sentences max), and one decision:
 - \`loop\` - do another lap (the default; keep going)
-- \`done\` - the work is complete, or another lap would add only minimal gains. This is the run's cleanup: it clears the run state and sends the end-of-run notification, so a finished run is not over until \`done\` is called.
-- \`critical-stop\` - a real blocker needs a human
+- \`done\` - the work is complete, or another lap would add only minimal gains. This is the run's cleanup: it clears the run state and sends the end-of-run notification, so a finished run is not over until \`done\` is called. Include \`full\` (markdown report) when you have one.
+- \`critical-stop\` - a real blocker needs a human; include \`whatToDecide\`
 `.trim(),
 	operation: "deciding at a lap checkpoint",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
-		const { plan, decision, summary, batchSize, defer } = schema.parse(args);
+		const { plan, decision, tiny, summary, full, attachments, whatToDecide, batchSize, defer } = schema.parse(args);
 		const { planFile, progress, steps, instructions } = loadCycleRun(cwd, plan, { requireActive: true });
+
+		// done/critical-stop always notify; lap ends only when the run opted in.
+		const notifyOnLoop = (progress.notify ?? "done") === "laps";
+		const makeNotify = (lap: number): z.infer<typeof NotifyHumanSchema> =>
+			buildNotifyHuman({ cwd, decision, tiny, summary, full, attachments, whatToDecide, plan, progress, lap });
+		const eventExtras = (lap: number) => {
+			const { project, elapsedMs, itemCounts } = autoContext({
+				cwd,
+				decision,
+				tiny,
+				summary,
+				full,
+				attachments,
+				whatToDecide,
+				plan,
+				progress,
+				lap,
+			});
+			return { tiny, full, attachments, whatToDecide, project, elapsedMs, itemCounts };
+		};
 
 		if (decision === "loop" && progress.mode !== "plan") {
 			// Items/phases mode: a loop advances the queue by one batch (one phase). The queue bounds the run.
@@ -123,8 +249,8 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 						? `All ${progress.items.length} phases done${deferredNote}.`
 						: `Queue drained: all ${progress.items.length} items processed${deferredNote}.`,
 					nextAction: isPhases
-						? `Finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", summary })\`. Do not stop unless finishing or blocked.`
-						: `Append with \`cycleAppendItems({ name, items: [...] })\` then loop again, or finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", summary })\`. Do not stop unless finishing or blocked.`,
+						? `Finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", tiny, summary })\`. Do not stop unless finishing or blocked.`
+						: `Append with \`cycleAppendItems({ name, items: [...] })\` then loop again, or finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", tiny, summary })\`. Do not stop unless finishing or blocked.`,
 				};
 				return { data: OutputSchema.parse(result) };
 			}
@@ -139,8 +265,17 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 				deferredItemIndexes: mergedDeferred,
 			};
 			writeProgress(planFile, next);
-			notifyCycleEnd({ decision, summary, plan, cycle: progress.name, lap: next.lap, status: "active" });
+			notifyCycleEnd({
+				decision,
+				summary,
+				plan,
+				cycle: progress.name,
+				lap: next.lap,
+				status: "active",
+				...eventExtras(next.lap),
+			});
 			const remaining = progress.items.length - adv.batchStart;
+			const notifyHuman = notifyOnLoop ? makeNotify(progress.lap) : undefined;
 			const result = {
 				plan,
 				cycle: progress.name,
@@ -150,8 +285,9 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 				step: next.current,
 				remaining,
 				totalItems: progress.items.length,
+				notifyHuman,
 				instructions: `${itemsContext(next)}\n\n---\n\n${appendStepCall(instructions(next.current), plan, next.current)}`,
-				nextAction: `Next ${isPhases ? "phase" : "batch"} (lap ${next.lap}, ${remaining} ${isPhases ? "phases" : "items"} left). Do step "${next.current}", then \`cycleNext({ plan: "${plan}", completed: "${next.current}" })\`. Keep going; do not stop until ${isPhases ? "all phases are done" : "the queue drains"} or you hit a critical blocker.`,
+				nextAction: `${notifyHuman ? `${relayInstruction()} ` : ""}Next ${isPhases ? "phase" : "batch"} (lap ${next.lap}, ${remaining} ${isPhases ? "phases" : "items"} left). Do step "${next.current}", then \`cycleNext({ plan: "${plan}", completed: "${next.current}" })\`. Keep going; do not stop until ${isPhases ? "all phases are done" : "the queue drains"} or you hit a critical blocker.`,
 			};
 			return { data: OutputSchema.parse(result) };
 		}
@@ -161,7 +297,16 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 			// fields survive.
 			const next: StoredProgress = applyLoop(progress, steps);
 			writeProgress(planFile, next);
-			notifyCycleEnd({ decision, summary, plan, cycle: progress.name, lap: next.lap, status: "active" });
+			notifyCycleEnd({
+				decision,
+				summary,
+				plan,
+				cycle: progress.name,
+				lap: next.lap,
+				status: "active",
+				...eventExtras(next.lap),
+			});
+			const notifyHuman = notifyOnLoop ? makeNotify(progress.lap) : undefined;
 			const result = {
 				plan,
 				cycle: progress.name,
@@ -169,13 +314,18 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 				status: "active",
 				lap: next.lap,
 				step: next.current,
+				notifyHuman,
 				instructions: appendStepCall(instructions(next.current), plan, next.current),
-				nextAction: `New lap ${next.lap} for \`${plan}\`. Do step "${next.current}", then call \`cycleNext({ plan: "${plan}", completed: "${next.current}" })\`. Continue straight into the next phase; do not stop to ask between phases unless blocked.`,
+				nextAction: `${notifyHuman ? `${relayInstruction()} ` : ""}New lap ${next.lap} for \`${plan}\`. Do step "${next.current}", then call \`cycleNext({ plan: "${plan}", completed: "${next.current}" })\`. Continue straight into the next phase; do not stop to ask between phases unless blocked.`,
 			};
 			return { data: OutputSchema.parse(result) };
 		}
 
 		const status = decision === "done" ? "done" : "stopped";
+		// Notification context is built BEFORE the sidecar is cleared, so done still
+		// reports elapsed time and counts.
+		const notifyHuman = makeNotify(progress.lap);
+		const extras = eventExtras(progress.lap);
 		if (decision === "done") {
 			// Plan fully consumed: clear the sidecar so nothing lingers to resume and a later
 			// cycleStartPlan begins clean without needing force.
@@ -184,7 +334,7 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 			const next: StoredProgress = { ...progress, status, summary };
 			writeProgress(planFile, next);
 		}
-		notifyCycleEnd({ decision, summary, plan, cycle: progress.name, lap: progress.lap, status });
+		notifyCycleEnd({ decision, summary, plan, cycle: progress.name, lap: progress.lap, status, ...extras });
 		const result = {
 			plan,
 			cycle: progress.name,
@@ -192,11 +342,13 @@ The end-of-lap decision, made after the last step. Give a 1-2 sentence summary o
 			status,
 			lap: progress.lap,
 			step: progress.current,
+			notifyHuman,
 			instructions: summary,
-			nextAction:
+			nextAction: `${relayInstruction()} ${
 				decision === "done"
 					? `\`${plan}\` done; its cycle sidecar was cleared. Start a cycle on a new plan with \`cycleStartPlan(...)\`.`
-					: `\`${plan}\` stopped. Resolve the critical issue, then resume with \`cycleGoto(...)\`.`,
+					: `\`${plan}\` stopped. Resolve the critical issue, then resume with \`cycleGoto(...)\`.`
+			}`,
 		};
 		return { data: OutputSchema.parse(result) };
 	},
