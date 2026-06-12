@@ -32,6 +32,9 @@ Path to the plan file.
 	decision: z.enum(["done", "loop", "critical-stop"]).describe(
 		`
 End-of-lap decision.
+- "loop": do another lap (the default; keep going).
+- "done": the work is complete, or another lap would add only minimal gains. This is the run's cleanup: it clears the run state and sends the end-of-run notification.
+- "critical-stop": a real blocker needs a human; include whatToDecide.
 `.trim(),
 	),
 	tiny: z
@@ -114,10 +117,7 @@ export const cycleCheckpoint = {
 	name: "cycleCheckpoint",
 	title: "cycle-checkpoint",
 	description: `
-The end-of-lap decision, made after the last step. Give a one-phrase \`tiny\` headline, a \`summary\` (4-6 sentences: what finished, and what is next if continuing), and one decision:
-- \`loop\` - do another lap (the default; keep going)
-- \`done\` - the work is complete, or another lap would add only minimal gains. This is the run's cleanup: it clears the run state and sends the end-of-run notification, so a finished run is not over until \`done\` is called. Include \`full\` (markdown report) when you have one.
-- \`critical-stop\` - a real blocker needs a human; include \`whatToDecide\`
+The end-of-lap decision, made after the last step. Give a \`tiny\` headline, a \`summary\`, and one \`decision\` (loop, done, or critical-stop). A finished run is not over until \`done\` is called; include \`full\` (markdown report) on done and critical-stop when you have one.
 `.trim(),
 	operation: "deciding at a lap checkpoint",
 	schema,
