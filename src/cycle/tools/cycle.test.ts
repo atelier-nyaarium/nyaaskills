@@ -780,6 +780,8 @@ describe("human notification tiers (notify option + payload)", () => {
 		const done = await run(cycleCheckpoint, { plan: "n1.md", decision: "done", tiny: "all shipped", summary: "s" });
 		expect(done.notifyHuman).toBeDefined();
 		expect(done.notifyHuman.tiny).toBe("all shipped");
+		// The Short tier rides verbatim as its own field, not only baked into full.
+		expect(done.notifyHuman.summary).toBe("s");
 		expect(done.notifyHuman.urgent).toBe(false);
 		// English header sentence, then the summary below a blank line.
 		expect(done.notifyHuman.full).toContain("has completed its run after 2 laps in ");

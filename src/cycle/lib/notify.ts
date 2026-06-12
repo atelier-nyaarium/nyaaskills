@@ -54,9 +54,12 @@ export interface NotifyBuildContext {
 ////////////////////////////////
 //  Schemas
 
-/** The agent-relayed payload shape; mirrors the params of the delivery tool. */
+/** The agent-relayed payload shape; mirrors the params of the delivery tool.
+ * `summary` is the Short tier carried verbatim as its own addressable field
+ * (downstream consumers must not have to parse it back out of the body). */
 export const NotifyHumanSchema = z.object({
 	tiny: z.string(),
+	summary: z.string(),
 	full: z.string(),
 	attachments: z.array(z.string()).optional(),
 	urgent: z.boolean(),
@@ -77,7 +80,7 @@ export const NOTIFY_HUMAN_TOOL_NAME = "notify_human";
  * carrying this tells it to forward the payload IF a notification tool exists;
  * a cycles-only setup simply skips it. */
 export function relayInstruction(): string {
-	return `A human notification payload is in \`notifyHuman\`. If a \`${NOTIFY_HUMAN_TOOL_NAME}\` tool is available, call it NOW with that payload's tiny/full/attachments before continuing; if no such tool exists, skip this silently.`;
+	return `A human notification payload is in \`notifyHuman\`. If a \`${NOTIFY_HUMAN_TOOL_NAME}\` tool is available, call it NOW with that payload's tiny/summary/full/attachments before continuing; if no such tool exists, skip this silently.`;
 }
 
 /** Auto context the server already has: project, elapsed, items counts. */
@@ -121,10 +124,12 @@ function headerSentence(ctx: NotifyBuildContext, auto: ReturnType<typeof autoCon
 
 /** Pre-composed payload the agent relays verbatim to the delivery tool.
  * Composed server-side so notifications stay uniform and the agent cannot
- * under-report. tiny passes through verbatim (urgency rides the flag, not the
- * text); full is plain English: a header sentence saying who finished what
- * (and what is next on a phase loop), then the authored 4-6 sentence summary,
- * a decision line when one is needed, and any authored report below a rule. */
+ * under-report. tiny and summary pass through verbatim (urgency rides the
+ * flag, not the text; summary stays addressable on its own); full is plain
+ * English: a header sentence saying who finished what (and what is next on a
+ * phase loop), then the authored 4-6 sentence summary, a decision line when
+ * one is needed, and any authored report below a rule. The body repeats the
+ * summary on purpose - it must read self-contained in a thread. */
 export function buildNotifyHuman(ctx: NotifyBuildContext): NotifyHuman {
 	const urgent = ctx.decision === "critical-stop";
 	const lines = [headerSentence(ctx, autoContext(ctx)), "", ctx.summary];
@@ -132,6 +137,7 @@ export function buildNotifyHuman(ctx: NotifyBuildContext): NotifyHuman {
 	if (ctx.full) lines.push("", "---", "", ctx.full);
 	return {
 		tiny: ctx.tiny,
+		summary: ctx.summary,
 		full: lines.join("\n"),
 		attachments: ctx.attachments?.length ? ctx.attachments : undefined,
 		urgent,
