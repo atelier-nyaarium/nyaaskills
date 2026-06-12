@@ -26,7 +26,7 @@ describe("appendItems dedup", () => {
 });
 
 describe("ProgressSchema mode discriminant", () => {
-	const planRecord = { name: "c", current: "a", index: 0, lap: 1, status: "active" };
+	const planRecord = { mode: "plan", name: "c", current: "a", index: 0, lap: 1, status: "active" };
 	const itemsRecord = {
 		...planRecord,
 		mode: "items",
@@ -39,13 +39,12 @@ describe("ProgressSchema mode discriminant", () => {
 		deferredItemIndexes: [],
 	};
 
-	it("defaults a modeless sidecar to plan mode (back-compat)", () => {
-		const parsed = ProgressSchema.safeParse(planRecord);
-		expect(parsed.success).toBe(true);
-		if (parsed.success) expect(parsed.data.mode).toBe("plan");
+	it("rejects a record with no mode discriminant", () => {
+		const { mode: _mode, ...modeless } = planRecord;
+		expect(ProgressSchema.safeParse(modeless).success).toBe(false);
 	});
 
-	it("strips unknown legacy fields rather than failing", () => {
+	it("strips unknown fields rather than failing", () => {
 		const parsed = ProgressSchema.safeParse({ ...planRecord, body_hash: "x", unchanged_laps: 3 });
 		expect(parsed.success).toBe(true);
 		if (parsed.success) expect("body_hash" in parsed.data).toBe(false);
@@ -65,26 +64,5 @@ describe("ProgressSchema mode discriminant", () => {
 		expect(parsed.success).toBe(true);
 		if (parsed.success) expect(parsed.data.includeSteps).toEqual(["implement", "commit"]);
 		expect(ProgressSchema.safeParse({ ...planRecord, includeSteps: [] }).success).toBe(false);
-	});
-
-	it("maps the pre-rename field names onto their positive successors", () => {
-		const legacy = {
-			...planRecord,
-			mode: "items",
-			spec: "do x",
-			items: ["one"],
-			cursor: 0,
-			batchStart: 0,
-			batchEnd: 1,
-			batchSize: 1,
-			skipped: [0],
-			steps: ["implement"],
-		};
-		const parsed = ProgressSchema.safeParse(legacy);
-		expect(parsed.success).toBe(true);
-		if (parsed.success && parsed.data.mode === "items") {
-			expect(parsed.data.deferredItemIndexes).toEqual([0]);
-			expect(parsed.data.includeSteps).toEqual(["implement"]);
-		}
 	});
 });

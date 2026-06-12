@@ -18,8 +18,8 @@ const baseProgressFields = {
 	summary: z.string().optional(),
 	// The effective step sequence for this run (index is relative to this list). Named after the
 	// start tools' includeSteps param and always persisted - even for a full-suite run - so a human
-	// editing the sidecar mid-run has a visible, obvious knob for dropping steps. Still optional on
-	// read for older sidecars (absent = the def's full step list).
+	// editing the sidecar mid-run has a visible, obvious knob for dropping steps. Optional on read
+	// as a hand-edit affordance: deleting the field falls back to the def's full step list.
 	includeSteps: z.array(z.string().min(1)).min(1).optional(),
 };
 
@@ -53,25 +53,7 @@ const PhasesProgress = z.object({
 	...queueFields,
 });
 
-// Tolerate older sidecars: default the missing `mode` discriminant to plan mode, and map the
-// pre-rename field names (`steps`, `skipped`) onto their positive successors.
-export const ProgressSchema = z.preprocess(
-	(raw) => {
-		if (!raw || typeof raw !== "object") return raw;
-		const r = { ...(raw as Record<string, unknown>) };
-		if (!("mode" in r)) r.mode = "plan";
-		if ("steps" in r && !("includeSteps" in r)) {
-			r.includeSteps = r.steps;
-			delete r.steps;
-		}
-		if ("skipped" in r && !("deferredItemIndexes" in r)) {
-			r.deferredItemIndexes = r.skipped;
-			delete r.skipped;
-		}
-		return r;
-	},
-	z.discriminatedUnion("mode", [PlanProgress, ItemsProgress, PhasesProgress]),
-);
+export const ProgressSchema = z.discriminatedUnion("mode", [PlanProgress, ItemsProgress, PhasesProgress]);
 
 export type StoredProgress = z.infer<typeof ProgressSchema>;
 
