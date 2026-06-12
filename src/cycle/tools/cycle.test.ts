@@ -781,9 +781,9 @@ describe("human notification tiers (notify option + payload)", () => {
 		expect(done.notifyHuman).toBeDefined();
 		expect(done.notifyHuman.tiny).toBe("all shipped");
 		expect(done.notifyHuman.urgent).toBe(false);
-		expect(done.notifyHuman.full).toContain("# all shipped");
-		expect(done.notifyHuman.full).toContain("**done**");
-		expect(done.notifyHuman.full).toContain("elapsed");
+		// English header sentence, then the summary below a blank line.
+		expect(done.notifyHuman.full).toContain("has completed its run after 2 laps in ");
+		expect(done.notifyHuman.full).toContain("\n\ns");
 		expect(done.nextAction).toContain("notify_human");
 	});
 
@@ -814,7 +814,9 @@ describe("human notification tiers (notify option + payload)", () => {
 			whatToDecide: "Provide the API key or approve mock mode",
 		});
 		expect(stop.notifyHuman.urgent).toBe(true);
-		expect(stop.notifyHuman.tiny).toContain("[NEEDS YOU]");
+		// tiny is verbatim; urgency rides the flag, not the text.
+		expect(stop.notifyHuman.tiny).toBe("blocked on creds");
+		expect(stop.notifyHuman.full).toContain("ran into an issue that needs your attention.");
 		expect(stop.notifyHuman.full).toContain("Decision needed:");
 		expect(stop.notifyHuman.full).toContain("approve mock mode");
 	});
@@ -829,7 +831,7 @@ describe("human notification tiers (notify option + payload)", () => {
 			summary: "s",
 			attachments: ["/tmp/shot.png"],
 		});
-		expect(looped.notifyHuman.full).toContain("Items:");
+		expect(looped.notifyHuman.full).toContain("finished a batch (1 of 3 items done) and is continuing.");
 		expect(looped.notifyHuman.attachments).toEqual(["/tmp/shot.png"]);
 	});
 
@@ -846,6 +848,15 @@ describe("human notification tiers (notify option + payload)", () => {
 		const done = await run(cycleCheckpoint, { plan: "n4.md", decision: "done", tiny: "t", summary: "s" });
 		expect(done.notifyHuman).toBeDefined();
 		// No startedAt -> no elapsed claim rather than a bogus one.
-		expect(done.notifyHuman.full).not.toContain("elapsed");
+		expect(done.notifyHuman.full).toContain("after 2 laps.");
+		expect(done.notifyHuman.full).not.toContain("laps in ");
+	});
+
+	it("phases mode loop header names the finished and next phase", async () => {
+		fs.writeFileSync(path.join(cwd, "np.md"), "## Schema\nBuild it.\n## Tools\nWire them.\n");
+		await startPlan({ plan: "np.md", cycle: "demo", phases: ["Schema", "Tools"], notify: "laps" });
+		await completeLap("np.md");
+		const looped = await run(cycleCheckpoint, { plan: "np.md", decision: "loop", tiny: "schema in", summary: "s" });
+		expect(looped.notifyHuman.full).toContain('completed phase "Schema" and is continuing on phase "Tools".');
 	});
 });

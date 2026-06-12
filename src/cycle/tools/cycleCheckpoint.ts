@@ -3,6 +3,7 @@ import { advanceBatch, applyLoop } from "../lib/computeNext.ts";
 import {
 	autoContext,
 	buildNotifyHuman,
+	type NotifyBuildContext,
 	type NotifyHuman,
 	NotifyHumanSchema,
 	notifyCycleEnd,
@@ -16,6 +17,11 @@ import {
 	type StoredProgress,
 	writeProgress,
 } from "../lib/run.ts";
+
+// Phase items are "<label>\n\n<body>" (see extractPhaseItems); the first line is the label.
+function firstLine(item: string): string {
+	return item.split("\n", 1)[0].trim();
+}
 
 const schema = z.object({
 	plan: z.string().describe(
@@ -42,7 +48,7 @@ One phrase for a notification bar (~60 chars): the lap's outcome at a glance.
 		.min(1)
 		.describe(
 			`
-What this lap did and the outcome. 4 sentences max.
+What this lap did and the outcome, in 4-6 plain sentences. When the run continues (a loop), also say what comes next.
 `.trim(),
 		),
 	full: z
@@ -108,7 +114,7 @@ export const cycleCheckpoint = {
 	name: "cycleCheckpoint",
 	title: "cycle-checkpoint",
 	description: `
-The end-of-lap decision, made after the last step. Give a one-phrase \`tiny\` headline, a \`summary\` (4 sentences max), and one decision:
+The end-of-lap decision, made after the last step. Give a one-phrase \`tiny\` headline, a \`summary\` (4-6 sentences: what finished, and what is next if continuing), and one decision:
 - \`loop\` - do another lap (the default; keep going)
 - \`done\` - the work is complete, or another lap would add only minimal gains. This is the run's cleanup: it clears the run state and sends the end-of-run notification, so a finished run is not over until \`done\` is called. Include \`full\` (markdown report) when you have one.
 - \`critical-stop\` - a real blocker needs a human; include \`whatToDecide\`
@@ -121,8 +127,20 @@ The end-of-lap decision, made after the last step. Give a one-phrase \`tiny\` he
 
 		// done/critical-stop always notify; lap ends only when the run opted in.
 		const notifyOnLoop = (progress.notify ?? "done") === "laps";
-		const makeNotify = (lap: number): NotifyHuman =>
-			buildNotifyHuman({ cwd, decision, tiny, summary, full, attachments, whatToDecide, plan, progress, lap });
+		const makeNotify = (lap: number, extra?: Partial<NotifyBuildContext>): NotifyHuman =>
+			buildNotifyHuman({
+				cwd,
+				decision,
+				tiny,
+				summary,
+				full,
+				attachments,
+				whatToDecide,
+				plan,
+				progress,
+				lap,
+				...extra,
+			});
 		const eventExtras = () => ({
 			tiny,
 			full,
@@ -202,7 +220,16 @@ The end-of-lap decision, made after the last step. Give a one-phrase \`tiny\` he
 				...eventExtras(),
 			});
 			const remaining = progress.items.length - adv.batchStart;
-			const notifyHuman = notifyOnLoop ? makeNotify(progress.lap) : undefined;
+			// Notify off the ADVANCED record so items counts include the just-finished
+			// batch; the lap number stays the old one (it is the lap that just ended).
+			// Phases get their labels so the header can say finished/next by name.
+			const phaseLabels = isPhases
+				? {
+						finishedPhase: firstLine(progress.items[progress.batchStart] ?? ""),
+						nextPhase: firstLine(progress.items[adv.batchStart] ?? ""),
+					}
+				: undefined;
+			const notifyHuman = notifyOnLoop ? makeNotify(progress.lap, { progress: next, ...phaseLabels }) : undefined;
 			const result = {
 				plan,
 				cycle: progress.name,
