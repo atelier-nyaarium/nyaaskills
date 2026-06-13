@@ -780,6 +780,8 @@ describe("human notification tiers (notify option + payload)", () => {
 		const done = await run(cycleCheckpoint, { plan: "n1.md", decision: "done", tiny: "all shipped", summary: "s" });
 		expect(done.notifyHuman).toBeDefined();
 		expect(done.notifyHuman.tiny).toBe("all shipped");
+		// Carries the canonical title alongside the legacy tiny alias.
+		expect(done.notifyHuman.title).toBe("all shipped");
 		// The Short tier rides verbatim as its own field, not only baked into full.
 		expect(done.notifyHuman.summary).toBe("s");
 		expect(done.notifyHuman.urgent).toBe(false);
