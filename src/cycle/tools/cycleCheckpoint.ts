@@ -37,15 +37,20 @@ End-of-lap decision.
 - "critical-stop": a real blocker needs a human; include whatToDecide.
 `.trim(),
 	),
-	tiny: z
+	title: z
 		.string()
 		.min(1)
 		.max(100)
+		.optional()
 		.describe(
 			`
-One phrase for a notification bar (~60 chars): the lap's outcome at a glance.
+One short phrase or sentence (~60 chars): the lap's outcome at a glance. The notification-bar headline; not a long-winded sentence.
 `.trim(),
 		),
+	// Deprecated alias for `title`, accepted for one transition release so a
+	// relay instruction minted before the rename still lands. Handler resolves
+	// title ?? tiny.
+	tiny: z.string().min(1).max(100).optional().describe(`Deprecated alias for \`title\`; use \`title\`.`),
 	summary: z
 		.string()
 		.min(1)
@@ -117,12 +122,15 @@ export const cycleCheckpoint = {
 	name: "cycleCheckpoint",
 	title: "cycle-checkpoint",
 	description: `
-The end-of-lap decision, made after the last step. Give a \`tiny\` headline, a \`summary\`, and one \`decision\` (loop, done, or critical-stop). A finished run is not over until \`done\` is called; include \`full\` (markdown report) on done and critical-stop when you have one.
+The end-of-lap decision, made after the last step. Give a \`title\` headline, a \`summary\`, and one \`decision\` (loop, done, or critical-stop). A finished run is not over until \`done\` is called; include \`full\` (markdown report) on done and critical-stop when you have one.
 `.trim(),
 	operation: "deciding at a lap checkpoint",
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
-		const { plan, decision, tiny, summary, full, attachments, whatToDecide, batchSize, defer } = schema.parse(args);
+		const parsed = schema.parse(args);
+		const { plan, decision, summary, full, attachments, whatToDecide, batchSize, defer } = parsed;
+		const title = parsed.title ?? parsed.tiny;
+		if (!title) throw new Error("cycleCheckpoint requires `title` (or the legacy `tiny`).");
 		const { planFile, progress, steps, instructions } = loadCycleRun(cwd, plan, { requireActive: true });
 
 		// done/critical-stop always notify; lap ends only when the run opted in.
@@ -131,7 +139,7 @@ The end-of-lap decision, made after the last step. Give a \`tiny\` headline, a \
 			buildNotifyHuman({
 				cwd,
 				decision,
-				tiny,
+				title,
 				summary,
 				full,
 				attachments,
@@ -142,7 +150,7 @@ The end-of-lap decision, made after the last step. Give a \`tiny\` headline, a \
 				...extra,
 			});
 		const eventExtras = () => ({
-			tiny,
+			title,
 			full,
 			attachments,
 			whatToDecide,
@@ -194,8 +202,8 @@ The end-of-lap decision, made after the last step. Give a \`tiny\` headline, a \
 						? `All ${progress.items.length} phases done${deferredNote}.`
 						: `Queue drained: all ${progress.items.length} items processed${deferredNote}.`,
 					nextAction: isPhases
-						? `Finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", tiny, summary })\`. Do not stop unless finishing or blocked.`
-						: `Append with \`cycleAppendItems({ name, items: [...] })\` then loop again, or finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", tiny, summary })\`. Do not stop unless finishing or blocked.`,
+						? `Finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", title, summary })\`. Do not stop unless finishing or blocked.`
+						: `Append with \`cycleAppendItems({ name, items: [...] })\` then loop again, or finish with \`cycleCheckpoint({ plan: "${plan}", decision: "done", title, summary })\`. Do not stop unless finishing or blocked.`,
 				};
 				return { data: OutputSchema.parse(result) };
 			}

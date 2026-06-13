@@ -1,5 +1,6 @@
 import path from "node:path";
 import { z } from "zod";
+import { NoticeFull, NoticeSummary, NoticeTitle } from "../../shared/notice.ts";
 import type { CycleStatus } from "./computeNext.ts";
 import { humanElapsed, type StoredProgress } from "./run.ts";
 
@@ -14,9 +15,9 @@ import { humanElapsed, type StoredProgress } from "./run.ts";
  */
 export interface CycleEndEvent {
 	decision: "done" | "loop" | "critical-stop";
-	// Tiered payloads: tiny is the one-phrase notification-bar line, summary the
-	// short (4-6 sentence) outcome, full an optional markdown/mermaid report.
-	tiny: string;
+	// Tiered payloads: title is the one-phrase notification-bar line, summary
+	// the short (4-6 sentence) outcome, full an optional markdown/mermaid report.
+	title: string;
 	summary: string;
 	full?: string;
 	attachments?: string[];
@@ -37,7 +38,7 @@ export interface CycleEndEvent {
 export interface NotifyBuildContext {
 	cwd: string;
 	decision: "done" | "loop" | "critical-stop";
-	tiny: string;
+	title: string;
 	summary: string;
 	full?: string;
 	attachments?: string[];
@@ -56,11 +57,16 @@ export interface NotifyBuildContext {
 
 /** The agent-relayed payload shape; mirrors the params of the delivery tool.
  * `summary` is the Short tier carried verbatim as its own addressable field
- * (downstream consumers must not have to parse it back out of the body). */
+ * (downstream consumers must not have to parse it back out of the body).
+ * Carries BOTH `title` (canonical) and `tiny` (legacy) during the rename
+ * transition so the agent's notify_human tool resolves whichever it knows -
+ * an older tool reads `tiny`, a newer one `title`. Drop `tiny` once switchboard
+ * is caught up everywhere. The field describes come from the synced notice.ts. */
 export const NotifyHumanSchema = z.object({
+	title: NoticeTitle,
 	tiny: z.string(),
-	summary: z.string(),
-	full: z.string(),
+	summary: NoticeSummary,
+	full: NoticeFull,
 	attachments: z.array(z.string()).optional(),
 	urgent: z.boolean(),
 });
@@ -80,7 +86,7 @@ export const NOTIFY_HUMAN_TOOL_NAME = "notify_human";
  * carrying this tells it to forward the payload IF a notification tool exists;
  * a cycles-only setup simply skips it. */
 export function relayInstruction(): string {
-	return `A human notification payload is in \`notifyHuman\`. If a \`${NOTIFY_HUMAN_TOOL_NAME}\` tool is available, call it NOW with that payload's tiny/summary/full/attachments before continuing; if no such tool exists, skip this silently.`;
+	return `A human notification payload is in \`notifyHuman\`. If a \`${NOTIFY_HUMAN_TOOL_NAME}\` tool is available, call it NOW with that payload's title/summary/full/attachments (the payload also carries a legacy \`tiny\` key for older tools - pass it too if present) before continuing; if no such tool exists, skip this silently.`;
 }
 
 /** Auto context the server already has: project, elapsed, items counts. */
@@ -136,7 +142,9 @@ export function buildNotifyHuman(ctx: NotifyBuildContext): NotifyHuman {
 	if (ctx.whatToDecide) lines.push("", `Decision needed: ${ctx.whatToDecide}`);
 	if (ctx.full) lines.push("", "---", "", ctx.full);
 	return {
-		tiny: ctx.tiny,
+		title: ctx.title,
+		// Same value under the legacy key for an older notify_human tool.
+		tiny: ctx.title,
 		summary: ctx.summary,
 		full: lines.join("\n"),
 		attachments: ctx.attachments?.length ? ctx.attachments : undefined,
