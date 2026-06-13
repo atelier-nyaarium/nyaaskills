@@ -1,0 +1,36 @@
+# nyaaskills had no CI - only dependabot. This gate runs lint + the cycle
+# tests on every push (and so on dependabot PRs), plus the synced-leaf
+# faithfulness check: src/shared/notice.ts is a verbatim copy of switchboard's
+# source of truth, and a hand-edit that diverged it would otherwise be
+# invisible here. Post-merge gating, matching switchboard's stance.
+name: CI
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+
+jobs:
+  ci:
+    name: Lint + Test + Sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Test
+        run: bun test
+
+      - name: Synced-leaf faithfulness
+        run: bun scripts/check-sync-hash.ts src/shared/notice.ts
