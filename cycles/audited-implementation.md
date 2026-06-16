@@ -16,13 +16,16 @@ Implement the phase. /coding skill hygiene. Complex code -> handle yourself. Hav
 
 ## align-fan-out
 
-**Analysis only.** Plan alignment audit. Fan out Agents.
+**Analysis only.** Plan alignment audit. Fan out via `Workflow()`.
 
 Vet the implementation for misalignments from the plan:
-- Come up with multiple angles.
-- Pass them a fresh git diff.
+- `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
+- Fan out with `parallel()`/`pipeline()`; pass each a fresh git diff.
+- As many as you think you need.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
+
+Then rank the survivors, most significant first.
 
 ## align-fix
 
@@ -30,19 +33,22 @@ Then fix real misalignments and run smoke tests (run editor/game instances, intr
 
 Don't forget /coding rules and to smoke test after changes.
 
-If a fix changed anything, `cycleGoto(...)` back to `align-fan-out` now.
+If a fix changed anything, `cycleGoto(...)` back to `align-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `next()` instead.
 
 
 
 ## red-team-fan-out
 
-**Analysis only.** Red team audit. Fan out Agents.
+**Analysis only.** Red team audit. Fan out via `Workflow()`.
 
 Vet the implementation for gaps, blockers, concerns:
-- Come up with multiple angles.
-- Pass them a fresh git diff.
+- `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
+- Fan out with `parallel()`/`pipeline()`; pass each a fresh git diff.
+- As many as you think you need.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
+
+Then rank the survivors, most significant first.
 
 ## red-team-fix
 
@@ -50,7 +56,7 @@ Then fix the real issues and run smoke tests again. Watch out for: yes-manning, 
 
 Don't forget /coding rules and to smoke test after changes.
 
-If you fixed anything, `cycleGoto(...)` back to `red-team-fan-out` now.
+If you fixed anything, `cycleGoto(...)` back to `red-team-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `next()` instead.
 
 
 
@@ -68,21 +74,24 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 
 ## framework-fan-out
 
-**Analysis only.** Framework-first audit. Fan out Agents.
+**Analysis only.** Framework-first audit. Fan out via `Workflow()`.
 
 Vet the implementation for framework-first improvements using /framework-first-design skill. You can now deviate from the plan, but do respect its goal:
-- Come up with multiple angles.
-- Pass them a list of relevant sections.
+- `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
+- Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
+- As many as you think you need.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
+Then rank the survivors most significant first, grouped into coherent committable chunks.
+
 ## framework-fix
 
-Then apply only real findings, most significant first, scoped to one coherent committable chunk.
+Then apply the top chunk `framework-fan-out` handed you.
 
 Don't forget /coding rules and to smoke test after changes.
 
-If a fix changed anything, `cycleGoto(...)` back to `framework-fan-out` now.
+If a fix changed anything, `cycleGoto(...)` back to `framework-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `next()` instead.
 
 ## framework-commit
 
@@ -98,25 +107,28 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 
 ## compliance-fan-out
 
-**Analysis only.** Compliance audit. Fan out Agents.
+**Analysis only.** Compliance audit. Fan out via `Workflow()`.
 
 Vet the implementation for compliance gaps using the /compliance skill:
-- Come up with multiple angles.
-- Pass them a list of relevant sections.
+- `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
+- Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
+- As many as you think you need.
 - Access control, data handling/classification, audit trails, retention, data-subject rights
 - SOC2/GDPR/CPRA
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
+Then rank the survivors most significant first, split into small (fix now) or large redesign (defer).
+
 ## compliance-fix
 
-If and only if the fix is small, fix it.
+Then apply the small fixes `compliance-fan-out` flagged.
 
 Don't forget /coding rules and to smoke test after changes.
 
-If a fix changed anything, `cycleGoto(...)` back to `compliance-fan-out` now.
+If a fix changed anything, `cycleGoto(...)` back to `compliance-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `next()` instead.
 
-For bigger issues requiring large redesigns, move on and report the findings to the human for a later plan. But only at the very end after plan is fully accounted for (`done`). Don't break out of the cycles just to report.
+Large-redesign items: report them to the human for a later plan, but only at the very end after the plan is fully accounted for (`done`). Don't break out of the cycles just to report.
 
 ## compliance-commit
 

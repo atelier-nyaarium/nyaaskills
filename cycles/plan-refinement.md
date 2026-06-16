@@ -16,12 +16,16 @@ Propose or refine the plan. Write the current state back into the plan file this
 
 ## audit-fan-out
 
-**Analysis only.** Plan audit. Fan out Agents.
+**Analysis only.** Plan audit. Fan out via `Workflow()`.
 
 Vet the plan for gaps, blockers, concerns:
-- Point them to the plan.
+- `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
+- Fan out with `parallel()`/`pipeline()`; point each at the plan.
+- As many as you think you need.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
+
+Then rank the surviving concerns, most significant first.
 
 ## audit-rethink
 
