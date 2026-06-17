@@ -104,7 +104,7 @@ export function autoContext(ctx: Pick<NotifyBuildContext, "cwd" | "progress">) {
 	return { project, elapsedMs, itemCounts };
 }
 
-/** One plain-English sentence stating who did what, per decision. The phone
+/** One plain-English sentence stating who did what, per decision. The console
  * threads the notice under the sender's name, but this header also stands
  * alone for any other notify_human provider. */
 function headerSentence(ctx: NotifyBuildContext, auto: ReturnType<typeof autoContext>): string {
