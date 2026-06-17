@@ -21,7 +21,7 @@ Implement the phase. /coding skill hygiene. Complex code -> handle yourself. Hav
 Vet the implementation for misalignments from the plan:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a fresh git diff.
-- As many as you think you need.
+- As many agents as you need. 8 to 20+ per parallel/pipeline Explore/Verify type phase.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
@@ -44,7 +44,7 @@ If a fix changed anything, `cycleGoto(...)` back to `align-fan-out` to re-audit.
 Vet the implementation for gaps, blockers, concerns:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a fresh git diff.
-- As many as you think you need.
+- As many agents as you need. 8 to 20+ per parallel/pipeline Explore/Verify type phase.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
@@ -79,7 +79,7 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 Vet the implementation for framework-first improvements using /framework-first-design skill. You can now deviate from the plan, but do respect its goal:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
-- As many as you think you need.
+- As many agents as you need. 8 to 20+ per parallel/pipeline Explore/Verify type phase.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
@@ -112,7 +112,7 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 Vet the implementation for compliance gaps using the /compliance skill:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
-- As many as you think you need.
+- As many agents as you need. 8 to 20+ per parallel/pipeline Explore/Verify type phase.
 - Access control, data handling/classification, audit trails, retention, data-subject rights
 - SOC2/GDPR/CPRA
 
