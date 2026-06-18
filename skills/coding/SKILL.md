@@ -39,6 +39,15 @@ Do comment:
 - Why one approach chosen over another: `// Use executeToolCall so Discord flows can have their own handlers`
 - Why block intentionally empty: `// Tests will trigger recreates multiple times. Silently pass / continue.`
 
+## Comments Must be Timeless
+
+Comments must describe the code as it stands. Not some plan. Nor phase. Nor a migration. Nor what changed. NEVER write comments like:
+- ❌ `// Phase D: seal directly to each Switch`
+- ❌ `// Now it should be multi-home (was gateway)`
+- ❌ `// New keyring sync`
+- ❌ `// Per the plan, verify the admission here`
+A reader a year from now has no memory of this work. Every comment has to earn its place based on intrinsic logic alone.
+
 ## Git Hygiene
 
 ### Consent
