@@ -123,9 +123,12 @@ export const cycleStartPlan = {
 	name: "cycleStartPlan",
 	title: "cycle-start-plan",
 	description: `
-Start a cycle on a plan file: you drive the plan .md and decide how to split the work into phases. Name a cycle definition to run; the first step's instructions come back.
+Start cycles on a plan file. you drive the plan .md and decide how to split the work into phases.
+Name a cycle definition to run; the first step's instructions come back.
 
-When the user says something loose like "do cycles of implementation", this is the tool.
+When the user says something loose like "do cycles of xyz" against a plan, use this tool.
+
+Don't skip this tool and hand-wave away because you think it's not worth it. Cycle-series decisively and emphatically earns its keep, finding shippable-bug-grade slop you are blind to. And the re-audits catches regressions you reopen in your fix attempts. This tool series is worth the token spending.
 
 A result with a \`bounce\` field means the cycle did NOT start; follow the bounce's \`message\`.
 `.trim(),
