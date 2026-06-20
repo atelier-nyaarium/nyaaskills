@@ -76,7 +76,7 @@ If you are working on phases of work, finish ALL phases before making a PR. Don'
 
 Due to dangers like Mini Shai-Hulud, you must proceed with caution when installing Node/Python packages. Or really any package manager ecosystem with fast moving CI/CD. This skill will speak in terms of Bun.
 
-When manually installing packages with bun (or any package manager really), only install versions that are **at least 7 days old**. The maturity window gives security researchers and automated audits time to flag a compromised or vulnerable release before it lands in your project.
+When manually installing packages with bun (or any package manager really), only install versions that are **at least 7 days old** or **advisory urged**. The maturity window gives security researchers and automated audits time to flag a compromised or vulnerable release before it lands in your project.
 
 ***Be deliberately slow and careful. One package at a time:***
 
@@ -86,3 +86,5 @@ When manually installing packages with bun (or any package manager really), only
 3. **Audit before it touches node_modules**: `bun audit` only scans the lockfile, so it can't see a package you haven't added yet. Workaround: Manually add the pinned version to `package.json`, run `bun install --lockfile-only` to resolve it into `bun.lock` without installing, then run `bun audit`. Only proceed if clean.
 4. **Pin it**: if the entry previously had a `^` (or `~`) range allowing automatic upgrades, strip it so the version stays exact. You should check if `bunfig.toml` specifies `minimumReleaseAge = 604800`, to automatically enforce this rule.
 5. **Install the exact version**: `bun add <pkg>@<version>` (`-d` for devDependencies), or plain `bun install` if you already staged it in step 3 and pinned it in step 4.
+
+If there is a tie-breaker between 7-day rule and advisory, use the advisory's judgement.
