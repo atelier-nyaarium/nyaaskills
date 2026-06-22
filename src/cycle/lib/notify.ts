@@ -58,13 +58,9 @@ export interface NotifyBuildContext {
 /** The agent-relayed payload shape; mirrors the params of the delivery tool.
  * `summary` is the Short tier carried verbatim as its own addressable field
  * (downstream consumers must not have to parse it back out of the body).
- * Carries BOTH `title` (canonical) and `tiny` (legacy) during the rename
- * transition so the agent's notify_human tool resolves whichever it knows -
- * an older tool reads `tiny`, a newer one `title`. Drop `tiny` once switchboard
- * is caught up everywhere. The field describes come from the synced notice.ts. */
+ * The field describes come from the synced notice.ts. */
 export const NotifyHumanSchema = z.object({
 	title: NoticeTitle,
-	tiny: z.string(),
 	summary: NoticeSummary,
 	full: NoticeFull,
 	attachments: z.array(z.string()).optional(),
@@ -86,7 +82,7 @@ export const NOTIFY_HUMAN_TOOL_NAME = "notify_human";
  * carrying this tells it to forward the payload IF a notification tool exists;
  * a cycles-only setup simply skips it. */
 export function relayInstruction(): string {
-	return `A human notification payload is in \`notifyHuman\`. If a \`${NOTIFY_HUMAN_TOOL_NAME}\` tool is available, call it NOW with that payload's title/summary/full/attachments (the payload also carries a legacy \`tiny\` key for older tools - pass it too if present) before continuing; if no such tool exists, skip this silently.`;
+	return `A human notification payload is in \`notifyHuman\`. If a \`${NOTIFY_HUMAN_TOOL_NAME}\` tool is available, call it NOW with that payload's title/summary/full/attachments before continuing; if no such tool exists, skip this silently.`;
 }
 
 /** Auto context the server already has: project, elapsed, items counts. */
@@ -130,7 +126,7 @@ function headerSentence(ctx: NotifyBuildContext, auto: ReturnType<typeof autoCon
 
 /** Pre-composed payload the agent relays verbatim to the delivery tool.
  * Composed server-side so notifications stay uniform and the agent cannot
- * under-report. tiny and summary pass through verbatim (urgency rides the
+ * under-report. summary passes through verbatim (urgency rides the
  * flag, not the text; summary stays addressable on its own); full is plain
  * English: a header sentence saying who finished what (and what is next on a
  * phase loop), then the authored 4-6 sentence summary, a decision line when
@@ -143,8 +139,6 @@ export function buildNotifyHuman(ctx: NotifyBuildContext): NotifyHuman {
 	if (ctx.full) lines.push("", "---", "", ctx.full);
 	return {
 		title: ctx.title,
-		// Same value under the legacy key for an older notify_human tool.
-		tiny: ctx.title,
 		summary: ctx.summary,
 		full: lines.join("\n"),
 		attachments: ctx.attachments?.length ? ctx.attachments : undefined,

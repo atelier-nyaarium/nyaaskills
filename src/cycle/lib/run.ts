@@ -238,7 +238,7 @@ export function appendStepCall(instructions: string, plan: string, step: string)
 // mechanics; the decision surfaces only when the agent actually reaches the end of the lap.
 export function checkpointCall(plan: string): string {
 	return [
-		`All steps complete. Call \`cycleCheckpoint({ plan: "${plan}", decision, tiny, summary })\` with a one-phrase \`tiny\` headline, a summary (4-6 sentences: what finished, and what is next if continuing), and one decision:`,
+		`All steps complete. Call \`cycleCheckpoint({ plan: "${plan}", decision, title, summary })\` with a one-phrase \`title\` headline, a summary (4-6 sentences: what finished, and what is next if continuing), and one decision:`,
 		"",
 		"- `loop` - do another lap. This is the default; keep going, do not stop to ask between laps.",
 		"- `done` - the work is complete, or another lap would add only minimal gains. This is the run's cleanup: it clears the run state and sends the end-of-run notification, so a finished run is not over until `done` is called.",
