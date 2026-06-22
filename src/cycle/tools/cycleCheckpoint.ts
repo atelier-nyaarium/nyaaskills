@@ -41,16 +41,11 @@ End-of-lap decision.
 		.string()
 		.min(1)
 		.max(100)
-		.optional()
 		.describe(
 			`
 One short phrase or sentence (~60 chars): the lap's outcome at a glance. The notification-bar headline; not a long-winded sentence.
 `.trim(),
 		),
-	// Deprecated alias for `title`, accepted for one transition release so a
-	// relay instruction minted before the rename still lands. Handler resolves
-	// title ?? tiny.
-	tiny: z.string().min(1).max(100).optional().describe(`Deprecated alias for \`title\`; use \`title\`.`),
 	summary: z
 		.string()
 		.min(1)
@@ -128,9 +123,7 @@ The end-of-lap decision, made after the last step. Give a \`title\` headline, a 
 	schema,
 	async handler(cwd: string, args: z.infer<typeof schema>) {
 		const parsed = schema.parse(args);
-		const { plan, decision, summary, full, attachments, whatToDecide, batchSize, defer } = parsed;
-		const title = parsed.title ?? parsed.tiny;
-		if (!title) throw new Error("cycleCheckpoint requires `title` (or the legacy `tiny`).");
+		const { plan, decision, title, summary, full, attachments, whatToDecide, batchSize, defer } = parsed;
 		const { planFile, progress, steps, instructions } = loadCycleRun(cwd, plan, { requireActive: true });
 
 		// done/critical-stop always notify; lap ends only when the run opted in.
