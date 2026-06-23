@@ -9,6 +9,8 @@ Build solid understanding of what user (or another team Agent) wants. Only when 
 
 Ask as many questions as needed until full design understood.
 
+**Don't use `AskUserQuestion` tool:** Ask the user directly instead of using `AskUserQuestion` tool. That tool is too basic for this skill.
+
 ## Concise Messaging
 
 Use /caveman skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too. Don't prefix the sentence with "caveman" though.
@@ -17,13 +19,35 @@ Don't caveman actual code.
 
 ## Analysis
 
-Request to design or make something *always* requires understanding codebase, and potentially online research with Agents. Do it first before making questions. May also perform additional research as questions answered.
+Request to design or make something *always* requires understanding codebase, and potentially online research with Opus Agents. Do it first before making questions.
+
+Perform additional research as answers come in.
+
+Structural questions can drastically change a lot. Use dynamic workflows to figure out the scale of a question as answers come in.
 
 ## Structural Scope First and Loopbacks
 
-Ask structural and foundational questions first. Shapes rest of questionaires. 1 question at a time.
+Ask structural and foundational questions first. Shapes rest of questionaires. 1 multiple choice question at a time.
 
 User may respond "I'm not sure", to which inform them we can loop back later when final features and presentation more understood.
+
+## UX Design
+
+If the questionaire leads into UX design and presentation, ask if the user would like to use Claude Designer to visualize and iterate on the design.
+
+### Using Claude Designer (DesignSync)
+
+If they say yes, drive the `DesignSync` MCP tool.
+- Create the project (`create_project`) if it's a new UX, or `list_projects` if it sounds like a session resume.
+- Link them to the proper `https://claude.ai/design/p/${projectId}` URL.
+
+Read the tool description first (it is the authoritative spec). The loop: `list_projects` -> `create_project({name})` if none, keep the `projectId` -> author one self-contained HTML mockup per screen as `<scratchpad>/design-mockups/components/<screen>/index.html` (inline `<style>`/SVG, no external assets, first line `<!-- @dsCard group="..." -->`) -> `finalize_plan` -> `write_files` -> `register_assets` -> tell the user where to look. One screen at a time: build, push, react, refine. Present and build, don't quiz them with abstract screen names.
+
+**Required tool usage:**
+- `finalize_plan` **requires `deletes`** even when not deleting. Pass `deletes: []` or the call errors. Also required: `projectId`, `localDir`, `writes`.
+- A bare `write_files` renders an **empty pane**. New card = `write_files` THEN `register_assets` (name, path, viewport, group, subtitle). Updating a card = `write_files` only. Removing = `unregister_assets` + `delete_files` (path must be in the plan's `deletes`, and delete the local file too).
+
+`localPath` must be inside the finalized `localDir`. Log every design ruling into the feature plan's questionaire/plan sections, not just the mockups, so nothing is lost during compaction.
 
 ## Plan File
 

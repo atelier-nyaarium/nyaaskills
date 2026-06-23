@@ -1,5 +1,5 @@
 ---
-steps: [implement-phase, align-fan-out, align-fix, red-team-fan-out, red-team-fix, implementation-commit, framework-fan-out, framework-fix, framework-commit, compliance-fan-out, compliance-fix, compliance-commit, documentation, plan-completeness]
+steps: [implementation-phase, align-fan-out, align-fix, red-team-fan-out, red-team-fix, implementation-commit, framework-fan-out, framework-fix, framework-commit, compliance-fan-out, compliance-fix, compliance-commit, documentation, plan-completeness]
 ---
 
 # Audited Phase Implementation
@@ -8,7 +8,7 @@ Implement a plan phase with multiple audits. Each lap implements, then audits fr
 
 
 
-## implement-phase
+## implementation-phase
 
 Implement the phase. Complex code -> handle yourself. Have a team? Delegate to team agents only if the task is so simple they cannot fail.
 
@@ -163,6 +163,17 @@ General rules:
 
 ## plan-completeness
 
-Audit what part of the plan is incomplete. If there is unfinished work, finish this step with `loop` and finish the work on the next loop. Prefer doing all autonomous work you can do now.
+Audit what part of the plan is incomplete. If there is:
+- Unfinished work in this current phase: `cycleGoto` back to the `implementation-phase`.
+- More phases in the plan to complete: `cycleCheckpoint` to checkpoint with `loop`.
 
-If it presents a critical issue that you cannot resolve by looping, it is a `critical-stop`.
+It causes more harm than good to stop and derail mid-plan:
+- Codebase half unfinished state.
+- Context losses from derailing.
+- Confusion from course changes that no longer match the vetted plan.
+
+If there are minor issues and discrepancies that you normally would stop for, report it and continue on. Don't stop the cycles for minor issues. Accumulate the laundry list until the very end as part of the final report, when cycles completely finishes and every phase sealed.
+
+If there was a critical issue that stops progress entirely, `cycleCheckpoint` to checkpoint with `critical-stop`. Discuss the problem.
+
+If there is a `notify_human` tool, report through it. Otherwise, just output your report as you normally would.

@@ -31,4 +31,4 @@ Then rank the surviving concerns, most significant first.
 
 Rethink and edit plan. Plan changed? Update the plan. Watch out for: yes-manning, scope creep, heavy drift (ask the human on large drifts).
 
-When the plan feels solid, finish with `done` and give a final report to the channel; otherwise `loop` for another lap. A critical issue you cannot resolve in-loop is a `critical-stop` (you may /questionaire again).
+When the plan feels solid, `cycleCheckpoint` to checkpoint with `done` and give a final report to the channel; otherwise `loop` for another lap. A critical issue you cannot resolve in-loop is a `critical-stop` (you may /questionaire again).
