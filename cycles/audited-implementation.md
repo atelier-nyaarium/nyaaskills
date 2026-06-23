@@ -172,7 +172,7 @@ It causes more harm than good to stop and derail mid-plan:
 - Context losses from derailing.
 - Confusion from course changes that no longer match the vetted plan.
 
-If there are minor issues and discrepancies that you normally would stop for, report it and continue on. Don't stop the cycles for minor issues. Accumulate the laundry list until the very end as part of the final report, when cycles completely finishes and every phase sealed.
+If there are minor issues and discrepancies that you normally would stop for, report it and continue on. Don't pause nor stop the cycles for minor issues. Accumulate the laundry list until the very end as part of the final report, when cycles completely finishes and every phase sealed.
 
 If there was a critical issue that stops progress entirely, `cycleCheckpoint` to checkpoint with `critical-stop`. Discuss the problem.
 
