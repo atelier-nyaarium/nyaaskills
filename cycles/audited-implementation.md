@@ -178,4 +178,4 @@ If there was a critical issue that stops progress entirely, `cycleCheckpoint` to
 
 If there is a `notify_human` tool, report through it. Otherwise, just output your report as you normally would.
 
-TLDR: **Do not pause. Do not hold. Do not stop. Do not derail.**
+TLDR: **Do not pause. Do not hold. Do not stop. Do not derail. Only continue and resume.**
