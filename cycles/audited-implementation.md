@@ -180,17 +180,18 @@ Audit what part of the plan is incomplete. If there is:
 - Unfinished work in this current phase: `cycleGoto` back to the `implementation-phase`.
 - More phases in the plan to complete: `cycleCheckpoint` to checkpoint with `loop`.
 
-It causes more harm than good to stop and derail mid-plan:
-- Codebase half unfinished state.
-- Context losses from derailing.
-- Confusion from course changes that no longer match the vetted plan.
-
-If there are minor issues and discrepancies that you normally would stop for, report it and continue on. Don't pause nor hold nor stop the cycles for minor issues. Accumulate the laundry list until the very end as part of the final report, when cycles completely finishes and every phase sealed.
-
 If there was a critical issue that stops progress entirely, `cycleCheckpoint` to checkpoint with `critical-stop`. Discuss the problem.
-
-As a side bonus, thanks to capturing everything said and decisions made in the plan file, you never have to concern yourself about approacing the session compaction limit. Just drive your vehicle over that line. You'll be fine.
 
 If there is a `notify_human` tool, report through it. Otherwise, just output your report as you normally would.
 
-TLDR: **Do not pause. Do not hold. Do not stop. Do not derail. Only continue and resume.**
+Green-commit discipline makes grinding through all phases safe even if you're interrupted. And thanks to capturing everything said and decisions made in the plan file, you never have to concern yourself about approaching the session compaction limit. Just drive your bicycle over that line. You'll be fine.
+
+It causes more harm than good to stop mid-plan and ask for permission to resume:
+- ❌ Codebase half unfinished state.
+- ❌ Context losses from derailing.
+- ❌ Confusion from course changes that no longer match the vetted plan.
+- ❌ Lost time because you lied about continuing but you actually paused to ask for permission to resume.
+
+If there are minor issues and discrepancies that you normally would stop for, report it and continue on. Don't pause and hold for minor issues or questions. Accumulate the laundry list of findings until the very end as part of the final report, when cycles completely finishes and every phase sealed.
+
+TLDR: **Do not pause. Do not park. Do not hold. Do not stop. Do not derail. Only continue and resume until plan is complete.**
