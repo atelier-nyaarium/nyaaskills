@@ -176,6 +176,8 @@ If there are minor issues and discrepancies that you normally would stop for, re
 
 If there was a critical issue that stops progress entirely, `cycleCheckpoint` to checkpoint with `critical-stop`. Discuss the problem.
 
+As a side bonus, thanks to capturing everything said and decisions made in the plan file, you never have to concern yourself about approacing the session compaction limit. Just drive your vehicle over that line. You'll be fine.
+
 If there is a `notify_human` tool, report through it. Otherwise, just output your report as you normally would.
 
 TLDR: **Do not pause. Do not hold. Do not stop. Do not derail. Only continue and resume.**
