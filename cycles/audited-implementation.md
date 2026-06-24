@@ -1,5 +1,5 @@
 ---
-steps: [implementation-phase, align-fan-out, align-fix, red-team-fan-out, red-team-fix, implementation-commit, framework-fan-out, framework-fix, framework-commit, compliance-fan-out, compliance-fix, compliance-commit, documentation, plan-completeness]
+steps: [implementation-phase, align-fan-out, align-fix, red-team-fan-out, red-team-fix, implementation-commit, framework-fan-out, framework-fix, framework-commit, compliance-fan-out, compliance-fix, compliance-commit, documentation, crust-collection, plan-completeness]
 ---
 
 # Audited Phase Implementation
@@ -158,6 +158,19 @@ General rules:
 - Don't include plan/cycle/slice/lap labels or progress narrative anywhere, e.g. "(slice 4)", "(some phase name)", "[sandbox] Testing things",.
 - Don't mention line numbers. Those are moving targets. Mention names instead (function names, class names, etc).
 - Fix documentation violations as you come across them.
+
+
+
+## crust-collection
+
+If the session has not been going long enough, `next()` out of this pass. Do this pass as you are nearing the final phases of the plan. Or just had a really annoying reoccuring quirk that you had to painfully derive a solution to.
+
+This is exactly the right moment for a crust sweep, utilizing a big workflow scouting pass.
+
+Fan out across known bug classes, bad class/function names, dead code, legacy landmines, and other /framework-first-design violations. This includes concerns that are out-of-scope from the plan. Seed each Agent with concrete leads from this session.
+
+Collect points in code where bug classes reside: `filepath : namespace : name` (not line numbers)
+Don't fix anything. Just write it to a `## Painpoints` section towards the end of the plan file pointing them out.
 
 
 

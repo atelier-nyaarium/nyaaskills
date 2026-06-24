@@ -1,6 +1,6 @@
 {
 	"name": "nyaaskills",
-	"version": "3.9.0",
+	"version": "3.9.1",
 	"description": "Shared agents, skills, and the cycle MCP for nyaarium projects. Includes testability assessment, quality review, code analysis, debugging instrumentation, team collaboration agents, and a looping step-runner MCP that drives an agent through named, reusable procedures.",
 	"author": {
 		"name": "Nyaarium"
