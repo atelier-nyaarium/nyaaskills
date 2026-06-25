@@ -7,11 +7,30 @@ description: Coding guidelines for all agents. Always load this skill before you
 
 Follow guidelines when editing files or writing human-facing text.
 
-## Concise Messaging
+## Terse and Concise
 
-Use /caveman skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too. Don't prefix the sentence with "caveman" though.
+Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster.
 
-Don't caveman actual code.
+## Refactoring
+
+When refactoring clean-break style, try reducing surface area for problems and failing tests. Peel off independent clean break layers before adding code.
+
+## Dont Use sed to Edit
+
+You break shit a lot of the times you do this. Instead:
+
+1. Find/Grep to locate
+2. Tiny amounts: open files manually for edit. Many files: send a swarm at them.
+
+**Remote files:** Temporarily mount the remote filesystem to local with sshfs to `/tmp/{foldername}` and edit using instructions above.
+
+## Unit Tests
+
+For complex systems, trend towards behavior testing, not plain internal state checks. Whenever the observable behavior of a unit can be expressed, assert on that rather than on plain state details.
+- ❌ State: `expect(foo.a).toBe(42)`
+- ✅ Behavior: After the user performs sequence A → B → C, `expect(foo).toEqual({ x, y, z })`
+
+Rearrange by similarity or transition. Many tests in a file tends to have similarity and differences.
 
 ## Banned Symbols
 
@@ -74,17 +93,4 @@ If you are working on phases of work, finish ALL phases before making a PR. Don'
 
 ## Package Install and Update - 7-Day Maturity Rule
 
-Due to dangers like Mini Shai-Hulud, you must proceed with caution when installing Node/Python packages. Or really any package manager ecosystem with fast moving CI/CD. This skill will speak in terms of Bun.
-
-When manually installing packages with bun (or any package manager really), only install versions that are **at least 7 days old** or **advisory urged**. The maturity window gives security researchers and automated audits time to flag a compromised or vulnerable release before it lands in your project.
-
-***Be deliberately slow and careful. One package at a time:***
-
-1. **Inspect the package**: `bun pm view <pkg>` for metadata, maintainers, and latest versions.
-2. **Filter by age**: Select a version that was published 7+ days ago.
-   - `npm view <pkg> time --json | jq 'to_entries | map(select(.key != "created" and .key != "modified")) | map(select(.key | test("-") | not)) | sort_by(.value) | .[-20:] | from_entries'`
-3. **Audit before it touches node_modules**: `bun audit` only scans the lockfile, so it can't see a package you haven't added yet. Workaround: Manually add the pinned version to `package.json`, run `bun install --lockfile-only` to resolve it into `bun.lock` without installing, then run `bun audit`. Only proceed if clean.
-4. **Pin it**: if the entry previously had a `^` (or `~`) range allowing automatic upgrades, strip it so the version stays exact. You should check if `bunfig.toml` specifies `minimumReleaseAge = 604800`, to automatically enforce this rule.
-5. **Install the exact version**: `bun add <pkg>@<version>` (`-d` for devDependencies), or plain `bun install` if you already staged it in step 3 and pinned it in step 4.
-
-If there is a tie-breaker between 7-day rule and advisory, use the advisory's judgement.
+Due to dangers like Mini Shai-Hulud, you must proceed with caution when installing Node/Python packages. Follow /update-packages rule when touching packages and versions.

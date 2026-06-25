@@ -1,6 +1,6 @@
 ---
 name: update-packages
-description: Absolute guidelines when involving installing or updating package (npm, bun, etc). Load this skill before you run bun/npm/yarn `install`.
+description: Absolute guidelines when installing or updating package (npm, bun, etc). Load this skill before you run bun/npm/yarn/anything `install`.
 ---
 
 ## Package Install and Update - 7-Day Maturity Rule
@@ -8,6 +8,8 @@ description: Absolute guidelines when involving installing or updating package (
 Due to dangers like Mini Shai-Hulud, you must proceed with caution when installing Node/Python packages. Or really any package manager ecosystem with fast moving CI/CD. This skill will speak in terms of Bun.
 
 When manually installing packages with bun (or any package manager really), only install versions that are **at least 7 days old**. The maturity window gives security researchers and automated audits time to flag a compromised or vulnerable release before it lands in your project.
+
+For trusted package manager sources like built-in `apt-get`, you don't have to follow this rule.
 
 ***Be deliberately slow and careful. One package at a time:***
 
