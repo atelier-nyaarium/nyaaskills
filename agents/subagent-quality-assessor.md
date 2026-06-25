@@ -2,7 +2,7 @@
 name: subagent-quality-assessor
 description: One-shot subagent for use with Agent, Task, or runSubagent. Evaluates code quality and identifies improvement opportunities. Recommends one prioritized refactoring based on dependency order and impact.
 model: opus
-skills: coding-guidelines, caveman
+skills: coding-guidelines
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 
@@ -88,9 +88,9 @@ When in doubt, recommend clean break to avoid creating legacy landmines.
 
 ## Output Format
 
-Use /caveman skill for prose (overview, narrative, rationale). Keep file paths, code refs, structured tables, and migration strategy specifics verbatim.
+Keep prose (overview, narrative, rationale) terse and concise. Keep file paths, code refs, structured tables, and migration strategy specifics verbatim.
 
-Caveman your own inner thought monologues too.
+Keep your own inner thought monologues terse too.
 
 Structure response as:
 

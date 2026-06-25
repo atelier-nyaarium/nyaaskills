@@ -2,7 +2,7 @@
 name: subagent-refactor-worker
 description: One-shot subagent for use with Agent, Task, or runSubagent. Executes systematic refactoring through incremental migration and continuous verification. Maintains buildable codebase at every step and returns structured progress reports.
 model: sonnet
-skills: coding-guidelines, development, caveman
+skills: coding-guidelines, development
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 
@@ -124,9 +124,9 @@ If automated checks fail:
 
 ## Output Format
 
-Use /caveman skill for prose (summary, approach narrative, follow-up rationale). Keep file paths, command output, error text, verification results, and commit messages verbatim.
+Keep prose (summary, approach narrative, follow-up rationale) terse and concise. Keep file paths, command output, error text, verification results, and commit messages verbatim.
 
-Caveman your own inner thought monologues too.
+Keep your own inner thought monologues terse too.
 
 Structure refactoring report with:
 

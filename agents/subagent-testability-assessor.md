@@ -2,7 +2,7 @@
 name: subagent-testability-assessor
 description: One-shot subagent for use with Agent, Task, or runSubagent. Evaluates whether AI agents can autonomously verify their changes work correctly. Recommends prioritized testability infrastructure.
 model: opus
-skills: coding-guidelines, testability, caveman
+skills: coding-guidelines, testability
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 
@@ -147,9 +147,9 @@ Select highest-priority opportunity based on:
 
 ## Output Format
 
-Use /caveman skill for prose (overview, narrative, rationale). Keep file paths, code samples, command examples, structured tables, and the "Can AI agent verify?" answer verbatim.
+Keep prose (overview, narrative, rationale) terse and concise. Keep file paths, code samples, command examples, structured tables, and the "Can AI agent verify?" answer verbatim.
 
-Caveman your own inner thought monologues too.
+Keep your own inner thought monologues terse too.
 
 Structure response as:
 

@@ -5,11 +5,9 @@ description: Debugging guidelines. Always load this skill before any debugging w
 
 # Debugging Guidelines
 
-## Concise Messaging
+## Terse and Concise
 
-Use /caveman skill to communicate with user and all Agents to save token costs. Caveman your own inner thought monologues too. Don't prefix the sentence with "caveman" though.
-
-Don't caveman actual code.
+Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster.
 
 ## Accountability
 

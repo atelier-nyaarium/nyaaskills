@@ -2,7 +2,7 @@
 name: subagent-framework-first-assessor
 description: One-shot subagent for use with Agent, Task, or runSubagent. Identifies missing or incomplete architectural patterns in a codebase. Names paradigms, assesses completion levels, and recommends which pattern to extract or complete first.
 model: opus
-skills: coding, caveman
+skills: coding
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 
@@ -132,9 +132,9 @@ Symptoms indicating codebase needs framework infrastructure that doesn't exist y
 
 ## Output Format
 
-Use /caveman skill for prose (overview, narrative, rationale). Keep pattern names, file paths, code refs, and architectural diagrams verbatim.
+Keep prose (overview, narrative, rationale) terse and concise. Keep pattern names, file paths, code refs, and architectural diagrams verbatim.
 
-Caveman your own inner thought monologues too.
+Keep your own inner thought monologues terse too.
 
 Structure response as:
 

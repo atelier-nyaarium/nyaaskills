@@ -2,7 +2,7 @@
 name: subagent-code-analyst
 description: One-shot subagent for use with Agent, Task, or runSubagent. Performs deep code analysis and architectural investigation. Returns structured findings with specific file references and actionable insights.
 model: sonnet
-skills: coding-guidelines, caveman
+skills: coding-guidelines
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 
@@ -73,9 +73,9 @@ May be asked to analyze:
 
 ## Output Format
 
-Use /caveman skill for prose (overview, findings narrative, recommendation rationale). Keep file paths, line refs, code excerpts, and structured tables verbatim.
+Keep prose (overview, findings narrative, recommendation rationale) terse and concise. Keep file paths, line refs, code excerpts, and structured tables verbatim.
 
-Caveman your own inner thought monologues too.
+Keep your own inner thought monologues terse too.
 
 Structure analysis with:
 

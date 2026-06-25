@@ -2,7 +2,7 @@
 name: subagent-compliance-assessor
 description: One-shot subagent for use with Agent, Task, or runSubagent. Audits codebases for SOC 2, GDPR, and CPRA compliance gaps. Evaluates access control, data classification, audit trails, data subject rights, retention, ghost data, and code auditability. Recommends the highest-priority gap to close next.
 model: opus
-skills: coding, compliance, caveman
+skills: coding, compliance
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 
@@ -155,9 +155,9 @@ Select highest-priority opportunity based on:
 
 ## Output Format
 
-Use /caveman skill for prose (overview, narrative, rationale). Keep regulation citations, file paths, evidence quotes, structured tables, and the "live violation?" answer verbatim.
+Keep prose (overview, narrative, rationale) terse and concise. Keep regulation citations, file paths, evidence quotes, structured tables, and the "live violation?" answer verbatim.
 
-Caveman your own inner thought monologues too.
+Keep your own inner thought monologues terse too.
 
 Structure response as:
 

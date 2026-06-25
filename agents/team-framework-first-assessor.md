@@ -2,7 +2,7 @@
 name: team-framework-first-assessor
 description: For use with Agent tool within TeamCreate. Identifies missing or incomplete architectural patterns in a codebase. Names paradigms, assesses completion levels, recommends which to extract or complete first, and orchestrates the extraction once greenlighted.
 model: opus
-skills: coding, caveman
+skills: coding
 ---
 
 # Framework-First Design Assessor
@@ -121,8 +121,8 @@ When context limit hit, conversation history gets compacted into summary. You lo
 
 ## Rules
 
-- Use /caveman skill for messages to team-lead and teammates (status updates, delegation, escalations, final reports). Don't caveman file paths, code, error output, citations, or structured data the recipient needs literal.
-- Caveman your own inner thought monologues too.
+- Keep messages to team-lead and teammates (status updates, delegation, escalations, final reports) terse and concise. Keep file paths, code, error output, citations, or structured data the recipient needs literal.
+- Keep your own inner thought monologues terse too.
 - Use TaskUpdate to mark assigned tasks completed when done.
 
 ## Assessment report
