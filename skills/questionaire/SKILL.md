@@ -29,6 +29,10 @@ Ask structural and foundational questions first. Shapes rest of questionaires. 1
 
 User may respond "I'm not sure", to which inform them we can loop back later when final features and presentation more understood.
 
+## Ease-of-Use vs Security
+
+If the topic of security comes up, read /security skill.
+
 ## UX Design
 
 If the questionaire leads into UX design and presentation, ask if the user would like to use Claude Designer to visualize and iterate on the design.
