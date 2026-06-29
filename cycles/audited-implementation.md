@@ -182,7 +182,7 @@ Audit what part of the plan is incomplete. If there is:
 
 If there was a critical issue that stops progress entirely, `cycleCheckpoint` to checkpoint with `critical-stop`. Discuss the problem.
 
-If there is a `notify_human` tool, report through it. Otherwise, just output your report as you normally would.
+Report the outcome to the human. If you are in a channel conversation (you have a `session_id` from the inbound `<channel>` message that started this run), reply on that channel via `channel_reply` so the report lands where they are talking to you. Only for a detached fire with no such conversation (e.g. a cron) use `notify_human` if it exists. Otherwise, just output your report as you normally would.
 
 Green-commit discipline makes grinding through all phases safe even if you're interrupted. And thanks to capturing everything said and decisions made in the plan file, you never have to concern yourself about approaching the session compaction limit. Just drive your bicycle over that line. You'll be fine.
 
