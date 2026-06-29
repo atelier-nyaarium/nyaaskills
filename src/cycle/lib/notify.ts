@@ -78,11 +78,17 @@ export type NotifyHuman = z.infer<typeof NotifyHumanSchema>;
 // notify_human tool registration.
 export const NOTIFY_HUMAN_TOOL_NAME = "notify_human";
 
-/** The agent-side relay sentence. Plugins compose through the agent: a result
- * carrying this tells it to forward the payload IF a notification tool exists;
- * a cycles-only setup simply skips it. */
+// The cross-team reply tool. A run started from a chat should report BACK on that
+// channel (route to the originator), not broadcast - so channel_reply is preferred
+// when the agent has an inbound session_id, and notify_human is the fallback for a
+// detached fire (a cron with no conversation to reply into).
+export const CHANNEL_REPLY_TOOL_NAME = "channel_reply";
+
+/** The agent-side relay sentence. Plugins compose through the agent: a result carrying this tells
+ * it how to report the payload to the human. Prefer replying on the originating channel; fall back
+ * to a broadcast notice only for a detached fire. A setup with neither tool simply skips it. */
 export function relayInstruction(): string {
-	return `A human notification payload is in \`notifyHuman\`. If a \`${NOTIFY_HUMAN_TOOL_NAME}\` tool is available, call it NOW with that payload's title/summary/full/attachments before continuing; if no such tool exists, skip this silently.`;
+	return `A human notification payload is in \`notifyHuman\` (title/summary/full/attachments). If you are in a channel conversation (you have a session_id from the inbound <channel> message that started this run), report ON that channel NOW: call \`${CHANNEL_REPLY_TOOL_NAME}\` with that session_id, the payload's title and summary, and full as respondAsMarkdownString, so the report lands where the human is talking to you. ONLY if there is no such conversation (a detached fire, e.g. a cron) and a \`${NOTIFY_HUMAN_TOOL_NAME}\` tool exists, call \`${NOTIFY_HUMAN_TOOL_NAME}\` with the payload instead. If neither applies, skip silently.`;
 }
 
 /** Auto context the server already has: project, elapsed, items counts. */

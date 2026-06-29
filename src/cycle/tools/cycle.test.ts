@@ -711,7 +711,7 @@ describe("shipped cycle definitions", () => {
 			const { loadCycleDef } = await import("../lib/resolveCycleDef.ts");
 			const def = loadCycleDef("audited-implementation");
 			expect(def.steps).toEqual([
-				"implement-phase",
+				"implementation-phase",
 				"align-fan-out",
 				"align-fix",
 				"red-team-fan-out",
@@ -724,6 +724,7 @@ describe("shipped cycle definitions", () => {
 				"compliance-fix",
 				"compliance-commit",
 				"documentation",
+				"crust-collection",
 				"plan-completeness",
 			]);
 		} finally {
@@ -791,6 +792,8 @@ describe("human notification tiers (notify option + payload)", () => {
 		// English header sentence, then the summary below a blank line.
 		expect(done.notifyHuman.full).toContain("has completed its run after 2 laps in ");
 		expect(done.notifyHuman.full).toContain("\n\ns");
+		// The relay prefers replying on the originating channel; notify_human is the detached-fire fallback.
+		expect(done.nextAction).toContain("channel_reply");
 		expect(done.nextAction).toContain("notify_human");
 	});
 
@@ -807,6 +810,7 @@ describe("human notification tiers (notify option + payload)", () => {
 		expect(looped.notifyHuman).toBeDefined();
 		expect(looped.notifyHuman.title).toBe("lap 1 ok");
 		expect(looped.notifyHuman.full).toContain("## report");
+		expect(looped.nextAction).toContain("channel_reply");
 		expect(looped.nextAction).toContain("notify_human");
 	});
 
