@@ -34,11 +34,13 @@ Rearrange by similarity or transition. Many tests in a file tends to have simila
 
 ## Banned Symbols
 
-In all files, including markdown, NEVER use em dashes, smart quotes, or zero-width characters. Use regular quotes. If you see smart quotes in existing code, replace them. Reword sentences to avoid lazy dash-joins. If you must use a dash, use a regular dash (-).
+In all files, including markdown, NEVER use em dashes, smart quotes, or zero-width characters. Use regular quotes. If you see smart quotes in existing code, replace them. Reword sentences to avoid lazy dash-joins. If you must use a dash, use a regular dash (-), BUT not before attempting a reword!
+
+Don't use `sed` to replace. You need to read the sentence structures to reword it.
 
 To check for lingering usages: `... | xargs grep -Pl '[\x{2014}\x{2018}\x{2019}\x{201C}\x{201D}\x{200B}\x{200C}\x{200D}]' 2>/dev/null`
 
-FYI: Some languages, like LaTeX and SQL, will crash if you put in a unicode character (like an `e2 80 94`). Overall, no matter the language, just dont use unicode characters unless the user has established that pattern in their code already.
+FYI: Some languages, like LaTeX and SQL, will crash if you put in a unicode character (like an `e2 80 94`). Overall, no matter the language, just avoid using unicode characters in code files, unless the user has established that pattern in their code already.
 
 ## Documentation Style
 
