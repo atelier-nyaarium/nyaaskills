@@ -15,7 +15,7 @@ export interface McpTool {
 
 const mcpServer = new McpServer({
 	name: "nyaaskills-mcp",
-	version: "3.11.0",
+	version: "3.11.1",
 });
 
 function registerTool(tool: McpTool) {

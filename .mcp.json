@@ -2,7 +2,7 @@
 	"mcpServers": {
 		"nyaaskills-mcp": {
 			"command": "bun",
-			"args": ["--install=force", "run", "${CLAUDE_PLUGIN_ROOT}/src/cycle-mcp.ts"]
+			"args": ["run", "${CLAUDE_PLUGIN_ROOT}/src/cycle-mcp.ts"]
 		}
 	}
 }
