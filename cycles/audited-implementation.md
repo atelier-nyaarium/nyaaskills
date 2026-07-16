@@ -158,6 +158,7 @@ General rules:
 - Don't include plan/cycle/slice/lap labels or progress narrative anywhere, e.g. "(slice 4)", "(some phase name)", "[sandbox] Testing things",.
 - Don't mention line numbers. Those are moving targets. Mention names instead (function names, class names, etc).
 - Fix documentation violations as you come across them.
+- If you must mention a line number, change their format to name style, not line number: `FilePath:Namespace:Name`
 
 
 
@@ -165,9 +166,11 @@ General rules:
 
 If the session has not been going long enough, `next()` out of this pass. Do this pass as you are nearing the final phases of the plan. Or just had a really annoying reoccuring quirk that you had to painfully derive a solution to.
 
-This is exactly the right moment for a crust sweep. As opposed to /framework-first-design, crust collection is about recording things you hated about the codebase. Most pain points can be answered straight from your head. Skip diminishing improvements: It's OK to just say this plan went perfectly with no pain points.
+This is exactly the right moment for a crust sweep. As opposed to /framework-first-design, crust collection is about recording things you hated about the codebase. Most pain points can be answered straight from your head.
 
-Collect points in code where bug classes reside: `filepath : namespace : name` (not line numbers)
+It's OK to just say this plan went perfectly with no pain points: Niche cases, diminishing improvements, and things that are not worth my time and tokens to bring up.
+
+Collect points in code where bug classes reside: `FilePath:Namespace:Name` (not line numbers)
 Don't fix anything. Just write it to a `## Painpoints` section towards the end of the plan file pointing them out.
 
 
@@ -177,6 +180,8 @@ Don't fix anything. Just write it to a `## Painpoints` section towards the end o
 Audit what part of the plan is incomplete. If there is:
 - Unfinished work in this current phase: `cycleGoto` back to the `implementation-phase`.
 - More phases in the plan to complete: `cycleCheckpoint` to checkpoint with `loop`.
+
+In the plan file, mark completed phases and slices with `✅`.
 
 If there was a critical issue that stops progress entirely, `cycleCheckpoint` to checkpoint with `critical-stop`. Discuss the problem.
 
