@@ -167,13 +167,11 @@ If you need to mention a line number, use **Reference format:** `FilePath:Namesp
 
 If the session has not been going long enough, or you recently just went through a compaction, `next()` out of this pass. Do this pass only if you've *felt* the codebase enough. As you are approaching the final phases of the plan, or you just had a really annoying reoccuring quirk that you had to painfully derive a solution to.
 
-As opposed to /framework-first-design, crust sweep is about recording things you hated about the codebase. This is not a code audit, it's a vibe check. Most pain points can be answered straight from your head.
+As opposed to /framework-first-design, crust sweep is about recording things you hated about the codebase. This is not a code audit, it's a vibe check. Pain points can be described straight from your head, but do reanalyze to capture file references and steps that causes the pain points, or where classes of anti-patterns reside.
 
-It's OK to just say this plan went perfectly with no pain points: Niche cases, diminishing improvements, and things that are not worth my time and tokens to bring up.
+It's also OK to just say this plan went perfectly with no pain points: Niche cases, diminishing improvements, and things that are not worth my time and tokens to bring up.
 
-Collect points in code where bug classes reside. **Reference format:** `FilePath:Namespace:ClassOrFunctionName`
 Don't fix anything. Just write it to a `## Painpoints` section towards the end of the plan file pointing them out.
-
 If you need to mention a line number, use **Reference format:** `FilePath:Namespace:ClassOrFunctionName[:VariableName...]`. Or  describe where.
 
 
