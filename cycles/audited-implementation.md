@@ -165,9 +165,7 @@ General rules:
 
 If the session has not been going long enough, `next()` out of this pass. Do this pass as you are nearing the final phases of the plan. Or just had a really annoying reoccuring quirk that you had to painfully derive a solution to.
 
-This is exactly the right moment for a crust sweep, utilizing a big workflow scouting pass.
-
-Fan out across known bug classes, bad class/function names, dead code, legacy landmines, and other /framework-first-design violations. This includes concerns that are out-of-scope from the plan. Seed each Agent with concrete leads from this session.
+This is exactly the right moment for a crust sweep. As opposed to /framework-first-design, crust collection is about recording things you hated about the codebase. Most pain points can be answered straight from your head. Skip diminishing improvements: It's OK to just say this plan went perfectly with no pain points.
 
 Collect points in code where bug classes reside: `filepath : namespace : name` (not line numbers)
 Don't fix anything. Just write it to a `## Painpoints` section towards the end of the plan file pointing them out.
