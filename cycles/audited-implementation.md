@@ -23,7 +23,7 @@ Be sure to fan out a Sonnet Workflow audit pass on every modified file or range.
 Vet the implementation for misalignments from the plan:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a fresh git diff.
-- As many agents as you need. 8 to 20+ per parallel/pipeline Explore/Verify type phase.
+- As many agents as you need. 8+ up to 20 per parallel/pipeline Explore/Verify type phase.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
@@ -47,7 +47,7 @@ If a fix changed anything, `cycleGoto(...)` back to `align-fan-out` to re-audit.
 Vet the implementation for gaps, blockers, concerns:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a fresh git diff.
-- As many agents as you need. 8 to 20+ per parallel/pipeline Explore/Verify type phase.
+- As many agents as you need. 8+ up to 20 per parallel/pipeline Explore/Verify type phase.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
@@ -83,11 +83,13 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 Vet the implementation for framework-first improvements using /framework-first-design skill. You can now deviate from the plan, but do respect its goal:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
-- As many agents as you need. 8 to 20+ per parallel/pipeline Explore/Verify type phase.
+- As many agents as you need. 8+ up to 20 per parallel/pipeline Explore/Verify type phase.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
-Then rank the survivors most significant first, grouped into coherent committable chunks.
+**Optional:** If you've noticed Agents fabricating wrong facts, sus out why. Bad function/class names? Stale comments? Anything that could be **misleading** it? Weigh these into the framework assessment as something to fix, only when you notice the issue.
+
+Then rank the survivors, most significant first, grouped into coherent committable chunks.
 
 ## framework-fix
 
@@ -117,13 +119,13 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 Vet the implementation for compliance gaps using the /compliance skill:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
-- As many agents as you need. 8 to 20+ per parallel/pipeline Explore/Verify type phase.
+- As many agents as you need. 8+ up to 20 per parallel/pipeline Explore/Verify type phase.
 - Access control, data handling/classification, audit trails, retention, data-subject rights
 - SOC2/GDPR/CPRA
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
-Then rank the survivors most significant first, split into small (fix now) or large redesign (defer).
+Then rank the survivors, most significant first, split into small (fix now) or large redesign (defer).
 
 ## compliance-fix
 
