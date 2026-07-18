@@ -12,7 +12,7 @@ Implement a plan phase with multiple audits. Each lap implements, then audits fr
 
 Implement the phase. Complex code -> handle yourself. Have a TeamCreate() team? Delegate to team agents only if the task is so simple they cannot fail.
 
-Use TaskCreate/TaskUpdate to itemize the tasks/slices in this phase.
+Use TaskCreate/TaskUpdate to track the tasks/slices in this phase.
 
 Be sure to fan out a Sonnet Workflow audit pass on every modified file or range. Violators of /coding guidelines. Especially overly long comments, narrative comments, and units that test plain internal states instead of behavior. They report, you fix if real.
 
