@@ -10,7 +10,9 @@ Implement a plan phase with multiple audits. Each lap implements, then audits fr
 
 ## implementation-phase
 
-Implement the phase. Complex code -> handle yourself. Have a team? Delegate to team agents only if the task is so simple they cannot fail.
+Implement the phase. Complex code -> handle yourself. Have a TeamCreate() team? Delegate to team agents only if the task is so simple they cannot fail.
+
+Use TaskCreate/TaskUpdate to itemize the tasks/slices in this phase.
 
 Be sure to fan out a Sonnet Workflow audit pass on every modified file or range. Violators of /coding guidelines. Especially overly long comments, narrative comments, and units that test plain internal states instead of behavior. They report, you fix if real.
 
@@ -185,6 +187,8 @@ Audit what part of the plan is incomplete. If there is:
 - More phases in the plan to complete: `cycleCheckpoint` to checkpoint with `loop`.
 
 In the plan file, mark completed phases and slices with `✅`.
+
+Call TaskUpdate with status: "deleted" to remove this phase's completed tasks.
 
 If there was a critical issue that stops progress entirely, `cycleCheckpoint` to checkpoint with `critical-stop`. Discuss the problem.
 
