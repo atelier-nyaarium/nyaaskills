@@ -50,15 +50,15 @@ No tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, r
 
 Only comment when something non-obvious happens. Do not narrate code.
 
-Don't comment:
-- What types already say (`User | null` needs no "returns null if not found")
-- Self-evident code (`if (!session.valid) throw` needs no explanation)
-- What was removed or changed (git handles that)
-
 Do comment:
-- Decisions to use anti-patterns: `// @unknown Router schema shape may contain any field types.`
-- Why one approach chosen over another: `// Use executeToolCall so Discord flows can have their own handlers`
-- Why block intentionally empty: `// Tests will trigger recreates multiple times. Silently pass / continue.`
+- ✅ Decisions to use anti-patterns: `// @unknown Router schema shape may contain any field types.`
+- ✅ Why one approach chosen over another: `// Use executeToolCall so Discord flows can have their own handlers`
+- ✅ Why block intentionally empty: `// Tests will trigger recreates multiple times. Silently pass / continue.`
+
+Don't comment:
+- ❌ What types already say (`User | null` needs no "returns null if not found")
+- ❌ Self-evident code (`if (!session.valid) throw` needs no explanation)
+- ❌ What was removed or changed (git handles that)
 
 ## Comments Must be Timeless
 
@@ -68,6 +68,12 @@ Comments must describe the code as it stands. Not some plan. Nor phase. Nor a mi
 - ❌ `// New keyring sync`
 - ❌ `// Per the plan, verify the admission here`
 A reader a year from now has no memory of this work. Every comment has to earn its place based on intrinsic logic alone.
+
+## Concise Comments
+
+Keep comments 1 line short (2 at most for critical lines). Don't write long paragraphs or narratives. If you run into an old violation of this, clean them up on a following commit.
+
+As with Comment Discipline above, don't comment on the obvious if the code obviously says the same thing.
 
 ## Git Hygiene
 

@@ -35,9 +35,9 @@ Then rank the survivors, most significant first.
 
 ## align-fix
 
-Then fix real misalignments and run smoke tests (run editor/game instances, introspection checks, screenshots, etc). Have a team? If it is their role, ask them to unit-test or smoke run.
+Fix real misalignments and run smoke tests (run editor/game instances, introspection checks, screenshots, etc). Have a team? If it is their role, ask them to unit-test or smoke run.
 
-/coding skill hygiene. Especially **Comments Must be Timeless**.
+/coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
 Don't forget to smoke test after changes.
 
 If a fix changed anything, `cycleGoto(...)` back to `align-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `next()` instead.
@@ -59,9 +59,9 @@ Then rank the survivors, most significant first.
 
 ## red-team-fix
 
-Then fix the real issues and run smoke tests again. Watch out for: yes-manning, scope creep, drift from codebase patterns.
+Fix the real issues and run smoke tests again. Watch out for: yes-manning, scope creep, drift from codebase patterns.
 
-/coding skill hygiene. Especially **Comments Must be Timeless**.
+/coding skill hygiene. Especially **Comments Must be Timeless** and **Concise Comments**.
 Don't forget to smoke test after changes.
 
 If you fixed anything, `cycleGoto(...)` back to `red-team-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `next()` instead.
@@ -97,9 +97,9 @@ Then rank the survivors, most significant first, grouped into coherent committab
 
 ## framework-fix
 
-Then apply the top chunk `framework-fan-out` handed you.
+Apply the top chunk `framework-fan-out` handed you.
 
-/coding skill hygiene. Especially **Comments Must be Timeless**.
+/coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
 Don't forget to smoke test after changes.
 
 If a fix changed anything, `cycleGoto(...)` back to `framework-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `next()` instead.
@@ -133,9 +133,9 @@ Then rank the survivors, most significant first, split into small (fix now) or l
 
 ## compliance-fix
 
-Then apply the small fixes `compliance-fan-out` flagged.
+Apply the small fixes `compliance-fan-out` flagged.
 
-/coding skill hygiene. Especially **Comments Must be Timeless**.
+/coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
 Don't forget to smoke test after changes.
 
 If a fix changed anything, `cycleGoto(...)` back to `compliance-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `next()` instead.
