@@ -6,6 +6,8 @@ steps: [implementation-phase, align-fan-out, align-fix, red-team-fan-out, red-te
 
 Implement a plan phase with multiple audits. Each lap implements, then audits from multiple angles, fixing and committing in between audits, repeating until the phase is solid. The plan file is the document being implemented; its body churns each lap while these steps stay fixed.
 
+`compliance-*` is suitable only if this is enterprise software, where the developer is concerned about safety PII. Typically skip it for personal projects.
+
 
 
 ## implementation-phase
