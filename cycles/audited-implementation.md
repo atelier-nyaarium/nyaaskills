@@ -70,7 +70,7 @@ If you fixed anything, `cycleGoto(...)` back to `red-team-fan-out` to re-audit. 
 
 ## implementation-commit
 
-If this project is git tracked, gitStage + gitCommit.
+If this project is git tracked, gitStage + gitCommit. If you had to PR, don't forget to pull main.
 
 Commit description rules: One short phrase or sentence. Start with a verb. Describe only what changed, not process.
 - No prefixes or tags, "feat:", "chore:", "wip:", "[sandbox]".
@@ -106,7 +106,7 @@ If a fix changed anything, `cycleGoto(...)` back to `framework-fan-out` to re-au
 
 ## framework-commit
 
-If this project is git tracked, gitStage + gitCommit.
+If this project is git tracked, gitStage + gitCommit. If you had to PR, don't forget to pull main.
 
 Commit description rules: One short phrase or sentence. Start with a verb. Describe only what changed, not process.
 - No prefixes or tags, "feat:", "chore:", "wip:", "[sandbox]".
@@ -144,7 +144,7 @@ Large-redesign items: report them to the human for a later plan, but only at the
 
 ## compliance-commit
 
-If this project is git tracked, gitStage + gitCommit.
+If this project is git tracked, gitStage + gitCommit. If you had to PR, don't forget to pull main.
 
 Commit description rules: One short phrase or sentence. Start with a verb. Describe only what changed, not process.
 - No prefixes or tags, "feat:", "chore:", "wip:", "[sandbox]".
