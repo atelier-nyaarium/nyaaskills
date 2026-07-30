@@ -15,12 +15,15 @@ Whether speaking to the user or writing comments, keep everything concise. Avoid
 
 When refactoring clean-break style, try reducing surface area for problems and failing tests. Peel off independent clean break layers before adding code.
 
-## Dont Use sed to Edit
+## Dont Use bash to Edit
 
-You break shit a lot of the times you do this. Instead:
+Don't use bash sed/awk/python/heredocs to edit code. You break shit a lot of the times you do this.
 
-1. Find/Grep to locate
-2. Tiny amounts: open files manually for edit. Many files: send a swarm at them.
+Instead, spend the tokens:
+- Find/Grep to locate
+- Tiny amounts: Open files manually for edit with the Update/Edit tool.
+- Many files: send a swarm at them.
+- Found a giant 600+ line files? After finishing the session's work, encourage a code split refactor with /framework-first-design skill (don't read the skill now, just tell them that it's a good opportunity).
 
 **Remote files:** Temporarily mount the remote filesystem to local with sshfs to `/tmp/{foldername}` and edit using instructions above.
 
