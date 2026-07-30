@@ -11,37 +11,116 @@ Ask as many questions as needed until full design understood.
 
 **Don't use `AskUserQuestion` tool:** Ask the user directly instead of using `AskUserQuestion` tool. That tool is too basic for this skill.
 
-## Terse and Concise
+## Plan File
 
-Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster.
+Decide on a name and write to `./plans/*.md`, a first section of `# Questionaire`.
 
-## Analysis
+Starter template:
+```md
+# Questionaire
 
-Request to design or make something *always* requires understanding codebase, and potentially online research with Opus Agents. Do it first before making questions.
+## Question 1 - What blah blah?
 
-Perform additional research as answers come in.
+Q: What blah blah?
+A: Blah blah.
 
-Structural questions can drastically change a lot. Use dynamic workflows to figure out the scale of a question as answers come in.
+> {Verbetim reason captured}
 
-## Structural Scope First and Loopbacks
+## Question 2 - Something something [Invalidated/superceded]
+
+Q: Something something?
+
+Invalidated/superceded by blah other answer.
+
+## Question 3 - This or that?
+
+Q: Should this blah or that?
+A: Blah blah.
+
+> {Verbetim reason captured}
+
+## Question N - ...
+...
+
+# Plan
+
+## Phase 1 - Blah
+
+## Phase N - ...
+```
+
+Capture questionaire as you go. Only capture:
+- Questions that got a response. Skip any that were invalidated or superceded by another.
+- Only the selected answer for the question.
+- Only if your recommendation was chosen, capture your recommendation reason.
+- If given, quotes of user's reasonings.
+
+Once the questionaire is finally complete, write a rough `# Plan` section based on the questionaire. Then ask if they want to start cycles of plan refinement (nyaaskills).
+
+## Asking Questions
 
 Ask structural and foundational questions first. Shapes rest of questionaires. 1 multiple choice question at a time.
 
 User may respond "I'm not sure", to which inform them we can loop back later when final features and presentation more understood.
 
-## Ease-of-Use vs Security
+Whether speaking to the user or writing the plan, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster.
 
-If the topic of security comes up, read /security skill.
+## Analysis Workflow Loop
 
-## UX Design
+Solid design *always* requires understanding codebase, and possibly online research with Opus Agents. Do these steps for each design decision question.
+
+1. **Foundational Workflows:** Structural questions can drastically change a lot. Fan out using Workflows to figure out the scale of change, as the user's answers come in. Foundational decisions asked first following /framework-first-design skill. Weigh the impact of bug classes, fragile design, code dupes, pain-points, etc. Give Agents full context of:
+- The questionaire choices so far so they know why they are on that route.
+- Any files/symbols/etc you know about that are relevant.
+- Tell it it's job.
+- Sonnet for fact checks and exploration, Opus for complex reasoning
+
+2. **Draft Synthesis:** Synthesize their result and draft the best single question to ask a user. Just 1, not multiple. Draft the choices to the draft question. Don't decide on a recommendation yet. Highly recommended to ask foundational questions first.
+
+3. Respond that you are researching [some line of reasoning/questioning], and that you will get back to them.
+
+4. **Choices Workflows:** Fan out using Workflows again 1 Agent per choice. Have them double check gaps, and how much it helps. Did you forget 3 other duped call sites? Are you setting yourself up for future pain? Give Agents full context of:
+- The questionaire choices so far so they know why they are on that route.
+- The question choice they are evaluating.
+- The other question choices they are battling against.
+- Any files/symbols/etc you know about that are relevant.
+- Tell it it's job.
+- Sonnet for fact checks and exploration, Opus for complex reasoning
+
+5. **Choices Synthesis:** Sort best choices first and kill terrible ones. If a lot died and changed, repeat from **1)**.
+
+6. ❓ Present the question and choices as depicted in **## Example Question**. and chat with them for as long as they need.
+- Capture the final concise answer for the question.
+- For the records, verbetim capture the part of the response that mattered, to omit heavy chatter.
+
+7. Only move on to the next question when they decided on an answer, or state that they are unsure. We can come back later or invalidate/supercede it.
+
+## Backwards Compatibility Strategy
+
+When encountering a change that affects existing behavior, ask and determine which backwards compatibility strategy. This question heavily affects upcoming foundational changes:
+
+- **Default to clean breaks by last phase** - Remove old patterns in the last phase entirely rather than preserving legacy behavior forever.
+- **Signals for backwards compatibility**:
+  - Versioned APIs or routes (e.g., `/api/v1/`, `/api/v2/`)
+  - User explicitly said "also", "both", "still support", "keep the old way"
+  - Public APIs, published packages, external integrations
+  - Multi-tenant systems where different clients may be on different versions
+- **When you see signals**: Ask whether to do **forceful improvement** (clean break), **gentle migration** (preserve legacy), or permanent backwards compatibility.
+- **When in doubt**: Recommend a plan-ending clean break
+
+## Optional - Ease-of-Use vs Security
+
+If security is a heavy topic for this plan, read /security skill. Otherwise don't load the skill.
+
+## Optional - UX Design
 
 If the questionaire leads into UX design and presentation, ask if the user would like to use Claude Designer to visualize and iterate on the design.
 
 ### Using Claude Designer (DesignSync)
 
-If they say yes, drive the `DesignSync` MCP tool.
-- Create the project (`create_project`) if it's a new UX, or `list_projects` if it sounds like a session resume.
-- Link them to the proper `https://claude.ai/design/p/${projectId}` URL.
+If they say yes, drive the `DesignSync` MCP tool and skills.
+- **Switchboard:** If they are chatting over Switchboard, prefer the Switchboard Designer capabilities if present.
+- **Vanilla Claude:** Create the project (`create_project`) if it's a new UX, or `list_projects` if it sounds like a session resume. Link them to the proper `https://claude.ai/design/p/${projectId}` URL.
 
 Read the tool description first (it is the authoritative spec). The loop: `list_projects` -> `create_project({name})` if none, keep the `projectId` -> author one self-contained HTML mockup per screen as `<scratchpad>/design-mockups/components/<screen>/index.html` (inline `<style>`/SVG, no external assets, first line `<!-- @dsCard group="..." -->`) -> `finalize_plan` -> `write_files` -> `register_assets` -> tell the user where to look. One screen at a time: build, push, react, refine. Present and build, don't quiz them with abstract screen names.
 
@@ -51,21 +130,7 @@ Read the tool description first (it is the authoritative spec). The loop: `list_
 
 `localPath` must be inside the finalized `localDir`. Log every design ruling into the feature plan's questionaire/plan sections, not just the mockups, so nothing is lost during compaction.
 
-## Plan File
-
-Decide on a name and write to `./plans/*.md`, a first section of `## Questionaire`.
-
-Capture questionaire as you go.
-
-Only capture:
-- Questions that got a response. Skip any that were invalidated or superceded by another.
-- Only the selected answer for the question.
-- Only if your recommendation was chosen, capture your recommendation reason.
-- If given, quotes of user's reasonings.
-
-Once the questionaire is finally complete, write a rough `## Plan` section based on the questionaire. Then ask if they want to start cycles of plan refinement.
-
-## Example
+## Example Question
 
 Example of 5th question (recommended options bolded):
 
@@ -80,9 +145,8 @@ Vision so far:
 
 We said Tab `=` name only. But user original concern was methods: "difficult to tell it needs `()`." Properties have ambiguous suffix (`=` vs nothing) → name-only justified. But methods always need `()`. No expression context where method name valid without them. Should methods be the one exception?
 
-- A) No exceptions - Tab always name only. Hint card makes parens need obvious. Consistent, user learns one rule.
-- **B) Methods get `()`** - If takes params, tab insert `name()` cursor inside. If zero-args, cursor after `)`. Properties and entities stay name-only. One exception, matches user original request exactly.
-- C) Methods get `()`, zero-arg methods auto-execute - `console.clear` Tab becomes `console.clear()` cursor after. Saves keystroke for fire-and-forget commands.
+- **A) Methods get `()`** - If takes params, tab insert `name()` cursor inside. If zero-args, cursor after `)`. Properties and entities stay name-only. One exception, matches user original request exactly.
+- B) No exceptions - Tab always name only. Hint card makes parens need obvious. Consistent, user learns one rule.
 
-**Recommendation: B.** Ambiguity argument only applies to properties. Methods always need parens → inserting never wrong. Cursor-inside-vs-after small detail, prevents "forgot parens" problem.
+**Recommendation: A.** Ambiguity argument only applies to properties. Methods always need parens → inserting never wrong. Cursor-inside-vs-after small detail, prevents "forgot parens" problem.
 ```
