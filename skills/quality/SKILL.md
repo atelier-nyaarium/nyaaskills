@@ -81,6 +81,7 @@ Based on assessor's recommended opportunity, determine backwards compatibility s
   - Multi-tenant systems where different clients may be on different versions
 - **When you see signals**: Ask whether to do **forceful improvement** (clean break) or **gentle migration** (preserve legacy)
 - **When in doubt**: Recommend clean break
+- Always place a remove date comment above temporary migration shims.
 
 ### 3. Execution Loop
 

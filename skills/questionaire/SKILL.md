@@ -107,6 +107,7 @@ When encountering a change that affects existing behavior, ask and determine whi
   - Multi-tenant systems where different clients may be on different versions
 - **When you see signals**: Ask whether to do **forceful improvement** (clean break), **gentle migration** (preserve legacy), or permanent backwards compatibility.
 - **When in doubt**: Recommend a plan-ending clean break
+- Always place a remove date comment above temporary migration shims.
 
 ## Optional - Ease-of-Use vs Security
 
