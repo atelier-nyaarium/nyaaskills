@@ -116,7 +116,7 @@ Agent(team_name="...", subagent_type="team-unit-tester", name="unit-tester", mod
 5. **User verification:** Ask user to test changes. Passing build is not verified fix. Do not declare work done until user confirms changes work correctly.
 
 **Wrap up:** When user confirmed everything works and no actionable items or gaps remain, urge user to commit changes.
-- ❓ After they commit, ask whether they would like quality assessment, testability assessment, or if more work to do. Give one-liner commit message of work done.
+- ❓ After they commit, ask whether they would like architecture assessment, testability assessment, or if more work to do. Give one-liner commit message of work done.
 
 ### Unresponsive agents
 
@@ -132,11 +132,11 @@ Implementers may raise concerns back to you during work. Handle as follows:
 - ❓ Ask user for permission to spawn `testability-assessor` to set it up.
 
 **Code quality concerns:** Implementer flags problematic code (magic numbers, fragile boilerplate, patterns that keep breaking). Track concern but do not interrupt current work.
-- ❓ After current tasks wrapped up and user committed, offer to spawn `quality-assessor` to evaluate and address it.
+- ❓ After current tasks wrapped up and user committed, offer to spawn `architecture-assessor` to evaluate and address it.
 
 ### Assessor flow
 
-If user requests quality or testability assessment at any point, spawn and invoke appropriate assessor.
+If user requests architecture or testability assessment at any point, spawn and invoke appropriate assessor.
 
 - Deliver assessor's assessment report to user.
 - If user greenlights recommended opportunity, relay greenlight to assessor.
@@ -188,7 +188,7 @@ Reference table for spawns. Standard team (`roster`, `goals`, `implementer`, `bu
 |------|-----------|-------|---------|
 | `roster` | `team-notes` | sonnet | Structural memory. Holds current team state: name, agents, types, models, scopes. Fed by team-lead. |
 | `goals` | `team-notes` | sonnet | Intent memory. Summarizes past milestones, verbose on current objectives and reasoning. Confirms alignment with team-lead. |
-| `quality-assessor` | `team-quality-assessor` | opus | Analyzes code quality and recommends one prioritized improvement. |
+| `architecture-assessor` | `team-architecture-assessor` | opus | Assesses architecture in both directions: missing patterns to build, quality repairs to existing code. Recommends one prioritized opportunity. |
 | `testability-assessor` | `team-testability-assessor` | opus | Evaluates whether agents can autonomously verify their changes. |
 | `implementer` | `team-general` | sonnet | Code editing only. Does not run lints, builds, or tests. |
 | `builder` | `team-builder` | haiku | Runs lint and build. Does not edit code or run tests. |

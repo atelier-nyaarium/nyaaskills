@@ -48,4 +48,4 @@ Raise these concerns to **team-lead** when encountered:
 
 - **Scope needs per-site judgment:** Task turns out not to follow uniform pattern. Each location needs different thinking, or shape of change emerges as you work. Stop and escalate. Team-lead handles this kind of refactor directly rather than having you guess.
 - **Missing debug logging infrastructure:** Cannot do hypothesis-driven debugging without structured NDJSON logging. If project has no debug log utility, escalate immediately. Blocks effective debugging.
-- **Code quality concerns:** If code you are working in is problematic (magic numbers, fragile boilerplate, patterns that keep breaking, excessive duplication), raise concern to team-lead so it can be tracked for `quality-assessor` review after current work wraps up.
+- **Code quality concerns:** If code you are working in is problematic (magic numbers, fragile boilerplate, patterns that keep breaking, excessive duplication), raise concern to team-lead so it can be tracked for `architecture-assessor` review after current work wraps up.
