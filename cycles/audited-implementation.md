@@ -86,6 +86,8 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 
 **Analysis only.** Framework-first audit. Fan out via `Workflow()`.
 
+**Skipping is allowed.** If you have come through here enough times and what is in front of you is already solid, `cycleNext` straight past rather than manufacturing work. An audit that has to reach for findings has told you it is finished.
+
 Vet the implementation for framework-first improvements using /framework-first-design skill. You can now deviate from the plan, but do respect its goal:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
@@ -106,7 +108,9 @@ Apply the top chunk `framework-fan-out` handed you.
 /coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
 Don't forget to smoke test after changes.
 
-If a fix changed anything, `cycleGoto(...)` back to `framework-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `next()` instead.
+**Reconcile the plan with what shipped.** This step is licensed to deviate, so slices you already marked `✅` may no longer describe the code. Rewrite those sections to match what is actually there. The plan is the record of what was built, not what was intended, and a stale `✅` means the next lap audits against a spec that no longer exists.
+
+**Then hand it to red team.** A refactor is unproven until something hostile has looked at it. `cycleGoto(...)` to `red-team-fan-out`. Step order brings you back through here, and `framework-fan-out` can wave you past when nothing is left worth doing.
 
 ## framework-commit
 
@@ -123,6 +127,8 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 ## compliance-fan-out
 
 **Analysis only.** Compliance audit. Fan out via `Workflow()`.
+
+**Skipping is allowed.** If you have come through here enough times and what is in front of you is already solid, `cycleNext` straight past rather than manufacturing work. An audit that has to reach for findings has told you it is finished.
 
 Vet the implementation for compliance gaps using the /compliance skill:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
@@ -142,7 +148,9 @@ Apply the small fixes `compliance-fan-out` flagged.
 /coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
 Don't forget to smoke test after changes.
 
-If a fix changed anything, `cycleGoto(...)` back to `compliance-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `next()` instead.
+**Reconcile the plan with what shipped.** Slices you already marked `✅` may no longer describe the code. Rewrite those sections to match what is actually there. The plan is the record of what was built, not what was intended, and a stale `✅` means the next lap audits against a spec that no longer exists.
+
+**Then hand it to red team.** A fix is unproven until something hostile has looked at it. `cycleGoto(...)` to `red-team-fan-out`. Step order brings you back through here, and `compliance-fan-out` can wave you past when nothing is left worth doing.
 
 Large-redesign items: report them to the human for a later plan, but only at the very end after the plan is fully accounted for (`done`). Don't break out of the cycles just to report.
 
