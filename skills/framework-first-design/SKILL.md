@@ -17,7 +17,25 @@ Whether speaking to the user or writing comments, keep everything concise. Avoid
 
 Highest quality only. "Overkill", "YAGNI", and "weeks of work" is not a valid objection. Design well once so we never sit at THIS drawing board again. Reject "good enough." Reject patches that mask structural defects. Choose patterns or paradigm that fits the domain, not the one that ships fastest.
 
-The bar: **eliminate bugs by design, not by patching.** Quality design makes whole classes of bug impossible to express.
+## Extensibility
+
+Extensibility is how cheap the next feature is. A strong framework absorbs a new feature as one registration or one config entry. A weak one demands similar edits across N files, and every N-file feature is the next defect class forming.
+
+Measure it with three questions:
+
+- **What does the next thing cost?** Count the files touched to add the canonical new thing: a content type, an entity, a command. One registration is the target. A checklist of edits is a framework asking to be built.
+- **The consumer test.** Can code outside the framework extend the system without editing framework internals? Answer from the API surface: if registering means editing a framework enum or switch, the answer is no.
+- **Bypassed is worse than missing.** Code doing by hand what an extension point exists to do. The architecture says growth goes through this point, and its own codebase went around it. Report it as a misalignment, and route the bypasser through the point before building anything new.
+
+## Defect Classes
+
+A defect class is every defect sharing one structural cause. A patch removes one instance. A design change makes the class inexpressible: the code path where the mistake lived does not exist, or the compiler rejects it. Inexpressible is the bar.
+
+Three grades, by where they fail:
+
+- **Bug class** - fails at runtime. "Forgot to call refresh()" is not one bug; every call site is another instance until the design makes the call unnecessary. Two write paths that can disagree become one write path, and desync is inexpressible.
+- **Structural defect class** - fails on change. Nothing misbehaves today, but the same edit must land in N places and eventually lands in N-1. Duplication, coupling, copy-paste registration.
+- **Misalignment class** - fails in the reader. Comments, docs, and names that say something the code does not do: a `validateUser()` that also mutates, a comment claiming "sorted by date" over an unsorted list, a CLAUDE.md rule describing a build step that does not exist. Nothing crashes. The human and the agent build on the lie, and what they write becomes instances of the other two grades. The fix: make the name tell the truth, or make the code do what the name says.
 
 ## Time is Cheap, Bandaids are Costly
 
@@ -85,7 +103,7 @@ Common paradigms worth looking for. Not exhaustive; domain-specific patterns als
 
 Rank by:
 
-- **Bug-class elimination**: which entire category of bug becomes impossible once the pattern is in place? Erasing bug classes outranks tidying code.
+- **Defect-class elimination**: which entire class (see **Defect Classes**) becomes inexpressible once the pattern is in place? Erasing a class outranks tidying its instances.
 - **Unification**: completing a pattern that merges multiple separate implementations into one code path is high value.
 - **Complete over create**: finishing a half-built pattern costs less and delivers more than starting a new one.
 - **Dependency order**: a consistent write path must exist before journaling it; a schema before versioning it. Foundations first.
@@ -114,10 +132,10 @@ If you've been working with the codebase prior to this audit, think of pain poin
 
 - The same bugs you ran into and bandaided multiple times in a row.
 - Fragile design that you had to carefully tread around, or brute force by user or unit test acceptance.
-- Code, comment, docs, or even AI/CLAUDE.md rules that just don't make sense anymore.
+- Comments, docs, names, or AI/CLAUDE.md rules that misled you about what the code does. That is a misalignment class, and it is worth reporting on its own.
 - Anything else that bothered you about the codebase.
 
-Carry all of it into the assessment. It is context no fresh agent can recover on its own.
+Each of these is likely an instance of a defect class. Carry all of it into the assessment; it is context no fresh agent can recover on its own.
 
 ### 1. Assessment Phase
 

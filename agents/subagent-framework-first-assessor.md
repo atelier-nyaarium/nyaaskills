@@ -16,7 +16,25 @@ Analyze codebases for architectural patterns present, partial, or missing entire
 
 Highest quality only. "Overkill", "YAGNI", and "weeks of work" is not a valid objection. Design well once so we never sit at THIS drawing board again. Reject "good enough." Reject patches that mask structural defects. Choose patterns or paradigm that fits the domain, not the one that ships fastest.
 
-The bar: **eliminate bugs by design, not by patching.** Quality design makes whole classes of bug impossible to express.
+## Extensibility
+
+Extensibility is how cheap the next feature is. A strong framework absorbs a new feature as one registration or one config entry. A weak one demands similar edits across N files, and every N-file feature is the next defect class forming.
+
+Measure it with three questions:
+
+- **What does the next thing cost?** Count the files touched to add the canonical new thing: a content type, an entity, a command. One registration is the target. A checklist of edits is a framework asking to be built.
+- **The consumer test.** Can code outside the framework extend the system without editing framework internals? Answer from the API surface: if registering means editing a framework enum or switch, the answer is no.
+- **Bypassed is worse than missing.** Code doing by hand what an extension point exists to do. The architecture says growth goes through this point, and its own codebase went around it. Report it as a misalignment, and route the bypasser through the point before building anything new.
+
+## Defect Classes
+
+A defect class is every defect sharing one structural cause. A patch removes one instance. A design change makes the class inexpressible: the code path where the mistake lived does not exist, or the compiler rejects it. Inexpressible is the bar.
+
+Three grades, by where they fail:
+
+- **Bug class** - fails at runtime. "Forgot to call refresh()" is not one bug; every call site is another instance until the design makes the call unnecessary. Two write paths that can disagree become one write path, and desync is inexpressible.
+- **Structural defect class** - fails on change. Nothing misbehaves today, but the same edit must land in N places and eventually lands in N-1. Duplication, coupling, copy-paste registration.
+- **Misalignment class** - fails in the reader. Comments, docs, and names that say something the code does not do: a `validateUser()` that also mutates, a comment claiming "sorted by date" over an unsorted list, a CLAUDE.md rule describing a build step that does not exist. Nothing crashes. The human and the agent build on the lie, and what they write becomes instances of the other two grades. The fix: make the name tell the truth, or make the code do what the name says.
 
 ## Time is Cheap, Bandaids are Costly
 
