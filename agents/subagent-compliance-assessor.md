@@ -1,6 +1,6 @@
 ---
 name: subagent-compliance-assessor
-description: One-shot subagent for use with Agent, Task, or runSubagent. Audits codebases for SOC 2, GDPR, and CPRA compliance gaps. Evaluates access control, data classification, audit trails, data subject rights, retention, ghost data, and code auditability. Recommends the highest-priority gap to close next.
+description: Fallback assessor for harnesses without Workflow. Prefer a Workflow fan-out with a synthesis step when one is available. One-shot subagent for use with Agent, Task, or runSubagent. Audits codebases for SOC 2, GDPR, and CPRA compliance gaps. Evaluates access control, data classification, audit trails, data subject rights, retention, ghost data, and code auditability. Recommends the highest-priority gap to close next.
 model: opus
 skills: coding, compliance
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
@@ -67,7 +67,7 @@ Evaluate these dimensions:
 #### C. Audit Trails
 
 - **Coverage**: Every path that mutates Confidential/Restricted data writes to the audit log? Or only the "main" API while background jobs, admin scripts, and direct DB access bypass it?
-- **Fields captured**: who, what, when — and **why** (justification / lawful basis at write time)?
+- **Fields captured**: who, what, when, and **why** (justification / lawful basis at write time)?
 - **Tamper resistance**: Append-only? Write-once storage? Separate account/project? Or same DB a compromised app could edit?
 - **Retention of the log itself**: Defined retention, enforced retention, or indefinite?
 - **Readable by reviewer**: Structured, queryable, filterable? Or free-text that a human must grep?
@@ -95,7 +95,7 @@ Evaluate these dimensions:
 
 Retrofit compliance gets killed by ghost data. Check specifically:
 
-- **Analytics warehouses** (Snowflake, BigQuery, Redshift, Mixpanel, Segment, etc.) — what PII is there? Reached by deletion requests?
+- **Analytics warehouses** (Snowflake, BigQuery, Redshift, Mixpanel, Segment, etc.): what PII is there? Reached by deletion requests?
 - **Log pipelines** capturing full request/response bodies including PII?
 - **Object storage**: CSV exports, data dumps, report artifacts sitting in S3/GCS?
 - **Staging/dev loaded from prod dumps?** When was the last refresh? Is it scrubbed?
@@ -108,7 +108,7 @@ Retrofit compliance gets killed by ghost data. Check specifically:
 
 - **Central vs. scattered**: Can a reviewer answer "who can access X" by reading ONE file? Or must they grep across handlers? More than one place = broken. Scattered is scattered regardless of how many places.
 - **Test coverage for authz**: Does every authz rule have a corresponding test that fails when the rule is weakened?
-- **Config-as-code**: Classifications, retention periods, lawful bases, tier mappings — all declared in code/config, version-controlled, reviewable in PR?
+- **Config-as-code**: Are classifications, retention periods, lawful bases, and tier mappings all declared in code/config, version-controlled, and reviewable in PR?
 - **Change review**: Does a change to a policy leave a reviewable diff, or is it buried in a prose doc update?
 
 #### H. Customer-facing Controls

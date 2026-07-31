@@ -1,6 +1,6 @@
 ---
 name: team-framework-first-assessor
-description: For use with Agent tool within TeamCreate. Identifies missing or incomplete architectural patterns in a codebase. Names paradigms, assesses completion levels, recommends which to extract or complete first, and orchestrates the extraction once greenlighted.
+description: Fallback assessor for harnesses without Workflow. Prefer a Workflow fan-out with a synthesis step when one is available. For use with Agent tool within TeamCreate. Identifies missing or incomplete architectural patterns in a codebase. Names paradigms, assesses completion levels, recommends which to extract or complete first, and orchestrates the extraction once greenlighted.
 model: opus
 skills: coding
 ---

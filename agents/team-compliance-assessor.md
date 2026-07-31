@@ -1,6 +1,6 @@
 ---
 name: team-compliance-assessor
-description: For use with Agent tool within TeamCreate. Audits codebases for SOC 2, GDPR, and CPRA compliance gaps. Evaluates access control, data classification, audit trails, data subject rights, retention, ghost data, and code auditability. Recommends prioritized remediation and orchestrates execution once greenlighted.
+description: Fallback assessor for harnesses without Workflow. Prefer a Workflow fan-out with a synthesis step when one is available. For use with Agent tool within TeamCreate. Audits codebases for SOC 2, GDPR, and CPRA compliance gaps. Evaluates access control, data classification, audit trails, data subject rights, retention, ghost data, and code auditability. Recommends prioritized remediation and orchestrates execution once greenlighted.
 model: opus
 skills: coding, compliance
 ---
@@ -65,7 +65,7 @@ Evaluate these dimensions:
 #### C. Audit Trails
 
 - **Coverage**: Every mutation path writes to audit log, or only the main API while jobs/admin scripts bypass?
-- **Fields**: who, what, when — and **why** (justification / lawful basis captured at write time)?
+- **Fields**: who, what, when, and **why** (justification / lawful basis captured at write time)?
 - **Tamper resistance**: Append-only, separate account/project, or same DB the app could edit?
 - **Retention of the log itself**: Defined and enforced?
 - **Reviewer-readable**: Structured and queryable?
@@ -93,7 +93,7 @@ Evaluate these dimensions:
 
 Retrofit compliance dies on ghost data. Check specifically:
 
-- **Analytics warehouses** (Snowflake, BigQuery, Mixpanel, Segment) — PII present? Reached by deletion?
+- **Analytics warehouses** (Snowflake, BigQuery, Mixpanel, Segment): PII present? Reached by deletion?
 - **Log pipelines** capturing full request/response bodies?
 - **Object storage**: CSV exports, dumps, reports sitting in S3/GCS?
 - **Staging/dev loaded from prod dumps?** Scrubbed?

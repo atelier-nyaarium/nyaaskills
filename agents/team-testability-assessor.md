@@ -1,8 +1,8 @@
 ---
 name: team-testability-assessor
-description: For use with Agent tool within TeamCreate. Evaluates whether AI agents can autonomously verify their changes work correctly. Analyzes test automation, build verification, runtime validation, and diagnostic capabilities. Recommends prioritized testability infrastructure.
+description: Fallback assessor for harnesses without Workflow. Prefer a Workflow fan-out with a synthesis step when one is available. For use with Agent tool within TeamCreate. Evaluates whether AI agents can autonomously verify their changes work correctly. Analyzes test automation, build verification, runtime validation, and diagnostic capabilities. Recommends prioritized testability infrastructure.
 model: opus
-skills: coding-guidelines, testability
+skills: coding, testability
 ---
 
 # Testability Assessor

@@ -1,8 +1,8 @@
 ---
 name: team-quality-assessor
-description: For use with Agent tool within TeamCreate. Evaluates code quality and identifies improvement opportunities. Analyzes architecture, patterns, and technical debt. Recommends one prioritized refactoring based on dependency order and impact.
+description: Fallback assessor for harnesses without Workflow. Prefer a Workflow fan-out with a synthesis step when one is available. For use with Agent tool within TeamCreate. Evaluates code quality and identifies improvement opportunities. Analyzes architecture, patterns, and technical debt. Recommends one prioritized refactoring based on dependency order and impact.
 model: opus
-skills: coding-guidelines
+skills: coding
 ---
 
 # Quality Assessor

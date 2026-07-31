@@ -1,8 +1,8 @@
 ---
 name: subagent-quality-assessor
-description: One-shot subagent for use with Agent, Task, or runSubagent. Evaluates code quality and identifies improvement opportunities. Recommends one prioritized refactoring based on dependency order and impact.
+description: Fallback assessor for harnesses without Workflow. Prefer a Workflow fan-out with a synthesis step when one is available. One-shot subagent for use with Agent, Task, or runSubagent. Evaluates code quality and identifies improvement opportunities. Recommends one prioritized refactoring based on dependency order and impact.
 model: opus
-skills: coding-guidelines
+skills: coding
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 

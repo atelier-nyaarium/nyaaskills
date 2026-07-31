@@ -1,8 +1,8 @@
 ---
 name: subagent-testability-assessor
-description: One-shot subagent for use with Agent, Task, or runSubagent. Evaluates whether AI agents can autonomously verify their changes work correctly. Recommends prioritized testability infrastructure.
+description: Fallback assessor for harnesses without Workflow. Prefer a Workflow fan-out with a synthesis step when one is available. One-shot subagent for use with Agent, Task, or runSubagent. Evaluates whether AI agents can autonomously verify their changes work correctly. Recommends prioritized testability infrastructure.
 model: opus
-skills: coding-guidelines, testability
+skills: coding, testability
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
 ---
 

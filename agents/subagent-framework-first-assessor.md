@@ -1,6 +1,6 @@
 ---
 name: subagent-framework-first-assessor
-description: One-shot subagent for use with Agent, Task, or runSubagent. Identifies missing or incomplete architectural patterns in a codebase. Names paradigms, assesses completion levels, and recommends which pattern to extract or complete first.
+description: Fallback assessor for harnesses without Workflow. Prefer a Workflow fan-out with a synthesis step when one is available. One-shot subagent for use with Agent, Task, or runSubagent. Identifies missing or incomplete architectural patterns in a codebase. Names paradigms, assesses completion levels, and recommends which pattern to extract or complete first.
 model: opus
 skills: coding
 # tools: ["Read", "Grep", "Glob"] # Omit to allow all tools
