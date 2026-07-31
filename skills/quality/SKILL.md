@@ -11,15 +11,51 @@ You orchestrate iterative code quality improvements through specialized subagent
 
 Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster.
 
-## Spawning Agents
+## Agents
 
-When this skill instructs you to delegate to Agent, spawn using whichever tool your environment provides (Agent, Task, or runSubagent). Always delegate to Agent rather than performing work yourself. Pass relevant context (goal, constraints, affected files) as explicit instructions to Agent.
+**With `Workflow()`,** author the fan-out inline.
 
-If you are team-lead with active team via `CreateTeam`:
-- Use `team-*` series. When workflow says Agent `quality-assessor`, spawn `team-quality-assessor`.
+You hold the conversation, so you write the prompts and the context goes in with them: what the user asked, the pain you hit this session, and what you already read.
 
-If you don't have team:
-- Use `subagent-*` series. When workflow says Agent `quality-assessor`, spawn `subagent-quality-assessor`.
+```
+dimensions -> [one agent per dimension, grounded in code]   // parallel
+           -> [synthesize: dedup, rank by dependency order and impact, recommend ONE]
+```
+
+- One agent per dimension that actually applies. Scale to the codebase, not to the list.
+- Give each a schema so it returns data, not prose.
+- Synthesis is the step that matters: dedup across dimensions, rank, name ONE with runners-up.
+
+Each dimension's checklist is in **Assessment Dimensions** below. Hand each fan-out agent its checklist.
+
+**Without `Workflow()`,** spawn the standing assessor: Agent `team-quality-assessor` if you are team lead via `CreateTeam`, otherwise Agent `subagent-quality-assessor`. It cannot see the conversation, so pass the request, your recalled pain points, and what is ruled out. Anything you omit is lost to it.
+
+Spawn Agent `refactor-worker`, `code-analyst`, and `ux-tester` directly via Agent, Task, or runSubagent, picking `team-*` or `subagent-*` by the same rule.
+
+## Assessment Dimensions
+
+Investigate file structure, code patterns, dependencies, and architectural decisions. Every finding grounds in the actual code, with file paths.
+
+- **Existing foundations**: what architectural patterns, design decisions, and code organization principles are in use?
+- **Friction points**: where is quality suboptimal, patterns inconsistent, or components failing to integrate cleanly?
+- **Integration issues**: do systems and modules work well together, or create unnecessary coupling and complexity?
+- **Bug classes**: which whole bug class could a focused design change eliminate, instead of the same bandaid patched in multiple places?
+
+Each opportunity identified must be:
+
+- A complete, self-contained improvement leaving the codebase working and buildable
+- A focused change committable as stable progress
+- Atomic, avoiding "everything changed at once and now something's broken"
+
+One deliberate leap forward each, not a massive overhaul.
+
+### What Synthesis Returns
+
+- 1-5 opportunities, each with name, description, impact, scope, and dependencies.
+- ONE recommendation with rationale, approach (forceful improvement vs gentle migration, from the compatibility signals in **Determine Approach** below), and implementation notes for the remediation agent.
+- Design decisions and tech debt observed, and future refactoring the recommendation unlocks.
+
+Rank by dependency order (foundational changes first; A must complete before B becomes possible) and by impact (changes unblocking future improvements or delivering significant quality gains).
 
 ## Understanding the Request
 
@@ -43,7 +79,7 @@ Cut the time estimates. Don't let time influence your design decisions. Always t
 
 I literally do not care how long you estimate something to take. Don't get lazy and defer work because it "takes weeks to accomplish". You literally arent human and you complete months of works in mere hours easily.
 
-## Orchestration Workflow
+## The Run
 
 ### 0. Recall Pain Points
 
@@ -54,20 +90,15 @@ If you've been working with the codebase prior to this audit, think of pain poin
 - Anything else that bothered you about the codebase.
 - Could you eliminate an entire bug class by a focused design change?
 
-Forward all detailed concerns to the assessor that you will spawn.
+Carry all of it into the assessment. It is context no fresh agent can recover on its own.
 
 ### 1. Assessment Phase
 
-Delegate to Agent `quality-assessor` to analyze codebase and identify quality improvement opportunities.
+Fan out per the Agents section above. Forward your recalled pain points into the prompts.
 
-Assessor will:
-- Assess existing foundations (what architectural patterns and design decisions in use?)
-- Identify friction points (where is code quality suboptimal or patterns inconsistent?)
-- Evaluate integration quality (do different systems and modules integrate cleanly or create unnecessary coupling?)
-- Present list of 1-5 quality improvement opportunities
-- Recommend ONE opportunity to act on based on dependency order and impact
+You want 1-5 quality improvement opportunities and ONE recommendation, ranked per **Assessment Dimensions**. Base it on this codebase's actual architecture, never on generic advice.
 
-Review assessment report with user.
+Review findings with user.
 
 ### 2. Determine Approach
 
@@ -83,9 +114,9 @@ Based on assessor's recommended opportunity, determine backwards compatibility s
 - **When in doubt**: Recommend clean break
 - Always place a remove date comment above temporary migration shims.
 
-### 3. Execution Loop
+### 3. Execution
 
-If problems found, delegate to Agent `code-analyst` to assess impact and return to step 1 to fix problem.
+If implementation surfaces a problem, delegate to Agent `code-analyst` to assess impact before going further.
 
 **Delegate to Agents for implementation:**
 
@@ -100,6 +131,8 @@ If problems found, delegate to Agent `code-analyst` to assess impact and return 
    - Test suite execution
    - Delegate to Agent `ux-tester` if refactoring affects UI components or user workflows
 
+   Codebase stays buildable at every step. Never leave it broken.
+
 3. **User Acceptance** - Present results to user:
    - Summary of changes made
    - Automated verification status
@@ -109,17 +142,4 @@ If problems found, delegate to Agent `code-analyst` to assess impact and return 
    - Delegate to Agent `refactor-worker` to remove temporary diagnostics
    - **Encourage user to commit** - locks in stable quality progress
 
-5. **Reassess & Continue** - After successful commit:
-   - Return to **Assessment Phase** and delegate to Agent `quality-assessor` again to reassess next opportunity
-
-Creates iterative loop where each cycle delivers tangible, tested, committable quality improvements.
-
-## Key Principles
-
-- **One opportunity at a time** - Focus on single, atomic improvements rather than sweeping overhauls
-- **Progressive quality improvement** - Build code quality incrementally through focused improvement steps
-- **Always buildable** - Maintain working codebase at every step; never leave things broken
-- **Commit frequently** - Lock in stable progress after each successful quality improvement
-- **Default to clean breaks** - Remove old patterns entirely rather than accumulating technical debt
-- **Project-specific analysis** - Base recommendations on actual architecture and patterns, not generic advice
-- **User is decision maker** - You assess and recommend, they approve and commit
+If what shipped meaningfully moved the picture, recommend another lap and name what you would look at next. A foundational refactor often unblocks improvements that are not viable without it.

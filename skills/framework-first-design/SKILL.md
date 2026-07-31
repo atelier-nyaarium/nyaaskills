@@ -25,15 +25,71 @@ Cut the time estimates. Don't let time influence your design decisions. Always t
 
 I literally do not care how long you estimate something to take. Don't get lazy and defer work because it "takes weeks to accomplish". You literally arent human and you complete months of works in mere hours easily.
 
-## Spawning Agents
+## Agents
 
-When this skill instructs you to delegate to Agent, spawn using whichever tool your environment provides (Agent, Task, or runSubagent). Always delegate to Agent rather than performing work yourself. Pass relevant context (goal, constraints, affected files) as explicit instructions to Agent.
+**With `Workflow()`,** author the fan-out inline.
 
-If you are team-lead with active team via `CreateTeam`:
-- Use `team-*` series. When workflow says Agent `framework-first-assessor`, spawn `team-framework-first-assessor`.
+You hold the conversation, so you write the prompts and the context goes in with them: what the user asked, the pain you hit this session, and what you already read.
 
-If you don't have team:
-- Use `subagent-*` series. When workflow says Agent `framework-first-assessor`, spawn `subagent-framework-first-assessor`.
+```
+dimensions -> [one agent per dimension, grounded in code]   // parallel
+           -> [synthesize: dedup, rank by dependency order, recommend ONE]
+```
+
+- One agent per subsystem or pattern family. Scale to the codebase, not to the list.
+- Give each a schema so it returns data, not prose.
+- Synthesis is the step that matters: dedup across dimensions, rank, name ONE with runners-up.
+
+Each agent maps its slice per **Assessment Dimensions** below.
+
+**Without `Workflow()`,** spawn the standing assessor: Agent `team-framework-first-assessor` if you are team lead via `CreateTeam`, otherwise Agent `subagent-framework-first-assessor`. It cannot see the conversation, so pass the request, your recalled pain points, and what is ruled out. Anything you omit is lost to it.
+
+Spawn Agent `refactor-worker` and `ux-tester` directly via Agent, Task, or runSubagent, picking `team-*` or `subagent-*` by the same rule.
+
+## Assessment Dimensions
+
+Framework design is in one of three states:
+
+- **Zero**: no framework. State scattered, mutations direct, no extension points. Find the patterns hiding in the chaos and name them.
+- **Partial**: attempted clean architecture that broke under pressure. Patterns half-built or bypassed. Identify what was started, what is missing, what completing would unlock.
+- **Full**: well-designed custom framework, nothing to complain about.
+
+Map the architecture:
+
+- **State**: where does state live? Centralized or scattered across files?
+- **Mutations**: how are writes performed? Single write path, or different files mutate state directly?
+- **Extension**: extension points (registries, hooks, config-driven behavior), or every feature hardcoded?
+- **Repetition**: what patterns repeat? Same shape of code in multiple places is an unnamed abstraction waiting to be extracted.
+- **Fragility**: what breaks when requirements change? Fragile areas reveal missing ownership boundaries.
+
+For each pattern found: name it by recognized paradigm, assess completion (roughly 0-100%), note what is missing or broken, note what completing would unlock.
+
+For Zero codebases, also identify what SHOULD exist based on the problem domain. An app managing state multiple consumers read needs a consistent write path. An app persisting data needs a storage strategy.
+
+### Recognizing Patterns
+
+Common paradigms worth looking for. Not exhaustive; domain-specific patterns also exist. Name anything you recognize.
+
+- **Event Sourcing**: mutations recorded as ordered log, current state derived by replay. Unlocks audit trails, recovery, time travel, peer catch-up. An undo system, changelog, or any action history is partial Event Sourcing.
+- **CQRS**: write path and read path separated. Commands mutate through a single authority; queries read without side effects. APIs mixing reads and writes in the same functions need CQRS.
+- **Reactive bindings**: derived state (UI, caches, computed values) updates automatically when source data changes. Manual `update()` or `refresh()` calls sprinkled across the UI layer signal the need.
+- **Schema-first**: data shapes declared explicitly, with validation, migration, and documentation derived from the schema. Implicit shapes existing only as object literals signal the need.
+- **Content-addressed storage**: objects keyed by hash of content. Identical content deduplicates, immutable by definition. Versioned data or dedup needs benefit from CAS.
+- **Actor model**: entities own their state and communicate only through messages, no shared memory. Race conditions, shared mutable state, or functions reaching into other modules' internals signal the need for actor-style isolation.
+- **Declarative configuration**: behavior defined by config rather than imperative code. New features added by writing config, not new code paths. Adding an entity type by touching multiple files with similar boilerplate signals the need for declarative registration.
+
+### What Synthesis Returns
+
+- 1-5 architectural improvements, each with name, description, impact, scope, and dependencies.
+- ONE recommendation with rationale and implementation notes for the extraction agent.
+
+Rank by:
+
+- **Bug-class elimination**: which entire category of bug becomes impossible once the pattern is in place? Erasing bug classes outranks tidying code.
+- **Unification**: completing a pattern that merges multiple separate implementations into one code path is high value.
+- **Complete over create**: finishing a half-built pattern costs less and delivers more than starting a new one.
+- **Dependency order**: a consistent write path must exist before journaling it; a schema before versioning it. Foundations first.
+- **Impact**: patterns unblocking the most future work or eliminating the most ad-hoc code.
 
 ## Understand the Request
 
@@ -50,7 +106,7 @@ Two tells in the code itself, independent of any pain you remember:
 - **Magic** - If an expression needs a comment to explain it, framework is missing a concept. Build concept, name it, give it method.
 - **Same operation, different hats** - If several features are the same operation wearing different costumes, they want one code path, not N similar ones.
 
-## Orchestration Workflow
+## The Run
 
 ### 0. Recall Pain Points
 
@@ -61,23 +117,13 @@ If you've been working with the codebase prior to this audit, think of pain poin
 - Code, comment, docs, or even AI/CLAUDE.md rules that just don't make sense anymore.
 - Anything else that bothered you about the codebase.
 
-Forward all detailed concerns to the assessor that you will spawn.
+Carry all of it into the assessment. It is context no fresh agent can recover on its own.
 
 ### 1. Assessment Phase
 
-Delegate to Agent `framework-first-assessor` to grasp current architecture and recommendations.
+Fan out per the Agents section above. Forward your recalled pain points into the prompts.
 
-Assessor will:
-- Identify architectural patterns currently in use, and how well they are implemented
-- Recognize patterns that codebase is trying to be but isn't fully realized
-- Detect anti-patterns
-- Present list of 1-5 architectural improvements
-- Recommend ONE pattern to handle now
-
-Weigh its recommendation on two axes:
-
-- **Complete over create** - Finishing half-built pattern costs less and delivers more than starting new one.
-- **Dependency order** - Some patterns are prerequisites for others. Map dependency graph before choosing what to build first.
+You want 1-5 architectural improvements and ONE recommendation, ranked per **Assessment Dimensions**. Map the dependency graph before choosing what to build first.
 
 ### 2. Framework Proposal
 
@@ -92,7 +138,7 @@ Ownership test: if application were replaced with different one built on same fr
 
 ❓ Present proposal to user for approval before proceeding.
 
-### 3. Extraction Loop
+### 3. Extraction
 
 Once user approves, execute one pattern at a time:
 
@@ -104,6 +150,4 @@ Once user approves, execute one pattern at a time:
 
 4. **Commit:** Once user confirms it works, encourage them to commit. Locks in structural improvement.
 
-5. **Next pattern:** Return to **Assessment Phase** and reassess. Codebase changed. Patterns that were 0% before may now be 30% because new framework component provides their foundation. Recommend next pattern to complete.
-
-Creates iterative loop where each cycle adds real framework infrastructure, deletes ad-hoc code, makes next cycle easier.
+If what shipped meaningfully moved the picture, recommend another lap and name what you would look at next. A new framework component often lifts other patterns off zero by giving them a foundation they lack.

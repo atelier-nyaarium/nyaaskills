@@ -20,6 +20,14 @@ Two lanes get you there. Scope the problem first, then pick.
 
 Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster.
 
+## Agents
+
+The fan-out here is per candidate option, and it is gated. You write the prompts, so the context goes in with them: the threat model you scoped, the appetite the human named, and the floor and ceiling you bounded. A fresh agent recovers none of that on its own.
+
+**With `Workflow()`,** see **Run It as an Agent Battle** for when it qualifies and how to shape it.
+
+**Without `Workflow()`,** spawn the advocates and the skeptic one at a time via Agent, Task, or runSubagent, using `team-*` or `subagent-*` depending on whether you are team lead via `CreateTeam`. Rank the results yourself against the same criteria.
+
 ## Scope It First
 
 Name the threat model. Who is the attacker, relative to the system?
