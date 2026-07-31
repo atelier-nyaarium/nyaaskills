@@ -28,13 +28,29 @@ Measure it with three questions:
 
 ## Defect Classes
 
-A defect class is every defect sharing one structural cause. A patch removes one instance. A design change makes the class inexpressible: the code path where the mistake lived does not exist, or the compiler rejects it. Inexpressible is the bar.
+A defect class is every defect sharing one structural cause. A patch removes one defect instance. A design change makes the defect class inexpressible: the code path where the mistake lived does not exist, or the compiler rejects it.
 
 Three grades, by where they fail:
 
-- **Bug class** - fails at runtime. "Forgot to call refresh()" is not one bug; every call site is another instance until the design makes the call unnecessary. Two write paths that can disagree become one write path, and desync is inexpressible.
-- **Structural defect class** - fails on change. Nothing misbehaves today, but the same edit must land in N places and eventually lands in N-1. Duplication, coupling, copy-paste registration.
-- **Misalignment class** - fails in the reader. Comments, docs, and names that say something the code does not do: a `validateUser()` that also mutates, a comment claiming "sorted by date" over an unsorted list, a CLAUDE.md rule describing a build step that does not exist. Nothing crashes. The human and the agent build on the lie, and what they write becomes instances of the other two grades. The fix: make the name tell the truth, or make the code do what the name says.
+**Bug class:** Fails at runtime. Multiple instances where the same bug is being experienced.
+
+- "Forgot to call refresh()" is not one bug. Every call site is another instance.
+- Two write paths that can disagree.
+- Eliminated when one write path exists and desync is inexpressible.
+
+**Structural defect class:** Fails on change. Nothing misbehaves today, but the code cannot absorb an edit cleanly.
+
+- **Duplication.** The same edit must land in N places, and eventually you forget one. Copy-paste registration, parallel implementations.
+- **Fragility.** Fixing one spot breaks another. Whack-a-mole, where coupling has no ownership boundary to stop a change propagating.
+- Eliminated when the N places become one, or when an ownership boundary contains the change.
+
+**Misalignment class:** Fails in interpretation. Nothing crashes. The human and the agent build on the lie, and what they write becomes instances of the other two grades.
+
+- Comments, docs, and names that say something the code does not do.
+- A `validateUser()` that secretly mutates.
+- A comment claiming "sorted by date" but the list is still unsorted.
+- A CLAUDE.md rule describing a build step that does not exist.
+- Eliminated by refactor renaming to tell the truth, or updating the docs.
 
 ## Time is Cheap, Bandaids are Costly
 
