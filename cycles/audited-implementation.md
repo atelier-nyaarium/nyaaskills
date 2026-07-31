@@ -1,5 +1,5 @@
 ---
-steps: [implementation-phase, align-fan-out, align-fix, red-team-fan-out, red-team-fix, implementation-commit, framework-fan-out, framework-fix, framework-commit, compliance-fan-out, compliance-fix, compliance-commit, documentation, crust-collection, plan-completeness]
+steps: [implementation-phase, align-fan-out, align-fix, red-team-fan-out, red-team-fix, implementation-commit, architecture-fan-out, architecture-fix, architecture-commit, compliance-fan-out, compliance-fix, compliance-commit, documentation, crust-collection, plan-completeness]
 ---
 
 # Audited Phase Implementation
@@ -61,7 +61,7 @@ Then rank the survivors, most significant first.
 
 Fix the real issues and run smoke tests again. Watch out for: yes-manning, scope creep, drift from codebase patterns.
 
-**Same bug twice is a design bug:** Note which mechanism each fix lands in. The second or third time you patch the same defect class in the same mechanism, that is a /framework-first-design violation, not bad luck. Stop trying to fix it properly here. Land the smallest patch that keeps the phase green, then append it under a `### Bug Classes` heading inside the current phase's section of the plan file, creating that heading if it is not there yet: the mechanism, the defect class, and what each round patched. Save the fix for `framework-fan-out`, or raise it to `crust-collection`.
+**Same bug twice is a design bug:** Note which mechanism each fix lands in. The second or third time you patch the same defect class in the same mechanism, that is a /architecture violation, not bad luck. Stop trying to fix it properly here. Land the smallest patch that keeps the phase green, then append it under a `### Bug Classes` heading inside the current phase's section of the plan file, creating that heading if it is not there yet: the mechanism, the defect class, and what each round patched. Save the fix for `architecture-fan-out`, or raise it to `crust-collection`.
 
 /coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
 Don't forget to smoke test after changes.
@@ -82,13 +82,13 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 
 
 
-## framework-fan-out
+## architecture-fan-out
 
-**Analysis only.** Framework-first audit. Fan out via `Workflow()`.
+**Analysis only.** Architecture audit. Fan out via `Workflow()`.
 
 **Skipping is allowed.** If you have come through here enough times and what is in front of you is already solid, `cycleNext` straight past rather than manufacturing work.
 
-Vet the implementation for framework-first improvements using /framework-first-design skill. You can now deviate from the plan, but do respect its goal:
+Vet the implementation for architectural improvements using the /architecture skill. You can now deviate from the plan, but do respect its goal:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
 - Adjust Agent count to complexity. 8+ up to 20 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model. Sonnet for **light** fact checks and exploration, Opus for complex reasoning. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
@@ -97,22 +97,22 @@ Anything under the current phase's `### Bug Classes` heading is required input, 
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
-**Optional:** If you've noticed Agents fabricating wrong facts, sus out why. Bad function/class names? Stale comments? Anything that could be **misleading** it? Weigh these into the framework assessment as something to fix, only when you notice the issue.
+**Optional:** If you've noticed Agents fabricating wrong facts, sus out why. Bad function/class names? Stale comments? Anything that could be **misleading** it? Weigh these into the architecture assessment as something to fix, only when you notice the issue.
 
 Then rank the survivors, most significant first, grouped into coherent committable chunks.
 
-## framework-fix
+## architecture-fix
 
-Apply the top chunk `framework-fan-out` handed you.
+Apply the top chunk `architecture-fan-out` handed you.
 
 /coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
 Don't forget to smoke test after changes.
 
 **Reconcile the plan with what shipped.** This step is licensed to deviate, so slices you already marked `✅` may no longer describe the code. Rewrite those sections to match what is actually there. The plan is the record of what was built, not what was intended, and a stale `✅` means the next lap audits against a spec that no longer exists.
 
-**Then hand it to red team.** A refactor is unproven until something hostile has looked at it. `cycleGoto(...)` to `red-team-fan-out`. Step order brings you back through here, and `framework-fan-out` can wave you past when nothing is left worth doing.
+**Then hand it to red team.** A refactor is unproven until something hostile has looked at it. `cycleGoto(...)` to `red-team-fan-out`. Step order brings you back through here, and `architecture-fan-out` can wave you past when nothing is left worth doing.
 
-## framework-commit
+## architecture-commit
 
 If this project is git tracked, gitStage + gitCommit. If you had to PR, don't forget to pull main.
 
@@ -185,7 +185,7 @@ If you need to mention a line number, use **Reference format:** `FilePath:Namesp
 
 If the session has not been going long enough, or you recently just went through a compaction, `next()` out of this pass. Do this pass only if you've *felt* the codebase enough. As you are approaching the final phases of the plan, or you just had a really annoying reoccuring quirk that you had to painfully derive a solution to.
 
-As opposed to /framework-first-design, crust sweep is about recording things you hated about the codebase. This is not a code audit, it's a vibe check. Pain points can be described straight from your head, but do reanalyze to capture file references and steps that causes the pain points, or where classes of anti-patterns reside.
+As opposed to /architecture, crust sweep is about recording things you hated about the codebase. This is not a code audit, it's a vibe check. Pain points can be described straight from your head, but do reanalyze to capture file references and steps that causes the pain points, or where classes of anti-patterns reside.
 
 It's also OK to just say this plan went perfectly with no pain points: Niche cases, diminishing improvements, and things that are not worth my time and tokens to bring up.
 
