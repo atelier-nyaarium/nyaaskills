@@ -173,12 +173,27 @@ Retrofit compliance gets killed by ghost data. Check each surface:
 
 ### What Synthesis Returns
 
-- 1-5 gaps, each with: name, regulation citations (SOC 2 CC reference, GDPR article, CPRA section), severity (live violation / audit blocker / control-surface weakness / policy-as-code gap), description with the evidence seen, impact if not closed, scope, and dependencies.
-- ONE recommendation with rationale, approach, implementation notes, and **reviewer verification**: after it lands, the one file to read, one query to run, or one test to execute that proves the control.
-- A ghost data inventory, always, even when not the recommendation: each surface, whether deletion reaches it, retention, owner.
-- A plain answer: **is the app in live violation of any GDPR or CPRA obligation right now? If yes, which?**
+**1-5 gaps**, each with:
 
-Rank by: live violation first, then blast radius if discovered by a regulator, customer, or auditor (fine scale, contract loss, public disclosure), then dependency order (classification before tier-aware enforcement; central policy engine before migrating inline checks; audit log infrastructure before capturing justifications). Collapsing N scattered checks into one surface is high value. Ghost data not reached by deletion is high value because it silently accumulates risk.
+- Name.
+- Regulation citations: SOC 2 CC reference, GDPR article, CPRA section.
+- Severity: live violation / audit blocker / control-surface weakness / policy-as-code gap.
+- Description, with the evidence seen.
+- Impact if not closed, scope, and dependencies.
+
+**ONE recommendation**, with rationale, approach, and implementation notes. Include **reviewer verification**: after it lands, the one file to read, one query to run, or one test to execute that proves the control.
+
+**A ghost data inventory**, always, even when not the recommendation: each surface, whether deletion reaches it, retention, owner.
+
+**A plain answer:** is the app in live violation of any GDPR or CPRA obligation right now? If yes, which?
+
+Rank by:
+
+- **Live violation** first.
+- **Blast radius** if discovered by a regulator, customer, or auditor: fine scale, contract loss, public disclosure.
+- **Dependency order.** Classification before tier-aware enforcement. Central policy engine before migrating inline checks. Audit log infrastructure before capturing justifications.
+- **Unification.** Collapsing N scattered checks into one surface is high value.
+- **Ghost data** not reached by deletion is high value, because it silently accumulates risk.
 
 ## Procedure
 

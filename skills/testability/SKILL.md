@@ -75,7 +75,14 @@ If instrumentation is missing, weigh MCP-based runtime inspection (next dimensio
 
 Can agents programmatically control and inspect the app without manual intervention?
 
-The core problem: IDEs require MCP servers running before the IDE connects, so a late-starting dev server (`yarn dev`) is never discovered. The pattern that works: a lightweight MCP server the IDE launches on startup, living outside the project (user space, system level, or devcontainer entrypoint), which loads project tool schemas from `.claude/connector/mcp-schema.js` and bridges tool calls via HTTP POST to the dev server (e.g. `/api/debug/:toolName`). Env vars locate the project and dev server port.
+The core problem: IDEs require MCP servers running before the IDE connects, so a late-starting dev server (`yarn dev`) is never discovered.
+
+The pattern that works, a lightweight MCP server the IDE launches on startup:
+
+- Lives outside the project: user space, system level, or devcontainer entrypoint.
+- Loads project tool schemas from `.claude/connector/mcp-schema.js`.
+- Bridges tool calls via HTTP POST to the dev server (e.g. `/api/debug/:toolName`).
+- Locates the project and dev server port from env vars.
 
 Assess progressively, simplest gaps first:
 
