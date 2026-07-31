@@ -16,6 +16,10 @@ A worked-around control is not high security. It is zero security you believe is
 
 Two lanes get you there. Scope the problem first, then pick.
 
+## Terse and Concise
+
+Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster.
+
 ## Scope It First
 
 Name the threat model. Who is the attacker, relative to the system?
