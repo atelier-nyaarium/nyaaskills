@@ -1,85 +1,125 @@
 ---
 name: security
-description: Weighs the real tradeoff between maximum security and the easy off-the-shelf option. Load this skill immediately when security is on the table; serving data, key exchange, building authentication.
+description: Decides how much security a project actually needs, then builds that much correctly. Load this skill immediately when security is on the table; login and sessions, access control, serving user data, key exchange, or anything a client could forge.
 ---
 
 # Ease-of-Use vs Security
 
-**Core truth: the strongest security is the one the human will actually keep using.**
+The strongest security is the one the human will actually keep using.
 
-Software is built for humans, and humans route around friction. Pile on ceremony and they defeat it the most insecure way available. Demand a rotated 40-character passphrase and it lands on a sticky note. Make key exchange a hassle and someone pastes the plaintext secret into Discord for the other side to copy out.
+Pile on ceremony and it gets worked around:
 
-A control the user works around is not weak security. It is zero security that you now believe is strong. That second failure is the dangerous one.
+- Rotated 20-character password -> sticky note.
+- Awkward key exchange -> secret pasted into Discord.
 
-So the target is never "maximum security." It is the strongest posture that survives daily use. Two lanes get you there. One question decides which, and it is not a matter of taste.
+A worked-around control is not high security. It is zero security you believe is strong. So "maximum security" is the lazy answer. The real question is what the human will tolerate.
 
-## Maximum Security Is the Lazy Answer
+Two lanes get you there. Scope the problem first, then pick.
 
-Reaching for the strongest possible control feels rigorous. Usually it is the opposite. It skips the only hard question, what the human will tolerate, and ships something that looks bulletproof in review and gets bypassed in week one.
+## Scope It First
 
-Tin-foil-hat security is an anti-feature. The more ceremony you pile on, the more reliably people defeat it. Do not confuse a strong-looking control with a strong one. The strong one is the one still in place a month later.
+Name the threat model. Who is the attacker, relative to the system?
 
-## The Failure-Shape Test
+- **Outsider** - no account. Scanning, guessing, scraping.
+- **Peer** - a logged-in user reaching for another user's data. The most-missed one in any multi-user system.
+- **Climber** - a logged-in user reaching for higher privilege. Free to paid, member to admin.
+- **The client itself** - everything it sends is attacker-authored, and everything you send it is disclosed. A wallhack is data you shipped.
+- **A leaked credential** - assume the token, session, or DB dump gets out. What does it unlock?
+- **The middle** - the network, a third-party script, a malicious extension, the tab next door.
+- **The insider** - support staff, a rogue admin, and you. What do you want to be unable to read?
+- **A compromised machine** - their device or your server process.
 
-One question picks the lane. Ask what a careless choice actually does:
+Some of it is not fixable from here. If the host computer is compromised, most application-level security is theater. Do not spend there.
 
-- **Degrades gracefully** - you lose a little surface area or convenience. This is a tradeoff. Weigh it.
-- **Fails catastrophically and silently** - forgeable, replayable, impersonable, and nobody notices. This is an invariant. There is nothing to weigh.
+❓ Ask the human how much security they actually want. Do not infer it, and do not default to maximum.
 
-Then ask whether the strong path costs the human anything: a secret to copy or carry, a blocking step, a fumble that means redoing setup. Anything that tempts "I'll just paste it here for now."
+- A blog does not need 2FA and a hardware key.
+- Most corporate sites fail Mozilla Observatory and ship anyway, on purpose.
+- "Enough that a scraper moves on" and "enough that a subpoena gets nothing" are different products.
 
-Free strength goes in the invariant lane by default. Costly strength goes in the weighed lane. That is the whole sort.
+Only the human picks which one they are building. Advise against a bad call, but they have the final say.
 
-## The Free / Invariant Lane
+## Pick the Lane
 
-When the infrastructure enforces the guarantee at zero human cost, there is no decision to make. Take it in full. Do not soften it. The human pays nothing for the strong version: the phone mints the key itself, the seal happens in the library, the handshake is three taps.
+For anything still in scope, two questions.
 
-This is the lane for canonical constructions: owner-signed admissions, commit-then-reveal handshakes, SAS comparison, replay guards, forward secrecy, versioned signing bytes reproduced byte-for-byte and never raw JSON. Here there is exactly one correct shape. The only acceptable variants are byte-equivalent to it.
+**What does a careless choice do?**
 
-A reused nonce, a stray newline in a preimage, a skipped replay check: none of these make it "slightly weaker." Each silently voids the whole guarantee. So the discipline here is not judgment. It is fidelity to a known-correct primitive, proven with cross-platform vectors. You are not designing something new, you are reproducing a correct paradigm.
+- **Degrades gracefully** - you lose a little surface area or convenience. A tradeoff.
+- **Fails catastrophically and silently** - forgeable, replayable, impersonable, and nobody notices. An invariant.
 
-## The Weighed Lane: Bound the Bar Both Ways
+**What does the strong path cost the human?**
 
-When the strong path has real human cost and several honestly-acceptable answers exist, you do not maximize. You bound. Set both ends before you choose anything:
+- **Nothing** - the library or the platform enforces it. Nobody needs to weigh in.
+- **A secret to carry, a blocking step, a fumble that means redoing setup** - anything that tempts "I'll just paste it here for now." The human decides if it is worth it.
 
-- **Floor (threat model)** - who the attacker is, what they reach, what is out of scope. "The owner owns the box. A hostile local uid means they are already compromised, so that is not our problem."
-- **Ceiling (comfort limit)** - reasonable, not tin-foil. No manually typing keys. Nothing that scuffs across the real paths: fresh install, re-enroll, teardown.
+Failure shape decides how much freedom you have. Cost decides who gets to choose. A costly invariant goes through both lanes: the weighed lane for whether, the invariant lane for how.
 
-Most "evaluate the options" thinking sets only a floor. A floor with no ceiling is exactly what produces the sticky note: technically strong, practically abandoned. The ceiling is what makes the answer land.
+## The Invariant Lane
+
+Scoping decides whether you build the control at all. This lane is only about how, once the human has said yes.
+
+At that point there is no decision left. Take it in full, do not soften it.
+
+Most projects only ever meet the everyday ones. Each has exactly one correct shape, and the near-miss does not weaken the guarantee, it voids it:
+
+- **Password hashing** - a fast hash instead of a slow one. Same API, no warning, offline-crackable.
+- **Token comparison** - `==` instead of constant-time. Leaks the answer a byte at a time.
+- **Session and signature verification** - parsed, never actually verified. The happy path is identical.
+- **Access scoping** - every query filtered by the current user. One unfiltered path exposes every row.
+- **Client-side visibility** - hiding it in the UI is not hiding it. Fog of war, the other player's hand, anything behind a wall.
+- **Server authority** - the client reporting its own score, position, or damage. One trusted field and the leaderboard is fiction.
+- **Replay guards** - the check skipped on one path. Every other path still looks right.
+
+Note what they share: the mistake is invisible. Tests pass, the UI works, nothing logs. That is what makes it an invariant and not a tradeoff.
+
+If the human scoped higher, the same rule extends up. Nothing changes but the grade:
+
+- **Nonces and IVs** - one reuse. Not weaker, broken.
+- **Signing bytes** - a stray newline, or re-serialized JSON with reordered keys. Verifies here, forges there.
+- **Key exchange** - a handshake that authenticates nothing. Encrypted to the attacker is still encrypted.
+- **Commit-then-reveal, SAS comparison, forward secrecy** - canonical constructions with published vectors. Reproduce, do not invent.
+
+So the discipline is fidelity, not judgment. You are not designing something new, you are reproducing a known-correct primitive. Take it from the library. If two implementations have to agree, prove it with shared test vectors.
+
+## The Weighed Lane
+
+Here the strong path has real human cost and several honest answers exist. Do not maximize. Bound it, then take the cheapest thing inside the bounds.
+
+- **Floor** - the threat model you already scoped. What must not happen, and who is explicitly out of scope. "A hostile process on their own machine means they are already compromised. Not ours to fix."
+- **Ceiling** - what the human will actually tolerate. Ask, do not guess.
+
+Ceilings usually look like:
+
+- A step on every use, not just at setup
+- Something to carry, copy, or retype
+- A tedious setup that can fail halfway and has to be redone
+- No recovery path. Lose the key, lose the account.
+
+Then choose. Drop everything under the floor, and among what survives take the easiest. Security is a gate, not a sort key, so "most secure" never wins on its own.
+
+Most "evaluate the options" thinking sets only a floor.
+
+**A floor with no ceiling is what produces the sticky note: technically strong, practically abandoned.**
 
 ## Run It as an Agent Battle
 
-This is the part the skill exists for. Do not decide alone, and do not decide first-thought, because first-thought is almost always the lazy or quietly-insecure option. Spend a `Workflow()` and make the agents fight.
+Not every question needs this, and most do not. Use the library, follow the invariant, move on.
 
-1. **Spread** - enumerate several distinct avenues, plus wildcards agents whose only job is "find one we have not named." Breadth is the antidote to satisficing.
-2. **Advocate per avenue** - one agent makes the strongest honest case for its option, read against the real code, not asserted from confidence. It surfaces the real cons and exactly how it breaks on the actual edge paths: fresh install, re-enroll, teardown.
-3. **Adversary** - a skeptic tries to refute each survivor. In the invariant lane this is a fidelity attack: is this the canonical construction, or a plausible-looking forgery of it? In the weighed lane it is a fit attack: where does this scuff, what did the advocate undersell?
-4. **Score and rank** - rate each on named axes (ease, safety under the bounded model, breakage-risk), then rank the way the objective actually reads. Security is a gate, not a sort key: drop everything below the floor first, then among survivors sort by ease and low-scuff. "Most secure" never wins on its own. "Easiest of the options that clear the bar" does.
-5. **Orchestrator de-biases** - advocates push, the synthesizer ranks across them, so no single agent's confidence carries the call. Output a ranked recommendation with its runner-ups and reasons, so a human can overrule it with full sight of the tradeoff.
+Run the battle when all three are true:
 
-The pipeline:
+- You are in the weighed lane, so real options exist instead of one correct shape.
+- The choice is expensive to reverse. It shapes storage, protocol, or the signup flow.
+- You cannot already name the winner and defend it against the best counterargument.
 
-```
-avenues -> [advocate per avenue, grounded in code]   // parallel, + a wildcard
-        -> [skeptic refutes each]                     // adversarial verify
-        -> drop below-floor, sort survivors by ease   // ease while secure
-        -> ranked recommendation + runner-ups
-```
+When it qualifies, do not decide alone and do not decide first-thought. First-thought is almost always the lazy option or the quietly-insecure one. Spend a `Workflow()` and make the agents fight.
 
-The invariant lane runs the same machine with the dial turned to fidelity: the avenues collapse to "the canonical construction vs each tempting shortcut," the adversary's whole job is to prove a shortcut breaks the guarantee, and the winner is validated with cross-platform vectors, not a vote.
+Do not cheap out at this point. The battle costs tokens and a few minutes. Shipping the first insecure thing you landed on costs a great deal more, and that trade is not close.
 
-## Spend the Tokens
+1. **Spread** - enumerate several distinct avenues, plus a wildcard agent whose only job is "find one we have not named." Breadth is the antidote to satisficing.
+2. **Advocate** - one agent per avenue makes its strongest honest case, read against the real code rather than asserted from confidence. It names the real cons and where the option breaks on paths users actually walk: first-time setup, recovery, device change, teardown.
+3. **Adversary** - a skeptic tries to refute each survivor. Where does it scuff? What did the advocate undersell?
+4. **Score and rank** - rate on named axes: ease, safety under the bounded model, breakage-risk. Then apply the weighed lane's rule. Drop below-floor, take the easiest survivor.
+5. **Synthesize** - the orchestrator ranks across advocates, so no single agent's confidence carries the call. Output the recommendation with its runner-ups and why they lost, so the human can overrule it with full sight of the tradeoff.
 
-Either lane, the agent battle costs tokens and a few minutes. Skipping it costs you shipping the first insecure thing you landed on and getting popped. That trade is not close. Spend the tokens. Every time.
-
-## Key Principles
-
-- **Strongest kept, not strongest built** - The win is the posture that survives daily use, not the one that looks hardest in review.
-- **A worked-around control is worse than none** - It is zero security you now trust. No security - You aim to build security. False security - over-confidence is the slow and insidious killer.
-- **Failure shape picks the lane** - Degrades gracefully is a tradeoff. Fails silently is an invariant. Decide which before you argue options.
-- **Free strength is never weighed** - If infrastructure enforces it at zero human cost, take it in full and do not soften it.
-- **Fidelity, not judgment** - In the invariant lane you reproduce a known-correct primitive byte-for-byte. Variants are forgeries, not flavors.
-- **Bound the ceiling, not just the floor** - A threat model with no comfort limit ships the sticky note. Name what the human will tolerate.
-- **Security is a gate, not a sort key** - Drop below-floor options, then sort survivors by ease. Easiest-that-clears-the-bar wins.
-- **Never decide first-thought** - First-thought is the lazy or quietly-insecure option. Make the agents fight, then rank.
-- **Spend the tokens** - The battle is cheap. Getting popped is not.
+The invariant lane does not get a battle. There is nothing to debate. It gets verification instead: a skeptic whose only job is to prove the implementation is a plausible-looking forgery of the canonical construction rather than the real thing, settled by test vectors and not by a vote.
