@@ -62,6 +62,7 @@ Don't comment:
 - ❌ What types already say (`User | null` needs no "returns null if not found")
 - ❌ Self-evident code (`if (!session.valid) throw` needs no explanation)
 - ❌ What was removed or changed (git handles that)
+- ❌ Redundant additional justifications (`TOKEN_STOP; // No reply needed and ack not needed. A replied "thanks" is exactly the cost this token wishes to avoid. Do not acknowledge and just stop instead.`)
 
 ## Comments Must be Timeless
 
