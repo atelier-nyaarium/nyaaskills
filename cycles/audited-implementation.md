@@ -61,10 +61,12 @@ Then rank the survivors, most significant first.
 
 Fix the real issues and run smoke tests again. Watch out for: yes-manning, scope creep, drift from codebase patterns.
 
-/coding skill hygiene. Especially **Comments Must be Timeless** and **Concise Comments**.
+**Same bug twice is a design bug:** Note which mechanism each fix lands in. The second or third time you patch the same defect class in the same mechanism, that is a /framework-first-design violation, not bad luck. Stop patching. Redesign that mechanism so the class cannot occur again. A fix that only moves where the bug surfaces does not count as a fix.
+
+/coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
 Don't forget to smoke test after changes.
 
-If you fixed anything, `cycleGoto(...)` back to `red-team-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `next()` instead.
+If a fix changed anything, `cycleGoto(...)` back to `red-team-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `cycleNext` instead.
 
 
 
