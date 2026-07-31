@@ -124,7 +124,7 @@ Two tells in the code itself, independent of any pain you remember:
 - **Magic** - If an expression needs a comment to explain it, framework is missing a concept. Build concept, name it, give it method.
 - **Same operation, different hats** - If several features are the same operation wearing different costumes, they want one code path, not N similar ones.
 
-## The Run
+## Procedure
 
 ### 0. Recall Pain Points
 

@@ -97,7 +97,7 @@ Cut the time estimates. Don't let time influence your design decisions. Always t
 
 I literally do not care how long you estimate something to take. Don't get lazy and defer work because it "takes weeks to accomplish". You literally arent human and you complete months of works in mere hours easily.
 
-## The Run
+## Procedure
 
 ### 0. Recall Pain Points
 

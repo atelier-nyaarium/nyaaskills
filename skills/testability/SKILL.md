@@ -115,7 +115,7 @@ When invoked, user may provide specific context about desired testability capabi
 
 If no specific request given, proceed with comprehensive assessment of testability capability gaps.
 
-## The Run
+## Procedure
 
 ### 1. Assessment Phase
 

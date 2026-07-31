@@ -180,7 +180,7 @@ Retrofit compliance gets killed by ghost data. Check each surface:
 
 Rank by: live violation first, then blast radius if discovered by a regulator, customer, or auditor (fine scale, contract loss, public disclosure), then dependency order (classification before tier-aware enforcement; central policy engine before migrating inline checks; audit log infrastructure before capturing justifications). Collapsing N scattered checks into one surface is high value. Ghost data not reached by deletion is high value because it silently accumulates risk.
 
-## The Run
+## Procedure
 
 **1. Assess.** Fan out per the Agents section above, scoped to the regulations you established.
 
