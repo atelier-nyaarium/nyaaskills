@@ -73,7 +73,7 @@ Solid design *always* requires understanding codebase, and possibly online resea
 - The questionaire choices so far so they know why they are on that route.
 - Any files/symbols/etc you know about that are relevant.
 - Tell it it's job.
-- Sonnet for fact checks and exploration, Opus for complex reasoning
+- Sonnet for **light** fact checks and exploration, Opus for complex reasoning
 
 2. **Draft Synthesis:** Synthesize their result and draft the best single question to ask a user. Just 1, not multiple. Draft the choices to the draft question. Don't decide on a recommendation yet. Highly recommended to ask foundational questions first.
 
@@ -85,7 +85,7 @@ Solid design *always* requires understanding codebase, and possibly online resea
 - The other question choices they are battling against.
 - Any files/symbols/etc you know about that are relevant.
 - Tell it it's job.
-- Sonnet for fact checks and exploration, Opus for complex reasoning
+- Sonnet for **light** fact checks and exploration, Opus for complex reasoning
 
 5. **Choices Synthesis:** Sort best choices first and kill terrible ones. If a lot died and changed, repeat from **1)**.
 

@@ -27,7 +27,7 @@ Be sure to fan out a Sonnet Workflow audit pass on every modified file or range.
 Vet the implementation for misalignments from the plan:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a fresh git diff.
-- As many agents as you need. 8+ up to 20 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model. **Explore** using `sonnet` or `opus` depending on complexity of the topic. **Verify** always using `opus` for both the review and verify. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
+- Adjust Agent count to complexity. 8+ up to 20 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model. Sonnet for **light** fact checks and exploration, Opus for complex reasoning. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
@@ -51,7 +51,7 @@ If a fix changed anything, `cycleGoto(...)` back to `align-fan-out` to re-audit.
 Vet the implementation for gaps, blockers, concerns:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a fresh git diff.
-- As many agents as you need. 8+ up to 20 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model. **Explore** using `sonnet` or `opus` depending on complexity of the topic. **Verify** always using `opus` for both the review and verify. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
+- Adjust Agent count to complexity. 8+ up to 20 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model. Sonnet for **light** fact checks and exploration, Opus for complex reasoning. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
@@ -61,7 +61,7 @@ Then rank the survivors, most significant first.
 
 Fix the real issues and run smoke tests again. Watch out for: yes-manning, scope creep, drift from codebase patterns.
 
-**Same bug twice is a design bug:** Note which mechanism each fix lands in. The second or third time you patch the same defect class in the same mechanism, that is a /framework-first-design violation, not bad luck. Stop trying to fix it properly here. Land the smallest patch that keeps the phase green, then append it under a `### Bug Classes` heading inside the current phase's section of the plan file, creating that heading if it is not there yet: the mechanism, the defect class, and what each round patched. Append, never replace; the rounds accumulate. `framework-fan-out` owns the redesign. Write it down, it will not survive in your head that long. A patch that only moves where the bug surfaces counts as another round, not a fix.
+**Same bug twice is a design bug:** Note which mechanism each fix lands in. The second or third time you patch the same defect class in the same mechanism, that is a /framework-first-design violation, not bad luck. Stop trying to fix it properly here. Land the smallest patch that keeps the phase green, then append it under a `### Bug Classes` heading inside the current phase's section of the plan file, creating that heading if it is not there yet: the mechanism, the defect class, and what each round patched. Save the fix for `framework-fan-out`, or raise it to `crust-collection`.
 
 /coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
 Don't forget to smoke test after changes.
@@ -86,12 +86,12 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 
 **Analysis only.** Framework-first audit. Fan out via `Workflow()`.
 
-**Skipping is allowed.** If you have come through here enough times and what is in front of you is already solid, `cycleNext` straight past rather than manufacturing work. An audit that has to reach for findings has told you it is finished.
+**Skipping is allowed.** If you have come through here enough times and what is in front of you is already solid, `cycleNext` straight past rather than manufacturing work.
 
 Vet the implementation for framework-first improvements using /framework-first-design skill. You can now deviate from the plan, but do respect its goal:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
-- As many agents as you need. 8+ up to 20 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model. **Explore** using `sonnet` or `opus` depending on complexity of the topic. **Verify** always using `opus` for both the review and verify. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
+- Adjust Agent count to complexity. 8+ up to 20 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model. Sonnet for **light** fact checks and exploration, Opus for complex reasoning. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
 
 Anything under the current phase's `### Bug Classes` heading is required input, not a candidate. Red team already proved that class recurs, so it enters the ranking as a redesign target and the fan-out only decides the shape of the fix.
 
@@ -128,12 +128,12 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 
 **Analysis only.** Compliance audit. Fan out via `Workflow()`.
 
-**Skipping is allowed.** If you have come through here enough times and what is in front of you is already solid, `cycleNext` straight past rather than manufacturing work. An audit that has to reach for findings has told you it is finished.
+**Skipping is allowed.** If you have come through here enough times and what is in front of you is already solid, `cycleNext` straight past rather than manufacturing work.
 
 Vet the implementation for compliance gaps using the /compliance skill:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
-- As many agents as you need. 8+ up to 20 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model. **Explore** using `sonnet` or `opus` depending on complexity of the topic. **Verify** always using `opus` for both the review and verify. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
+- Adjust Agent count to complexity. 8+ up to 20 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model. Sonnet for **light** fact checks and exploration, Opus for complex reasoning. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
 - Access control, data handling/classification, audit trails, retention, data-subject rights
 - SOC2/GDPR/CPRA
 
