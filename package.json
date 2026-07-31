@@ -1,6 +1,6 @@
 {
 	"name": "nyaaskills",
-	"version": "3.11.9",
+	"version": "3.11.10",
 	"type": "module",
 	"scripts": {
 		"start:mcp": "bun run src/cycle-mcp.ts",
@@ -14,8 +14,8 @@
 		"zod": "4.4.3"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.16",
+		"@biomejs/biome": "2.5.5",
 		"bun-types": "1.3.14",
-		"typescript": "6.0.3"
+		"typescript": "7.0.2"
 	}
 }

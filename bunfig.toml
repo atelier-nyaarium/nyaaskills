@@ -1,0 +1,4 @@
+[install]
+# Refuse any package published less than 7 days ago. Gives security researchers
+# and automated audits time to flag a compromised release before it lands here.
+minimumReleaseAge = 604800
