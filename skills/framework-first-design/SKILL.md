@@ -7,7 +7,7 @@ description: Identifies missing or incomplete architectural patterns in a codeba
 
 **Core Mission: Identify framework a codebase needs but does not have.**
 
-You identify what codebase is missing architecturally and design framework it needs. Your role: assess what exists, recognize what it tries to be, propose abstractions that would make codebase maintainable and extensible.
+Assess what exists, recognize what it tries to be, propose abstractions that would make codebase maintainable and extensible.
 
 ## Terse and Concise
 
@@ -43,6 +43,13 @@ When invoked, user may describe specific pain points, or may just point you at c
 - **If they point at codebase:** Proceed with full audit. Codebase will tell you what is wrong.
 - **If they name specific pattern they want:** Verify whether codebase is ready for that pattern. Some patterns depend on others being in place first.
 
+## Signals a Framework Is Missing
+
+Two tells in the code itself, independent of any pain you remember:
+
+- **Magic** - If an expression needs a comment to explain it, framework is missing a concept. Build concept, name it, give it method.
+- **Same operation, different hats** - If several features are the same operation wearing different costumes, they want one code path, not N similar ones.
+
 ## Orchestration Workflow
 
 ### 0. Recall Pain Points
@@ -66,6 +73,11 @@ Assessor will:
 - Detect anti-patterns
 - Present list of 1-5 architectural improvements
 - Recommend ONE pattern to handle now
+
+Weigh its recommendation on two axes:
+
+- **Complete over create** - Finishing half-built pattern costs less and delivers more than starting new one.
+- **Dependency order** - Some patterns are prerequisites for others. Map dependency graph before choosing what to build first.
 
 ### 2. Framework Proposal
 
@@ -92,18 +104,6 @@ Once user approves, execute one pattern at a time:
 
 4. **Commit:** Once user confirms it works, encourage them to commit. Locks in structural improvement.
 
-5. **Next pattern:** Return to step 2 (Pattern Recognition) and reassess. Codebase changed. Patterns that were 0% before may now be 30% because new framework component provides their foundation. Recommend next pattern to complete.
+5. **Next pattern:** Return to **Assessment Phase** and reassess. Codebase changed. Patterns that were 0% before may now be 30% because new framework component provides their foundation. Recommend next pattern to complete.
 
 Creates iterative loop where each cycle adds real framework infrastructure, deletes ad-hoc code, makes next cycle easier.
-
-## Key Principles
-
-- **One pattern at a time** - Do not propose full rewrite. Extract one framework component, verify it, unit-test it, commit it, then move on.
-- **Complete over create** - Finishing half-built pattern costs less and delivers more than starting new one.
-- **Dependency order matters** - Some patterns are prerequisites for others. Map dependency graph before choosing what to build first.
-- **The ownership test** - If application changed, would this code move with framework or stay with application? Determines where it belongs.
-- **No magic** - If expression needs comment to explain, framework missing a concept. Build concept, name it, give it method.
-- **Unify operations** - If multiple features are same operation wearing different hats, build one code path and remove duplicates.
-- **Bugs impossible by design** - Goal is not fewer bugs, it is bug classes that cannot be expressed in the new code. If pattern only reduces bug likelihood, keep designing.
-- **Design once, not twice** - We are at this drawing board now so we never return to it. Pay upfront cost of right paradigm. Half-measures guarantee a second visit.
-- **The user decides** - You assess, propose, recommend. They approve and commit.
