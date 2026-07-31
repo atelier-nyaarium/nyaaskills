@@ -61,7 +61,7 @@ Then rank the survivors, most significant first.
 
 Fix the real issues and run smoke tests again. Watch out for: yes-manning, scope creep, drift from codebase patterns.
 
-**Same bug twice is a design bug:** Note which mechanism each fix lands in. The second or third time you patch the same defect class in the same mechanism, that is a /framework-first-design violation, not bad luck. Stop patching. Redesign that mechanism so the class cannot occur again. A fix that only moves where the bug surfaces does not count as a fix.
+**Same bug twice is a design bug:** Note which mechanism each fix lands in. The second or third time you patch the same defect class in the same mechanism, that is a /framework-first-design violation, not bad luck. Stop trying to fix it properly here. Land the smallest patch that keeps the phase green, then record it under a `## Recurrences` heading in the plan file: the mechanism, the defect class, and what each round patched. `framework-fan-out` owns the redesign. Write it down, it will not survive in your head that long. A patch that only moves where the bug surfaces counts as another round, not a fix.
 
 /coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
 Don't forget to smoke test after changes.
@@ -90,6 +90,8 @@ Vet the implementation for framework-first improvements using /framework-first-d
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
 - As many agents as you need. 8+ up to 20 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model. **Explore** using `sonnet` or `opus` depending on complexity of the topic. **Verify** always using `opus` for both the review and verify. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
+
+Anything under `## Recurrences` in the plan file is required input, not a candidate. Red team already proved that class recurs, so it enters the ranking as a redesign target and the fan-out only decides the shape of the fix.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
