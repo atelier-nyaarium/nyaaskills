@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type { z } from "zod";
+import packageJson from "../package.json";
 import { toolsCycle } from "./cycle/index.ts";
 
 export interface McpTool {
@@ -15,7 +16,7 @@ export interface McpTool {
 
 const mcpServer = new McpServer({
 	name: "nyaaskills-mcp",
-	version: "3.12.1",
+	version: packageJson.version,
 });
 
 function registerTool(tool: McpTool) {

@@ -4,6 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"start:mcp": "bun run src/cycle-mcp.ts",
+		"build": "bun run scripts/build.ts",
 		"lint": "biome ci . && bun run typecheck",
 		"lint:fix": "biome check --write .",
 		"test": "bun test",

@@ -26,10 +26,10 @@ A looping step-runner that drives an agent through a named, reusable procedure (
 defined by a markdown file. Progress is tracked in a JSON sidecar next to the plan
 (`<plan>.cycle.json`), so the tools never touch the document the author is editing.
 
-The MCP server is declared in `.mcp.json` and runs from source via
-`bun run ${CLAUDE_PLUGIN_ROOT}/src/cycle-mcp.ts`. Its only runtime dependencies are
-`@modelcontextprotocol/sdk` and `zod`; run `bun install` in the plugin directory once so they
-resolve (the same way the switchboard plugin installs its deps).
+The MCP server is declared in `.mcp.json` and runs the committed bundle via
+`node ${CLAUDE_PLUGIN_ROOT}/dist/cycle-mcp.js`. Its dependencies (`@modelcontextprotocol/sdk` and
+`zod`) are bundled into that file, so the plugin needs no install step and no bun on the machine
+running it. Build and commit a new one with `bun run build patch`.
 
 ### Cycle definitions
 
@@ -38,7 +38,8 @@ step. Resolution order for the library directory:
 
 1. `NYAASKILLS_CYCLES_DIR` - explicit override.
 2. `CLAUDE_PLUGIN_ROOT` - set by Claude Code; `cycles/` sits at the plugin root.
-3. Module-relative fallback - resolves `cycles/` next to `src/`, for running from source.
+3. Module-relative fallback - nearest ancestor of the running module holding a `cycles/` directory,
+   which covers both running from source and running the bundle.
 
 Ships with `plan-refinement` and `audited-implementation`.
 

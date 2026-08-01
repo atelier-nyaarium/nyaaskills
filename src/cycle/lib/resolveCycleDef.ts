@@ -13,13 +13,23 @@ export interface CycleDef {
 // Reusable cycle definitions ship in the plugin's cycles/ directory. Resolution order:
 //   1. NYAASKILLS_CYCLES_DIR  - explicit override for tests or a custom library.
 //   2. CLAUDE_PLUGIN_ROOT     - set by Claude Code for plugin MCP servers; cycles/ sits at its root.
-//   3. module-relative        - this file lives at src/cycle/lib/, so cycles/ is three levels up.
-// The module-relative fallback keeps the server working when run from source outside the plugin host.
+//   3. module-relative        - nearest ancestor of this file that holds a cycles/ directory.
+// The module-relative fallback keeps the server working when run outside the plugin host. It searches
+// rather than counting levels because this module runs from two depths: src/cycle/lib/ from source,
+// and dist/ once bundled. A fixed number of ".." would be correct for exactly one of them.
 export function cyclesDir(): string {
 	if (process.env.NYAASKILLS_CYCLES_DIR) return process.env.NYAASKILLS_CYCLES_DIR;
 	if (process.env.CLAUDE_PLUGIN_ROOT) return path.join(process.env.CLAUDE_PLUGIN_ROOT, "cycles");
 	const here = path.dirname(fileURLToPath(import.meta.url));
-	return path.resolve(here, "..", "..", "..", "cycles");
+	let dir = here;
+	for (;;) {
+		const candidate = path.join(dir, "cycles");
+		if (fs.existsSync(candidate)) return candidate;
+		const parent = path.dirname(dir);
+		// Nothing above us has one. Name the module-adjacent path, the most useful of the misses.
+		if (parent === dir) return path.join(here, "cycles");
+		dir = parent;
+	}
 }
 
 function assertSafeName(name: string): void {
