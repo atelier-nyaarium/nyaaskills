@@ -21,7 +21,7 @@ Propose or refine the plan. Write the current state back into the plan file this
 Vet the plan for gaps, blockers, concerns:
 - `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
 - Fan out with `parallel()`/`pipeline()`; point each at the plan.
-- As many agents as you need. 8 to 20+ per parallel/pipeline Explore/Verify type phase.
+- Adjust Agent count to complexity. Choose between 4 to 12 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model: Sonnet for **light** fact checks and exploration, Opus for complex reasoning. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
 
 Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
