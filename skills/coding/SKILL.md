@@ -75,7 +75,7 @@ A reader a year from now has no memory of this work. Every comment has to earn i
 
 ## Concise Comments
 
-Keep comments 1 line short (2 at most for critical lines). Don't write long paragraphs or narratives. If you run into an old violation of this, clean them up on a following commit.
+Keep comments 1 line short (2 at most for critical lines). Don't write long paragraphs or narratives. If you run into any existing length violation of this, **fix now** with your work. Or if it's unrelated, flag them for cleanup on a following cleanup commit.
 
 As with Comment Discipline above, don't comment on the obvious if the code obviously says the same thing.
 
