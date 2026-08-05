@@ -47,9 +47,21 @@ FYI: Some languages, like LaTeX and SQL, will crash if you put in a unicode char
 
 ## Documentation Style
 
+### Autonomous Cleanup
+
+If you run into any existing violation of the below docs/comments guidelines, **fix now** with your work. Or if it's unrelated, flag them for autonomous cleanup on a following cleanup commit.
+
+### Writing Style
+
 No tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, rhetorics, flair, or puffery. Write concise, accurate sentences like a human would. Instead of em dashes joining sentences and fragments, form proper sentences.
 
-## Comment Discipline
+### Conciseness
+
+Keep comments 1 line short (2 at most for critical lines). A phrase is enough, but you may write a full sentence where critical.
+
+Don't write long paragraphs or narratives; Always forbidden except for external documentation files (e.g. MD files).
+
+### Discipline
 
 Only comment when something non-obvious happens. Do not narrate code.
 
@@ -64,20 +76,15 @@ Don't comment:
 - ❌ What was removed or changed (git handles that)
 - ❌ Redundant additional justifications (`TOKEN_STOP; // No reply needed and ack not needed. A replied "thanks" is exactly the cost this token wishes to avoid. Do not acknowledge and just stop instead.`)
 
-## Comments Must be Timeless
+### Timelessness
+
+A reader a year from now has no memory of this work. Every comment has to earn its place based on intrinsic logic alone.
 
 Comments must describe the code as it stands. Not some plan. Nor phase. Nor a migration. Nor what changed. NEVER write comments like:
 - ❌ `// Phase D: seal directly to each Switch`
 - ❌ `// Now it should be multi-home (was gateway)`
 - ❌ `// New keyring sync`
 - ❌ `// Per the plan, verify the admission here`
-A reader a year from now has no memory of this work. Every comment has to earn its place based on intrinsic logic alone.
-
-## Concise Comments
-
-Keep comments 1 line short (2 at most for critical lines). Don't write long paragraphs or narratives. If you run into any existing length violation of this, **fix now** with your work. Or if it's unrelated, flag them for cleanup on a following cleanup commit.
-
-As with Comment Discipline above, don't comment on the obvious if the code obviously says the same thing.
 
 ## Git Hygiene
 
