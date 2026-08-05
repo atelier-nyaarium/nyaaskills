@@ -19,13 +19,14 @@ Propose or refine the plan. Write the current state back into the plan file this
 **Analysis only.** Plan audit. Fan out via `Workflow()`.
 
 Vet the plan for gaps, blockers, concerns:
-- `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
-- Fan out with `parallel()`/`pipeline()`; point each at the plan.
-- Adjust Agent count to complexity. Choose between 4 to 12 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model: Sonnet for **light** fact checks and exploration, Opus for complex reasoning. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
+- Fan out with `parallel()`/`pipeline()`; Pass each their angle. Point each at the plan.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
+  - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+  - If **Capabilities** list Codex, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
+- Give each a schema so it returns data, not prose.
+- Synthesis: Dedup across dimensions, rank survivors.
 
-Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
-
-Then rank the surviving concerns, most significant first.
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
 ## audit-rethink
 

@@ -64,18 +64,16 @@ Live violations outrank all hardening, always.
 
 ## Agents
 
-**With `Workflow()`,** author the fan-out inline.
+**With `Workflow()`,** author the fan-out.
 
-You hold the conversation, so you write the prompts and the context goes in with them: what the user asked, which regulations you scoped in, and what is explicitly out.
-
-```
-dimensions -> [one agent per dimension, grounded in code]   // parallel
-           -> [synthesize: dedup, rank by live-risk, recommend ONE]
-```
-
-- One agent per dimension that actually applies. Skip dimensions belonging to regulations you scoped out.
+- Fan out with `parallel()`/`pipeline()`; One agent per dimension that actually applies. Skip dimensions belonging to regulations you already scoped out.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
+  - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+  - If **Capabilities** list Codex, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
 - Give each a schema so it returns data, not prose.
-- Synthesis is the step that matters: dedup across dimensions, rank, name ONE with runners-up.
+- Synthesis: Dedup across dimensions, rank survivors.
+
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
 Each dimension's checklist is in **Assessment Dimensions** below. Hand each fan-out agent its checklist.
 

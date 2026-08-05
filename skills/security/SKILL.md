@@ -126,12 +126,15 @@ Run the battle when all three are true:
 
 When it qualifies, do not decide alone and do not decide first-thought. First-thought is almost always the lazy option or the quietly-insecure one. Spend a `Workflow()` and make the agents fight.
 
-Do not cheap out at this point. The battle costs tokens and a few minutes. Shipping the first insecure thing you landed on costs a great deal more, and that trade is not close.
+- Fan out with `parallel()`/`pipeline()`; One agent per dimension. Enumerate several distinct avenues, plus a wildcard agent whose only job is "find one we have not named."
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
+  - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+  - If **Capabilities** list Codex, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
+- Read against the real code rather than assert from confidence. It names the real cons and where the option breaks on paths users actually walk: first-time setup, recovery, device change, teardown.
+- Give each a schema so it returns data, not prose.
+- **Adversary Fan out** again each as a skeptic to try and refute each one. Was the report even real and accurate? Where does it scuff? What did the advocate undersell?
+- Synthesis: Dedup across dimensions, rank survivors.
 
-1. **Spread** - enumerate several distinct avenues, plus a wildcard agent whose only job is "find one we have not named." Breadth is the antidote to satisficing.
-2. **Advocate** - one agent per avenue makes its strongest honest case, read against the real code rather than asserted from confidence. It names the real cons and where the option breaks on paths users actually walk: first-time setup, recovery, device change, teardown.
-3. **Adversary** - a skeptic tries to refute each survivor. Where does it scuff? What did the advocate undersell?
-4. **Score and rank** - rate on named axes: ease, safety under the bounded model, breakage-risk. Then apply the weighed lane's rule. Drop below-floor, take the easiest survivor.
-5. **Synthesize** - the orchestrator ranks across advocates, so no single agent's confidence carries the call. Output the recommendation with its runner-ups and why they lost, so the human can overrule it with full sight of the tradeoff.
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
-The invariant lane does not get a battle. There is nothing to debate. It gets verification instead: a skeptic whose only job is to prove the implementation is a plausible-looking forgery of the canonical construction rather than the real thing, settled by test vectors and not by a vote.
+The invariant lane does not get a battle. There is nothing to debate. It gets verification instead.

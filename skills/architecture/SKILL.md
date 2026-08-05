@@ -61,18 +61,16 @@ I literally do not care how long you estimate something to take. Don't get lazy 
 
 ## Agents
 
-**With `Workflow()`,** author the fan-out inline.
+**With `Workflow()`,** author the fan-out.
 
-You hold the conversation, so you write the prompts and the context goes in with them: what the user asked, the pain you hit this session, and what you already read.
-
-```
-dimensions -> [one agent per dimension, grounded in code]   // parallel
-           -> [synthesize: dedup, rank, recommend ONE]
-```
-
-- One agent per subsystem or pattern family. Scale to the codebase, not to the list.
+- Fan out with `parallel()`/`pipeline()`; One agent per subsystem or pattern family.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
+  - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+  - If **Capabilities** list Codex, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
 - Give each a schema so it returns data, not prose.
-- Synthesis is the step that matters: dedup across dimensions, rank, name ONE with runners-up.
+- Synthesis: Dedup across dimensions, rank survivors.
+
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
 Each agent maps its slice per **Assessment Dimensions** below.
 

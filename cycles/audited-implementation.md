@@ -25,13 +25,14 @@ Be sure to fan out a Sonnet Workflow audit pass on every modified file or range.
 **Analysis only.** Plan alignment audit. Fan out via `Workflow()`.
 
 Vet the implementation for misalignments from the plan:
-- `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
-- Fan out with `parallel()`/`pipeline()`; pass each a fresh git diff.
-- Adjust Agent count to complexity. Choose between 4 to 12 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model: Sonnet for **light** fact checks and exploration, Opus for complex reasoning. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
+- Fan out with `parallel()`/`pipeline()`; Pass each their angle. Each agent git diffs on their own.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
+  - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+  - If **Capabilities** list Codex, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
+- Give each a schema so it returns data, not prose.
+- Synthesis: Dedup across dimensions, rank survivors.
 
-Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
-
-Then rank the survivors, most significant first.
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
 ## align-fix
 
@@ -49,13 +50,14 @@ If a fix changed anything, `cycleGoto(...)` back to `align-fan-out` to re-audit.
 **Analysis only.** Red team audit. Fan out via `Workflow()`.
 
 Vet the implementation for gaps, blockers, concerns:
-- `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
-- Fan out with `parallel()`/`pipeline()`; pass each a fresh git diff.
-- Adjust Agent count to complexity. Choose between 4 to 12 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model: Sonnet for **light** fact checks and exploration, Opus for complex reasoning. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
+- Fan out with `parallel()`/`pipeline()`; Pass each their angle. Each agent git diffs on their own.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
+  - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+  - If **Capabilities** list Codex, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
+- Give each a schema so it returns data, not prose.
+- Synthesis: Dedup across dimensions, rank survivors.
 
-Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
-
-Then rank the survivors, most significant first.
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
 ## red-team-fix
 
@@ -89,17 +91,18 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 **Skipping is allowed.** If you have come through here enough times and what is in front of you is already solid, `cycleNext` straight past rather than manufacturing work.
 
 Vet the implementation for architectural improvements using the /architecture skill. You can now deviate from the plan, but do respect its goal:
-- `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
-- Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
-- Adjust Agent count to complexity. Choose between 4 to 12 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model: Sonnet for **light** fact checks and exploration, Opus for complex reasoning. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
+- Fan out with `parallel()`/`pipeline()`; Pass each a list of relevant sections and their angle.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
+  - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+  - If **Capabilities** list Codex, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
+- Give each a schema so it returns data, not prose.
+- Synthesis: Dedup across dimensions, rank survivors.
 
 Anything under the current phase's `### Bug Classes` heading is required input, not a candidate. Red team already proved that class recurs, so it enters the ranking as a redesign target and the fan-out only decides the shape of the fix.
 
-Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
-**Optional:** If you've noticed Agents fabricating wrong facts, sus out why. Bad function/class names? Stale comments? Anything that could be **misleading** it? Weigh these into the architecture assessment as something to fix, only when you notice the issue.
-
-Then rank the survivors, most significant first, grouped into coherent committable chunks.
+**Optional:** If you've noticed Agents fabricating wrong facts, sus out why. Poorly named function/class names? Stale comments? Anything that could be **misleading** them? Weigh these into the architecture assessment as something to fix, when you notice the issue.
 
 ## architecture-fix
 
@@ -131,15 +134,16 @@ Commit description rules: One short phrase or sentence. Start with a verb. Descr
 **Skipping is allowed.** If you have come through here enough times and what is in front of you is already solid, `cycleNext` straight past rather than manufacturing work.
 
 Vet the implementation for compliance gaps using the /compliance skill:
-- `export const meta = {...}`, then a `DIMENSIONS` array (one entry per audit angle).
-- Fan out with `parallel()`/`pipeline()`; pass each a list of relevant sections.
-- Adjust Agent count to complexity. Choose between 4 to 12 per parallel/pipeline Explore/Verify type phase. Instead of inheriting the sessions model, explicitly choose a model: Sonnet for **light** fact checks and exploration, Opus for complex reasoning. Cap adversarial verify at 2 agents per findings; both must agree to refute it, or you tie-breaker.
+- Fan out with `parallel()`/`pipeline()`; Pass each a list of relevant sections and their angle.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
+  - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+  - If **Capabilities** list Codex, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
 - Access control, data handling/classification, audit trails, retention, data-subject rights
 - SOC2/GDPR/CPRA
+- Give each a schema so it returns data, not prose.
+- Synthesis: Dedup across dimensions, rank survivors, split into small (fix now) or large redesign (defer).
 
-Triage gate: real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
-
-Then rank the survivors, most significant first, split into small (fix now) or large redesign (defer).
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
 ## compliance-fix
 

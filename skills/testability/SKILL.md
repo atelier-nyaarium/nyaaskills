@@ -15,18 +15,14 @@ Whether speaking to the user or writing comments, keep everything concise. Avoid
 
 ## Agents
 
-**With `Workflow()`,** author the fan-out inline.
+**With `Workflow()`,** author the fan-out.
 
-You hold the conversation, so you write the prompts and the context goes in with them: what the user asked, and which verification steps you already tried and how they failed.
-
-```
-dimensions -> [one agent per dimension, grounded in code]   // parallel
-           -> [synthesize: dedup, rank by dependency order, recommend ONE]
-```
-
-- One agent per dimension that actually applies. Scale to the project, not to the list.
+- Fan out with `parallel()`/`pipeline()`; One agent per dimension that actually applies.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
+  - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+  - If **Capabilities** list Codex, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
 - Give each a schema so it returns data, not prose.
-- Synthesis is the step that matters: dedup across dimensions, rank, name ONE with runners-up.
+- Synthesis: Dedup across dimensions, rank, name ONE with runners-up.
 
 Each dimension's checklist is in **Assessment Dimensions** below. Hand each fan-out agent its checklist.
 
