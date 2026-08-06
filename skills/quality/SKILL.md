@@ -18,7 +18,7 @@ Whether speaking to the user or writing comments, keep everything concise. Avoid
 - Fan out with `parallel()`/`pipeline()`; One agent per dimension that actually applies.
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
   - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
-  - If **Capabilities** list Codex, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
+  - If **Capabilities** list **Codex**, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
 - Give each a schema so it returns data, not prose.
 - Synthesis: Dedup across dimensions, rank survivors.
 
