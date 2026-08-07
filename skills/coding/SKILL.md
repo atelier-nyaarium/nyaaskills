@@ -1,6 +1,6 @@
 ---
 name: coding
-description: Coding guidelines for all agents. Always load this skill before you edit a single line of code.
+description: Coding and writing guidelines for all agents. Always load this skill before you edit a single line of ANY file.
 ---
 
 # Coding Guidelines
@@ -99,6 +99,8 @@ Did they even ask you to push/PR?
 ### Message
 
 One short phrase or sentence. Verb first, no prefixes. Do not use words like \"fix\" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like \"attempt\" or \"try\" instead. If related to issues, end with (fixes #N) for bugfixes, (closes #N) for completed tasks, (related #N) to link without closing.
+
+Don't claim authorship (omit "Co-Authored-By" / "Generated with") for **human-written** work that you merely committed or PR'd on their behalf.
 
 ### Dont Spam Commits
 
