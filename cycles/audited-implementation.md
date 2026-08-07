@@ -4,7 +4,7 @@ steps: [implementation-phase, align-fan-out, align-fix, red-team-fan-out, red-te
 
 # Audited Phase Implementation
 
-Implement a plan phase with multiple audits. Each lap implements, then audits from multiple angles, fixing and committing in between audits, repeating until the phase is solid. The plan file is the document being implemented; its body churns each lap while these steps stay fixed.
+Implement a plan phase with multiple audits. Each lap implements, then audits from multiple angles, fixing and commit amending in between audits, repeating until the phase is solid. The plan file is the document being implemented; its body churns each lap while these steps stay fixed.
 
 `compliance-*` is suitable only if this is enterprise software, where the developer is concerned about safety PII. Typically skip it for personal projects.
 
@@ -74,13 +74,14 @@ If a fix changed anything, `cycleGoto(...)` back to `red-team-fan-out` to re-aud
 
 ## implementation-commit
 
-If this project is git tracked, gitStage + gitCommit. If you had to PR, don't forget to pull main.
+If this project is git tracked, gitStage + gitCommit.
 
 Commit description rules: One short phrase or sentence. Start with a verb. Describe only what changed, not process.
 - No prefixes or tags, "feat:", "chore:", "wip:", "[sandbox]".
 - Don't include plan/cycle/slice/lap labels or progress narrative anywhere, e.g. "(slice 4)", "(some phase name)", "[sandbox] Testing things",.
 - Do not use words like "fix" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like "attempt" or "try" instead. This rule also goes double when you end and report to user.
 - If related to issues, end with (fixes #N) for bugfixes, (closes #N) for completed tasks, (related #N) to link without closing.
+- If you had to PR, don't forget to switch to main, await, and pull.
 
 
 
@@ -117,13 +118,14 @@ Don't forget to smoke test after changes.
 
 ## architecture-commit
 
-If this project is git tracked, gitStage + gitCommit. If you had to PR, don't forget to pull main.
+If this project is git tracked, gitStage + gitCommit.
 
 Commit description rules: One short phrase or sentence. Start with a verb. Describe only what changed, not process.
 - No prefixes or tags, "feat:", "chore:", "wip:", "[sandbox]".
 - Don't include plan/cycle/slice/lap labels or progress narrative anywhere, e.g. "(slice 4)", "(some phase name)", "[sandbox] Testing things",.
 - Do not use words like "fix" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like "attempt" or "try" instead. This rule also goes double when you end and report to user.
 - If related to issues, end with (fixes #N) for bugfixes, (closes #N) for completed tasks, (related #N) to link without closing.
+- If you had to PR, don't forget to switch to main, await, and pull.
 
 
 
@@ -160,13 +162,14 @@ Large-redesign items: report them to the human for a later plan, but only at the
 
 ## compliance-commit
 
-If this project is git tracked, gitStage + gitCommit. If you had to PR, don't forget to pull main.
+If this project is git tracked, gitStage + gitCommit.
 
 Commit description rules: One short phrase or sentence. Start with a verb. Describe only what changed, not process.
 - No prefixes or tags, "feat:", "chore:", "wip:", "[sandbox]".
 - Don't include plan/cycle/slice/lap labels or progress narrative anywhere, e.g. "(slice 4)", "(some phase name)", "[sandbox] Testing things",.
 - Do not use words like "fix" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like "attempt" or "try" instead. This rule also goes double when you end and report to user.
 - If related to issues, end with (fixes #N) for bugfixes, (closes #N) for completed tasks, (related #N) to link without closing.
+- If you had to PR, don't forget to switch to main, await, and pull.
 
 
 
@@ -200,26 +203,28 @@ If you need to mention a line number, use **Reference format:** `FilePath:Namesp
 
 ## plan-completeness
 
-Audit what part of the plan is incomplete. If there is:
+Audit what part of the plan is incomplete. In the plan file, mark completed phases and slices with `✅`.
+
+If there is:
 - Unfinished work in this current phase: `cycleGoto` back to the `implementation-phase`.
-- More phases in the plan to complete: `cycleCheckpoint` to checkpoint with `loop`.
+- Critical issue that stops progress entirely, `cycleCheckpoint` to checkpoint with `critical-stop`. Discuss the problem.
+- More phases in the plan to complete: `cycleCheckpoint` with `loop`.
+- Actually factually done? `cycleCheckpoint` with `done`.
+- Minor issues and discrepancies that you normally would stop for, report it and continue on. Don't pause and hold for minor issues or questions. Accumulate the laundry list of findings until the very end as part of the final report, or queue it up for the next architecture pass.
 
-In the plan file, mark completed phases and slices with `✅`.
+**Task Board** or **Task** tools series. Keep your task list current.
 
-Call TaskUpdate with status: "deleted" to remove this phase's completed tasks.
+Report the outcome to the human:
+- If you are in a channel conversation (you have a `session_id` from the inbound `<channel>` message), reply on that channel via `channel_reply` so the report lands where they are talking to you.
+- If you weren't in a conversation but have `notify_human` tool, use that.
+- Otherwise, just output the report to the usual terminal as normal.
 
-If there was a critical issue that stops progress entirely, `cycleCheckpoint` to checkpoint with `critical-stop`. Discuss the problem.
+Green-commit discipline makes grinding through all phases safe even if you're interrupted. And because we capture everything said and decisions made in the plan file, you never have to concern yourself about approaching the session compaction limit. Just drive your bicycle over that line. You'll be fine.
 
-Report the outcome to the human. If you are in a channel conversation (you have a `session_id` from the inbound `<channel>` message that started this run), reply on that channel via `channel_reply` so the report lands where they are talking to you. Only for a detached fire with no such conversation (e.g. a cron) use `notify_human` if it exists. Otherwise, just output your report as you normally would.
-
-Green-commit discipline makes grinding through all phases safe even if you're interrupted. And thanks to capturing everything said and decisions made in the plan file, you never have to concern yourself about approaching the session compaction limit. Just drive your bicycle over that line. You'll be fine.
-
-It causes more harm than good to stop mid-plan and ask for permission to resume:
+It causes more harm than good to stop mid-plan to wait for yet another approval to resume:
 - ❌ Codebase half unfinished state.
 - ❌ Context losses from derailing.
 - ❌ Confusion from course changes that no longer match the vetted plan.
-- ❌ Lost time because you lied about continuing but you actually paused to ask for permission to resume.
+- ❌ Lost time because you lied about continuing but you actually paused to wait for some go ahead to resume for an hour.
 
-If there are minor issues and discrepancies that you normally would stop for, report it and continue on. Don't pause and hold for minor issues or questions. Accumulate the laundry list of findings until the very end as part of the final report, when cycles completely finishes and every phase sealed.
-
-TLDR: **Do not pause. Do not park. Do not hold. Do not stop. Do not derail. Only continue and resume until plan is complete.**
+TLDR: Don't pause. Don't park. Don't stop. **Don't say "Continuing" and then immediately silently stop** (I'm looking at YOU, Opus). Resume until all phases of the plan is complete. Thank you.
