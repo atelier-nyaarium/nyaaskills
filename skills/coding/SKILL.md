@@ -49,7 +49,7 @@ FYI: Some languages, like LaTeX and SQL, will crash if you put in a unicode char
 
 ### Autonomous Cleanup
 
-If you run into any existing violation of the below docs/comments guidelines, **fix now** with your work. Or if it's unrelated, flag them for autonomous cleanup on a following cleanup commit.
+If you run into any existing violation of the below docs/comments guidelines, **fix it now** with your work. Or if it's unrelated, flag them for autonomous cleanup on a following cleanup commit.
 
 ### Writing Style
 
@@ -57,13 +57,13 @@ No tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, r
 
 ### Conciseness
 
-Keep comments 1 line short (2 at most for critical lines). A phrase is enough, but you may write a full sentence where critical.
+Keep comments 1 line short (2 at most for critical lines). A phrase is generally enough, but you may write a full sentence where critical.
 
 Don't write long paragraphs or narratives; Always forbidden except for external documentation files (e.g. MD files).
 
 ### Discipline
 
-Only comment when something non-obvious happens. Do not narrate code.
+Only comment when something non-obvious happens.Don't narrate code.
 
 Do comment:
 - ✅ Decisions to use anti-patterns: `// @unknown Router schema shape may contain any field types.`
@@ -74,17 +74,42 @@ Don't comment:
 - ❌ What types already say (`User | null` needs no "returns null if not found")
 - ❌ Self-evident code (`if (!session.valid) throw` needs no explanation)
 - ❌ What was removed or changed (git handles that)
-- ❌ Redundant additional justifications (`TOKEN_STOP; // No reply needed and ack not needed. A replied "thanks" is exactly the cost this token wishes to avoid. Do not acknowledge and just stop instead.`)
+- ❌ Redundant additional justifications (`TOKEN_STOP; // No reply needed and ack not needed. A replied "thanks" is exactly the cost this token wishes to avoid. Don't acknowledge and just stop instead.`)
 
 ### Timelessness
 
 A reader a year from now has no memory of this work. Every comment has to earn its place based on intrinsic logic alone.
 
-Comments must describe the code as it stands. Not some plan. Nor phase. Nor a migration. Nor what changed. NEVER write comments like:
+Comments must describe the code as it stands. Not some plan. Nor phase. Nor a migration. Nor history. Nor what changed. NEVER write comments like:
 - ❌ `// Phase D: seal directly to each Switch`
 - ❌ `// Now it should be multi-home (was gateway)`
 - ❌ `// New keyring sync`
 - ❌ `// Per the plan, verify the admission here`
+- ❌ `// We fixed this 4 times now`
+
+### Tracking
+
+Again, don't track incidents and history in comments or documentation. Use another system instead. Options listed below.
+
+**Backlog and task tracking:**
+1. If `switchboard_capabilities` list **Task Board**, suitable for backlogging tasks and findings on it.
+2. Else if dedicated task & memory tools like Phren or Jira? Use them for backlogs or task tracking.
+3. None of the above? Ask if they want a dedicated file in `docs/` to track backlogs. Figure out their preferred method of tracking and update AGENTS.md with the preferred method.
+
+**Incidents and history tracking:**
+1. If GitHub repo? Find the Issue/PR to blame and reference it in your next PR. If it's OUR repo, you can also edit or comment on existing issues and PRs to make a paper trail. Don't comment on 3rd party repos. This is the only correct form of long-term incident tracking.
+2. Else if dedicated task & memory tools like Phren or Jira? Use them for findings tracking.
+3. None of the above? They most likely DON'T want you to record megabytes worth of incident logs; Don't track them.
+
+**Which ones to use?**
+
+If you wrote a `TODO` / `FIXME`, make sure it is tracked with **Backlog and task tracking**.
+
+If this session discovered or is about addressing a bug, no point in filing it; Skip the tracking. But if you hit a bug multiple times and it's becoming a problem:
+- **Backlog and task tracking** to make a task or backlog out of it.
+- **Incidents and history tracking** if you have a commit or PR to blame.
+
+As always, **Autonomous Cleanup** any live violations.
 
 ## Git Hygiene
 
@@ -98,7 +123,9 @@ Did they even ask you to push/PR?
 
 ### Message
 
-One short phrase or sentence. Verb first, no prefixes. Do not use words like \"fix\" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like \"attempt\" or \"try\" instead. If related to issues, end with (fixes #N) for bugfixes, (closes #N) for completed tasks, (related #N) to link without closing.
+One short phrase or sentence. Verb first, no prefixes. Don't use words like \"fix\" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like \"attempting\" or \"trying\" instead.
+
+If related to issues, trail with (fixes #N) for bugfixes, (closes #N) for completed tasks, (related #N) to link without closing.
 
 Don't claim authorship (omit "Co-Authored-By" / "Generated with") for **human-written** work that you merely committed or PR'd on their behalf.
 
