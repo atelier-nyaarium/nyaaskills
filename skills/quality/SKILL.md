@@ -102,7 +102,7 @@ Three grades, by where they fail:
 - Comments, docs, and names that say something the code does not do.
 - A `validateUser()` that secretly mutates.
 - A comment claiming "sorted by date" but the list is still unsorted.
-- A CLAUDE.md rule describing a build step that does not exist.
+- An AGENTS.md rule describing a build step that does not exist.
 - Eliminated by refactor renaming to tell the truth, or updating the docs.
 
 ## Time is Cheap, Bandaids are Costly
@@ -118,7 +118,7 @@ I literally do not care how long you estimate something to take. Don't get lazy 
 If you've been working with the codebase prior to this audit, think of pain points you've experienced this session:
 - The same bugs you ran into and bandaided multiple times in a row.
 - Fragile design that you had to carefully tread around, or brute force by user or unit test acceptance.
-- Comments, docs, names, or AI/CLAUDE.md rules that misled you about what the code does. That is a misalignment class, and it is worth reporting on its own.
+- Comments, docs, names, or AGENTS.md rules that misled you about what the code does. That is a misalignment class, and it is worth reporting on its own.
 - Anything else that bothered you about the codebase.
 - Could a focused design change make an entire defect class inexpressible?
 

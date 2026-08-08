@@ -48,7 +48,7 @@ Three grades, by where they fail:
 - Comments, docs, and names that say something the code does not do.
 - A `validateUser()` that secretly mutates.
 - A comment claiming "sorted by date" but the list is still unsorted.
-- A CLAUDE.md rule describing a build step that does not exist.
+- An AGENTS.md rule describing a build step that does not exist.
 - Eliminated by refactor renaming to tell the truth, or updating the docs.
 
 ## Time is Cheap, Bandaids are Costly

@@ -160,7 +160,7 @@ If implementation surfaces a problem, delegate to Agent `code-analyst` to assess
    - **For test infrastructure**: Run sample tests, verify agents can interpret results and understand coverage
    - **For diagnostic capabilities**: Write sample debug statements, verify output is structured and parseable
    - **For MCP servers**: Execute validation operations (query state, trigger scenarios, verify responses)
-     - May need to pause and instruct user how to configure or refresh MCP server on VS/Cursor/Claude Code
+     - May need to pause and instruct user how to configure or refresh MCP server on VS/Cursor/Codex/Claude Code
    - **For development skills**: Read generated SKILL.md, verify it accurately describes this project's validation workflow
 
 4. **User Acceptance** - Present results to user:
