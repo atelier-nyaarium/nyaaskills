@@ -128,8 +128,8 @@ When it qualifies, do not decide alone and do not decide first-thought. First-th
 
 - Fan out with `parallel()`/`pipeline()`; One agent per dimension. Enumerate several distinct avenues, plus a wildcard agent whose only job is "find one we have not named."
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
-  - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
-  - If **Capabilities** list **Codex**, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
+  - If `switchboard_capabilities` list **Codex**, use Luna for all types of *fan outs* (like Explore/Analyze/Audit/Edits), and Opus for *joins* (Synthesis).
+  - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - Read against the real code rather than assert from confidence. It names the real cons and where the option breaks on paths users actually walk: first-time setup, recovery, device change, teardown.
 - Give each a schema so it returns data, not prose.
 - **Adversary Fan out** again each as a skeptic to try and refute each one. Was the report even real and accurate? Where does it scuff? What did the advocate undersell?

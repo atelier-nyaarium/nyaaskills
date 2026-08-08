@@ -21,8 +21,8 @@ Propose or refine the plan. Write the current state back into the plan file this
 Vet the plan for gaps, blockers, concerns:
 - Fan out with `parallel()`/`pipeline()`; Pass each their angle. Point each at the plan.
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
-  - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
-  - If **Capabilities** list **Codex**, use Luna for *fan outs* (like Explore/Analyze/Audit), and Opus for *joins* (Synthesis). 
+  - If `switchboard_capabilities` list **Codex**, use Luna for all types of *fan outs* (like Explore/Analyze/Audit/Edits), and Opus for *joins* (Synthesis).
+  - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - Give each a schema so it returns data, not prose.
 - Synthesis: Dedup across dimensions, rank survivors.
 
