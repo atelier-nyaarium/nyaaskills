@@ -92,7 +92,9 @@ Comments must describe the code as it stands. Not some plan. Nor phase. Nor a mi
 Again, don't track incidents and history in comments or documentation. Use another system instead. Options listed below.
 
 **Backlog and task tracking:**
-1. If `switchboard_capabilities` list **Task Board**, suitable for backlogging tasks and findings on it.
+1. If `switchboard_capabilities` list **Task Board**, suitable for backlogging tasks and findings on it. Do you care to address it?
+   - Yes, intend to address it: Add it to your Task Board. Claim it so you remember to fix it soon.
+   - No, don't care: Add it to the backlog. Inform the user.
 2. Else if dedicated task & memory tools like Phren or Jira? Use them for backlogs or task tracking.
 3. None of the above? Ask if they want a dedicated file in `docs/` to track backlogs. Figure out their preferred method of tracking and update AGENTS.md with the preferred method.
 
