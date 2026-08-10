@@ -1,6 +1,6 @@
 {
 	"name": "nyaaskills",
-	"version": "3.19.1",
+	"version": "3.20.0",
 	"type": "module",
 	"scripts": {
 		"start:mcp": "bun run src/cycle-mcp.ts",
