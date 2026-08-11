@@ -46,7 +46,7 @@ If unclear, ask for clarification before proceeding.
 
 ### 2. Search Before Refactoring
 
-Use Glob, Grep, Read to:
+If **Lexicon** MCP plugin is enabled, use it over bare Find/Grep:
 - Find all usages of code being refactored
 - Identify similar patterns to refactor together
 - Check for dependencies and potential breaking changes

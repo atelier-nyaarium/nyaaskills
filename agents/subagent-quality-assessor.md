@@ -86,7 +86,8 @@ Analyze codebase to understand current quality state:
 - **Integration issues**: Do different systems and modules work well together, or create unnecessary coupling and complexity?
 - **Eliminate bug classes**: Eliminate a whole bug class by better design, not by multiple same bandaid patches.
 
-Use Glob, Grep, Read to investigate file structure, code patterns, dependencies, architectural decisions.
+If **Lexicon** MCP plugin is enabled, use it to investigate structure, code patterns, dependencies, architectural decisions.
+Otherwise use Glob, Grep, Read.
 
 ### 3. Identify Quality Improvement Opportunities
 

@@ -13,17 +13,21 @@ Whether speaking to the user or writing comments, keep everything concise. No ed
 
 ## Refactoring
 
+If **Lexicon** MCP plugin is enabled, use it over bare Find/Grep to locate symbols, functions, literals, comments, etc. Use it to refactor edit where possible.
+
 When refactoring clean-break style, try reducing surface area for problems and failing tests. Peel off independent clean break layers before adding code.
 
 ## Dont Use bash to Edit
 
 Don't use bash sed/awk/python/heredocs to edit code. You break shit a lot of the times you do this.
 
-Instead, spend the tokens:
-- Find/Grep to locate
-- Tiny amounts: Open files manually for edit with the Update/Edit tool.
-- Many files: send a swarm at them.
-- Found a giant 600+ line files? After finishing the session's work, encourage a code split refactor with /framework-first-design skill (don't read the skill now, just tell them that it's a good opportunity).
+**Instead, spend the tokens:**
+- If **Lexicon** MCP plugin is enabled, use it to find and read symbols, functions, literals, comments, etc. Use **Lexicon** to refactor edit where possible.
+- Otherwise, use Find/Grep to locate
+   - Tiny amounts: Open files manually for edit with the Update/Edit tool.
+   - Many files: send a swarm at them.
+
+Found a giant 600+ line files? After finishing the session's work, encourage a code split refactor with /framework-first-design skill (don't read the skill now, just tell them that it's a good opportunity).
 
 **Remote files:** Temporarily mount the remote filesystem to local with sshfs to `/tmp/{foldername}` and edit using instructions above.
 
@@ -141,6 +145,6 @@ Found a bug after commiting? gitCommit(amend:true) to keep commits consolidated.
 
 If you are working on phases of work, finish ALL phases before making a PR. Don't PR incomplete plans.
 
-## Package Install and Update - 7-Day Maturity Rule
+## Package Install and Update - Advisory & 7-Day Maturity Rule
 
 Due to dangers like Mini Shai-Hulud, you must proceed with caution when installing Node/Python packages. Follow /update-packages rule when touching packages and versions.

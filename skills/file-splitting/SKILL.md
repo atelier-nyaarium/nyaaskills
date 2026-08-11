@@ -11,13 +11,15 @@ A long file is a navigation problem. Splitting it is mechanical work with a nast
 
 Follow /coding for everything you write. Follow /architecture when the answer turns out to be a redesign rather than a move.
 
+If **Lexicon** MCP plugin is enabled, use it over bare Find/Grep.
+
 ## Split by responsibility, never by line count
 
 The test is one question: **does the file name what it OWNS?** A file called `Helpers`, `Sections`, `Types`, or `Rows` usually names a shape, not a concept. That is acceptable only when its members are individually too small to own anything, and you should say so out loud rather than pretend it is cohesion.
 
 Line count is a symptom, not the target. A 640-line file that names one thing beats four 160-line files named for where their contents used to sit.
 
-**Follow the callers.** A member with zero callers in its own file and two in another file belongs in the other file. Grep before you place anything; a placement the greps contradict is wrong however sensible it reads.
+**Follow the callers.** A member with zero callers in its own file and two in another file belongs in the other file.
 
 ## A move pass cannot reduce, and that is deliberate
 

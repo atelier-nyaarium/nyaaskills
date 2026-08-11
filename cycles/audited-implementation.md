@@ -29,6 +29,7 @@ Vet the implementation for misalignments from the plan:
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
   - If `switchboard_capabilities` list **Codex**, use Luna for all types of *fan outs* (like Explore/Analyze/Audit/Edits), and Opus for *joins* (Synthesis).
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+- If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
 - Give each a schema so it returns data, not prose.
 - Synthesis: Dedup across dimensions, rank survivors.
 
@@ -54,6 +55,7 @@ Vet the implementation for gaps, blockers, concerns:
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
   - If `switchboard_capabilities` list **Codex**, use Luna for all types of *fan outs* (like Explore/Analyze/Audit/Edits), and Opus for *joins* (Synthesis).
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+- If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
 - Give each a schema so it returns data, not prose.
 - Synthesis: Dedup across dimensions, rank survivors.
 
@@ -96,6 +98,7 @@ Vet the implementation for architectural improvements using the /architecture sk
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
   - If `switchboard_capabilities` list **Codex**, use Luna for all types of *fan outs* (like Explore/Analyze/Audit/Edits), and Opus for *joins* (Synthesis).
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+- If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
 - Give each a schema so it returns data, not prose.
 - Synthesis: Dedup across dimensions, rank survivors.
 
@@ -142,6 +145,7 @@ Vet the implementation for compliance gaps using the /compliance skill:
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - Access control, data handling/classification, audit trails, retention, data-subject rights
 - SOC2/GDPR/CPRA
+- If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
 - Give each a schema so it returns data, not prose.
 - Synthesis: Dedup across dimensions, rank survivors, split into small (fix now) or large redesign (defer).
 

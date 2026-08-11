@@ -86,7 +86,8 @@ Map current architecture:
 - **Friction:** Where is quality suboptimal, patterns inconsistent, or components failing to integrate cleanly?
 - **Integration:** Do systems and modules work well together, or create unnecessary coupling and complexity?
 
-Use Glob, Grep, Read to investigate file structure, code patterns, dependencies, architectural decisions.
+If **Lexicon** MCP plugin is enabled, use it to investigate structure, code patterns, dependencies, architectural decisions.
+Otherwise use Glob, Grep, Read.
 
 ### 2. Pattern Recognition
 

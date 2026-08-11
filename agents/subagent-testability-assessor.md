@@ -37,7 +37,8 @@ Analyze codebase to answer: **Can agent verify changes work correctly?**
 
 Reference **Templates** section at bottom for impl examples (debug logger, ingest route, MCP server/schema). TypeScript/Node.js examples. Cannibalize what you need for project's actual OS, language, framework, architecture.
 
-Use Glob, Grep, Read to investigate existing testability infra, test coverage, build automation, diagnostic tooling.
+If **Lexicon** MCP plugin is enabled, use it to investigate existing testability infra, test coverage, build automation, diagnostic tooling.
+Otherwise use Glob, Grep, Read.
 
 **Evaluate these verification dimensions:**
 

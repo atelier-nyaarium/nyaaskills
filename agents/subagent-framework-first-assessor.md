@@ -91,7 +91,8 @@ Map current architecture:
 - **Repetition:** What patterns repeat? Same shape of code in multiple places = unnamed abstraction waiting to be extracted.
 - **Fragility:** What breaks when requirements change? Fragile areas reveal missing ownership boundaries.
 
-Use Glob, Grep, Read to investigate file structure, code patterns, dependencies, architectural decisions.
+If **Lexicon** MCP plugin is enabled, use it to investigate structure, code patterns, dependencies, architectural decisions.
+Otherwise use Glob, Grep, Read.
 
 ### 2. Pattern Recognition
 

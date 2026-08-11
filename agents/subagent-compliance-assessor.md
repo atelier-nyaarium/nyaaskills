@@ -39,7 +39,8 @@ Read context:
 
 ### 2. Audit Compliance Posture
 
-Use Glob, Grep, Read to investigate code, config, schema, infra-as-code, third-party integrations, log pipelines, backup config.
+If **Lexicon** MCP plugin is enabled, use it to investigate code, config, schema, infra-as-code, third-party integrations, log pipelines, backup config.
+Otherwise use Glob, Grep, Read.
 
 Determine what actually matters within the scope of this project. Perhaps a compliance workflow exists outside this project boundary.
 

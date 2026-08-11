@@ -32,7 +32,7 @@ If unclear, ask for clarification before proceeding.
 
 ### 2. Search Strategically
 
-Use Glob, Grep, Read to find:
+If **Lexicon** MCP plugin is enabled, use it over bare Find/Grep:
 - Related impls and usage patterns
 - Similar code needing same treatment
 - Dependencies and coupling points

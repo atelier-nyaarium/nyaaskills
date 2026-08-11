@@ -70,6 +70,7 @@ Live violations outrank all hardening, always.
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
   - If `switchboard_capabilities` list **Codex**, use Luna for all types of *fan outs* (like Explore/Analyze/Audit/Edits), and Opus for *joins* (Synthesis).
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+- If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
 - Give each a schema so it returns data, not prose.
 - Synthesis: Dedup across dimensions, rank survivors.
 

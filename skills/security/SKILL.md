@@ -131,6 +131,7 @@ When it qualifies, do not decide alone and do not decide first-thought. First-th
   - If `switchboard_capabilities` list **Codex**, use Luna for all types of *fan outs* (like Explore/Analyze/Audit/Edits), and Opus for *joins* (Synthesis).
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - Read against the real code rather than assert from confidence. It names the real cons and where the option breaks on paths users actually walk: first-time setup, recovery, device change, teardown.
+- If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
 - Give each a schema so it returns data, not prose.
 - **Adversary Fan out** again each as a skeptic to try and refute each one. Was the report even real and accurate? Where does it scuff? What did the advocate undersell?
 - Synthesis: Dedup across dimensions, rank survivors.
