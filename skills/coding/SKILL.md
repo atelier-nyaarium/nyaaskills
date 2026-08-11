@@ -9,7 +9,7 @@ Follow guidelines when editing files or writing human-facing text.
 
 ## Terse and Concise
 
-Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster.
+Whether speaking to the user or writing comments, keep everything concise. No editorials, tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, rhetorics, flair, or puffery. Keeping short gets the point across faster.
 
 ## Refactoring
 
@@ -53,11 +53,11 @@ If you run into any existing violation of the below docs/comments guidelines, **
 
 ### Writing Style
 
-No tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, rhetorics, flair, or puffery. Write concise, accurate sentences like a human would. Instead of em dashes joining sentences and fragments, form proper sentences.
+No editorials, tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, rhetorics, flair, or puffery. Write concise, accurate sentences like a human would. Instead of em dashes joining sentences and fragments, form proper sentences.
 
 ### Conciseness
 
-Keep comments 1 line short (2 at most for critical lines). A phrase is generally enough, but you may write a full sentence where critical.
+Keep comments 1 line short. An incomplete phrase is usually more than enough, but you may write a full sentence where critical.
 
 Don't write long paragraphs or narratives; Always forbidden except for external documentation files (e.g. MD files).
 
