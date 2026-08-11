@@ -69,7 +69,7 @@ Whether speaking to the user or writing the plan, keep everything concise. Avoid
 
 Solid design *always* requires understanding codebase, and possibly online research with Opus Agents. Do these steps for each design decision question.
 
-1. **Foundational Workflows:** Structural questions can drastically change a lot. Fan out using Workflows to figure out the scale of change, as the user's answers come in. Foundational decisions asked first following /framework-first-design skill. Weigh the impact of bug classes, fragile design, code dupes, pain-points, etc. Give Agents full context of:
+1. **Foundational Workflows:** Structural questions can drastically change a lot. Fan out using Workflows to figure out the scale of change, as the user's answers come in. Foundational decisions asked first following /architecture skill. Weigh the impact of bug classes, fragile design, code dupes, pain-points, etc. Give Agents full context of:
 - The questionaire choices so far so they know why they are on that route.
 - Any files/symbols/etc you know about that are relevant.
 - Tell it it's job.

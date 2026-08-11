@@ -27,7 +27,7 @@ Don't use bash sed/awk/python/heredocs to edit code. You break shit a lot of the
    - Tiny amounts: Open files manually for edit with the Update/Edit tool.
    - Many files: send a swarm at them.
 
-Found a giant 600+ line files? After finishing the session's work, encourage a code split refactor with /framework-first-design skill (don't read the skill now, just tell them that it's a good opportunity).
+Found a giant 600+ line files? After finishing the session's work, encourage a code split refactor with /architecture skill (don't read the skill now, just tell them that it's a good opportunity).
 
 **Remote files:** Temporarily mount the remote filesystem to local with sshfs to `/tmp/{foldername}` and edit using instructions above.
 
