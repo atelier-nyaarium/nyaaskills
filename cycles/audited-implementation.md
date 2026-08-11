@@ -30,7 +30,7 @@ Vet the implementation for misalignments from the plan:
   - If `switchboard_capabilities` list **Codex**, use Luna for all types of *fan outs* (like Explore/Analyze/Audit/Edits), and Opus for *joins* (Synthesis).
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
-- Give each a schema so it returns data, not prose.
+- Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors.
 
 Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
@@ -56,7 +56,7 @@ Vet the implementation for gaps, blockers, concerns:
   - If `switchboard_capabilities` list **Codex**, use Luna for all types of *fan outs* (like Explore/Analyze/Audit/Edits), and Opus for *joins* (Synthesis).
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
-- Give each a schema so it returns data, not prose.
+- Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors.
 
 Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
@@ -99,7 +99,7 @@ Vet the implementation for architectural improvements using the /architecture sk
   - If `switchboard_capabilities` list **Codex**, use Luna for all types of *fan outs* (like Explore/Analyze/Audit/Edits), and Opus for *joins* (Synthesis).
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
-- Give each a schema so it returns data, not prose.
+- Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors.
 
 Anything under the current phase's `### Bug Classes` heading is required input, not a candidate. Red team already proved that class recurs, so it enters the ranking as a redesign target and the fan-out only decides the shape of the fix.
@@ -146,7 +146,7 @@ Vet the implementation for compliance gaps using the /compliance skill:
 - Access control, data handling/classification, audit trails, retention, data-subject rights
 - SOC2/GDPR/CPRA
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
-- Give each a schema so it returns data, not prose.
+- Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors, split into small (fix now) or large redesign (defer).
 
 Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.

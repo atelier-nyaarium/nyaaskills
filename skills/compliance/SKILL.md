@@ -71,7 +71,7 @@ Live violations outrank all hardening, always.
   - If `switchboard_capabilities` list **Codex**, use Luna for all types of *fan outs* (like Explore/Analyze/Audit/Edits), and Opus for *joins* (Synthesis).
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
-- Give each a schema so it returns data, not prose.
+- Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors.
 
 Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.

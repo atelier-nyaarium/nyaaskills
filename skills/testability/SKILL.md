@@ -22,7 +22,7 @@ Whether speaking to the user or writing comments, keep everything concise. Avoid
   - If `switchboard_capabilities` list **Codex**, use Luna for all types of *fan outs* (like Explore/Analyze/Audit/Edits), and Opus for *joins* (Synthesis).
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
-- Give each a schema so it returns data, not prose.
+- Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank, name ONE with runners-up.
 
 Each dimension's checklist is in **Assessment Dimensions** below. Hand each fan-out agent its checklist.
