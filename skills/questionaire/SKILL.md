@@ -9,11 +9,16 @@ Build solid understanding of what user (or another team Agent) wants. Only when 
 
 Ask as many questions as needed until full design understood.
 
-**Don't use `AskUserQuestion` tool:** Ask the user directly instead of using `AskUserQuestion` tool. That tool is too basic for this skill.
+**Don't use the built in Ask Question tool**: It defeats the purpose of this skill. Ask directly in the channel or stdout as you normally would.
 
 ## Plan File
 
 Decide on a name and write to `./plans/*.md`, a first section of `# Questionaire`.
+
+If **Lexicon** MCP plugin is enabled and has been functioning: When writing to this plan, never write file paths or line numbers. Reference symbols by the namespace and name of the symbols:
+- ❌ MessageQueue at `xx/structures.ts:1234`
+- ✅ ...the constructor of `MessageQueue`...
+- You may however note down line numbers if it's too obscure to reference by **Lexicon**.
 
 Starter template:
 ```md
