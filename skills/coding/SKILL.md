@@ -137,7 +137,7 @@ Typically I have you execute a plan with phases, so all slices in a phase must b
 
 Audit thoroughly before committing. Our typical Red Team workflow depend on unstaged diffs.
 
-Found a bug after commiting? gitCommit(amend:true) to keep commits consolidated. If amending, merge messages intelligently.
+Found a bug after commiting? gitCommit(amend:true) to keep commits consolidated. If amending, merge messages intelligently. Keep it terse and concise.
 
 If you are working on phases of work, finish ALL phases before making a PR. Don't PR incomplete plans.
 
