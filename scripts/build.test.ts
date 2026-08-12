@@ -61,6 +61,14 @@ describe("dirtyTrackedFiles", () => {
 		const lines = "? scratch.txt\n! node_modules/\n";
 		expect(dirtyTrackedFiles(headers + lines)).toEqual([]);
 	});
+	it("ignores tracked files under root and nested dist directories", () => {
+		const lines = [
+			"1 .M N... 100644 100644 100644 aaa bbb dist/cycle-mcp.js",
+			"1 .M N... 100644 100644 100644 aaa bbb src/dist/generated.js",
+			"1 .M N... 100644 100644 100644 aaa bbb src/cycle-mcp.ts",
+		].join("\n");
+		expect(dirtyTrackedFiles(headers + lines)).toEqual(["src/cycle-mcp.ts"]);
+	});
 	it("keeps spaces in a path instead of truncating at the first one", () => {
 		const line = "1 .M N... 100644 100644 100644 abc def my notes.md";
 		expect(dirtyTrackedFiles(headers + line)).toEqual(["my notes.md"]);
