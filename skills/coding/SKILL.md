@@ -85,14 +85,18 @@ Found a giant 600+ line files? After finishing the session's work, encourage a c
 
 Aim for "Good coverage". Not "Full coverage".
 
+A gap in the test costs a round of debugging when the bug is encountered.
+Excessive tests costs heavy maintenance every day a refactor causes them to fall out of sync.
+
+Never test on pointless things like text, unless the text is a critical part of the behavior like key building.
+- ❌ `expect(res.errorText).toBe('No projects bound. Call thingy to bind first.')`
+- ✅ `expect(res.isError).toBe(true)`
+
 To answer the question of "pointless", ask yourself:
-- Is it worth the bill in minutes to test this?
 - Is this redundant to another test?
 - Does a more complex behavior test below already cover this case?
-
-Never test on pointless things like text, unless the text is a critical part of the behavior (key building).
-- ❌ `expect(res.error.text).toBe('No projects bound. Call thingy to bind first.')`
-- ✅ `expect(res.isError).toBe(true)`
+- Is it worth the bill in minutes to test this?
+- Am I programming the codebase? ...or am I programming tests at this point?
 
 While updating existing tests, merge and consolidate relevant tests as needed.
 
