@@ -79,13 +79,30 @@ Found a giant 600+ line files? After finishing the session's work, encourage a c
 
 **Remote files:** Temporarily mount the remote filesystem to local with sshfs to `/tmp/{foldername}` and edit using instructions above.
 
-## Unit Tests
+## Unit Testing
+
+### Coverage
+
+Aim for "Good coverage". Not "Full coverage".
+
+To answer the question of "pointless", ask yourself:
+- Is it worth the bill in minutes to test this?
+- Is this redundant to another test?
+- Does a more complex behavior test below already cover this case?
+
+Never test on pointless things like text, unless the text is a critical part of the behavior (key building).
+- ❌ `expect(res.error.text).toBe('No projects bound. Call thingy to bind first.')`
+- ✅ `expect(res.isError).toBe(true)`
+
+While updating existing tests, merge and consolidate relevant tests as needed.
+
+### Behavior
 
 For complex systems, trend towards behavior testing, not plain internal state checks. Whenever the observable behavior of a unit can be expressed, assert on that rather than on plain state details.
 - ❌ State: `expect(foo.a).toBe(42)`
 - ✅ Behavior: After the user performs sequence A → B → C, `expect(foo).toEqual({ x, y, z })`
 
-Rearrange by similarity or transition. Many tests in a file tends to have similarity and differences.
+Rearrange tests by similarity or transition. Many tests in a file tends to have similarity and differences.
 
 ## Banned Symbols
 
