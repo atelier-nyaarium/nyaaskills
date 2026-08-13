@@ -34,3 +34,5 @@ Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinate
 Rethink and edit plan. Plan changed? Update the plan. Watch out for: yes-manning, scope creep, heavy drift (ask the human on large drifts).
 
 When the plan feels solid, `cycleCheckpoint` to checkpoint with `done` and give a final report to the channel; otherwise `loop` for another lap. A critical issue you cannot resolve in-loop is a `critical-stop` (you may /questionaire again).
+
+End turn by setting a **Cron** for 1 minute with the notice to resume the next cycle.

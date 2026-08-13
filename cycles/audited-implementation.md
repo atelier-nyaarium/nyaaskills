@@ -231,4 +231,4 @@ It causes more harm than good to stop mid-plan to wait for yet another approval 
 - ❌ Confusion from course changes that no longer match the vetted plan.
 - ❌ Lost time because you lied about continuing but you actually paused to wait for some go ahead to resume for an hour.
 
-TLDR: Don't pause. Don't park. Don't stop. **Don't say "Continuing" and then immediately silently stop** (I'm looking at YOU, Opus). Resume until all phases of the plan is complete. Thank you.
+End turn by setting a **Cron** for 1 minute with the notice to resume the next cycle.
