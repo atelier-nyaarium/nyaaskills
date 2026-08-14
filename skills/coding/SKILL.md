@@ -130,9 +130,9 @@ No editorials, tricolons (three adjectives/bullets/examples), punchlines, rhythm
 
 ### Conciseness
 
-Keep comments 1 line short. An incomplete phrase is usually more than enough, but you may write a full sentence where critical.
+Keep comments 1 line short, up to a 4 word phrase. A critical comment may have more words, but aim for 4 or less.
 
-Don't write long paragraphs or narratives; Always forbidden except for external documentation files (e.g. MD files).
+Don't write long sentences, paragraphs, or narratives; Always forbidden except for external documentation files (e.g. MD files). Even then, keep ultra concise.
 
 ### Discipline
 
