@@ -16,7 +16,9 @@ Implement the phase. Complex code -> handle yourself. Have a TeamCreate() team? 
 
 If `switchboard_capabilities` list **Task Board**, use Switchboard `taskBoard*` series of tools instead of vanilla Claude `TaskCreate`/`TaskUpdate`. Else, use vanilla Task series. Maintain the task board frequently to show active progress. Recommended to build the full phase listing and their nested slices in Task Board, so the whole plan is visible from the app.
 
-Be sure to fan out a Sonnet Workflow audit pass on every modified file or range. Violators of /coding guidelines. Especially overly long comments, narrative comments, and units that test plain internal states instead of behavior. They report, you fix if real.
+Be sure to fan out a couple Workflow audit passes on every modified file or range. If `switchboard_capabilities` list **Codex**, use Haiku to verbatim relay to Codex Luna. Otherwise, audit with Sonnet.
+1. Violators of /coding guidelines. Especially overly long comments (keep to 4 words or less, unless CRITICAL), narrative comments. Anything listed in `## Documentation Style`.
+2. Units that test plain internal states instead of behavior. They report, you fix if real.
 
 
 
