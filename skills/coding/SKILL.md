@@ -139,15 +139,17 @@ Don't write long sentences, paragraphs, or narratives; Always forbidden except f
 Only comment when something non-obvious happens.Don't narrate code.
 
 Do comment:
+- ✅ Rule that holds, only if it's not clear.
 - ✅ Decisions to use anti-patterns: `// @unknown Router schema shape may contain any field types.`
 - ✅ Why one approach chosen over another: `// Use executeToolCall so Discord flows can have their own handlers`
 - ✅ Why block intentionally empty: `// Tests will trigger recreates multiple times. Silently pass / continue.`
 
 Don't comment:
-- ❌ What types already say (`User | null` needs no "returns null if not found")
+- ❌ Rationale for a change (say it in your report, not in code)
+- ❌ Self-evident types (`User | null` needs no "returns null if not found")
 - ❌ Self-evident code (`if (!session.valid) throw` needs no explanation)
 - ❌ What was removed or changed (git handles that)
-- ❌ Redundant additional justifications (`TOKEN_STOP; // No reply needed and ack not needed. A replied "thanks" is exactly the cost this token wishes to avoid. Don't acknowledge and just stop instead.`)
+- ❌ Redundant justifications (`TOKEN_STOP; // No reply needed and ack not needed. A replied "thanks" is exactly the cost this token wishes to avoid. Don't acknowledge and just stop instead.`)
 
 ### Timelessness
 
