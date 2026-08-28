@@ -33,6 +33,8 @@ One-lined run-on or conceptually multiple parts jammed together? Break it out to
 
 For multi-line descriptions, always use multi-line backticks with a `.trim()`. Write in **Terse and Concise** phrases or sentences. Always Markdown style:
 
+I prefer readability of multi-lined prose, so always newline off the backtick, left-align the prose, and `.trim()` it. You can choose against `.trim()` method if you determined it runs more than 10 times a second. But realistically, you probably want some other form of memoisation instead of making my code less readable.
+
 ```ts
    .describe(
       `
