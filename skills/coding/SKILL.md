@@ -7,57 +7,23 @@ description: Coding and writing guidelines for all agents. Always load this skil
 
 Follow guidelines when editing files or writing human-facing text.
 
+If you determined that an Agent violated this, check the commits and uncommitted changes, then fix prose right away.
+
 ## Terse and Concise
 
-Whether speaking to the user or writing comments, keep everything concise. No editorials, justification, tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, rhetorics, flair, or puffery. Keeping short gets the point across faster.
+Whether speaking to the user, guiding agents, or writing comments, keep everything concise. No editorials, justification, tricolons (three adjectives/bullets/examples), punchlines, rhythm, cadence, rhetorics, flair, or puffery. Keeping short gets the point across faster.
 
-## Prose and Instructions
+Incomplete sentences instead of full sentences. Capitalize first letter, punctuated, dont drop key words like verbs or nouns.
 
-For strings that face users and agents, once again, follow **Terse and Concise** guidelines above.
-
-If you determined that an Agent violated this, check the commits and uncommitted changes, then fix prose right away.
+It's so important, that I want you to SAY the **Terse and Concise** guidelines out loud to me before you start editing a bunch of prose. Every time.
 
 ### UI
 
-In UI, a "Description" textarea doesn't need a sentence-long explanation that it's a description.
+In UI, keep minimal. Don't add words where I didn't ask. A "Description" textarea doesn't need under it a *sentence-long explanation that it's a description*.
 
-### Schema & Tool Descriptions
+### Prose and Instructions
 
-Applies to any Zod, MCP, or tool description. Once again, follow **Terse and Concise** guidelines above.
-
-You must ensure all strings used by MCP are under 2048 characters. **It's a hidden error-class to write an editorial with justification.**
-
-Are they truly one-liners? If so, shorten and make terse, and wrap in backticks (\`) instead of quotes (").
-
-```ts
-.describe(`Short phrase description`)
-```
-
-One-lined run-on or conceptually multiple parts jammed together? Break it out to Markdown style below.
-
-For multi-line descriptions, always use multi-line backticks with a `.trim()`. Write in **Terse and Concise** phrases or sentences. Always Markdown style:
-
-```ts
-   .describe(
-      `
-# Await Codex Agent
-
-Wait for a Codex agent's current turn to finish and return its outcome.
-
-Use to pick up a turn previously reported as \`waitTimedOut\`. If nothing is running, it returns the latest settled state immediately.
-      `.trim()
-   );
-```
-
-```ts
-   .describe(
-      `
-\`unclaimed\` = The backlog only
-\`session\` = Your taskboard only
-\`all\` = Both (default)
-      `.trim()
-   );
-```
+Always follow /prose skill when designing agent-facing text.
 
 ## Refactoring
 
