@@ -54,7 +54,7 @@ Aim for "Good coverage". Not "Full coverage".
 A gap in the test costs a round of debugging when the bug is encountered.
 Excessive tests costs heavy maintenance every day a refactor causes them to fall out of sync.
 
-Never test on pointless things like text, unless the text is a critical part of the behavior like key building.
+Never test on pointless things like text, unless the text is a critical part of the behavior like key-concatonation.
 - ❌ `expect(res.errorText).toBe('No projects bound. Call thingy to bind first.')`
 - ✅ `expect(res.isError).toBe(true)`
 

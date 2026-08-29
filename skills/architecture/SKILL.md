@@ -9,55 +9,11 @@ description: Assesses a codebase's architecture; identifies missing or incomplet
 
 Assess what exists, recognize what it is trying to be, then propose either the abstraction that is missing or the repair that is due. Building new abstractions and improving existing ones are the same work.
 
+If generally/aimlessly asked to assess the codebase, follow **Full Audit Report** style. Otherwise use the lessons of this skills to focus on what was asked.
+
 ## Terse and Concise
 
-Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster.
-
-## Engineering Standard
-
-Highest quality only. "Overkill", "YAGNI", and "weeks of work" is not a valid objection. Design well once so we never sit at THIS drawing board again. Reject "good enough." Reject patches that mask structural defects. Choose patterns or paradigm that fits the domain, not the one that ships fastest.
-
-## Extensibility
-
-Extensibility is how cheap the next feature is. A strong framework absorbs a new feature as one registration or one config entry. A weak one demands similar edits across N files, and every N-file feature is the next defect class forming.
-
-Measure it with three questions:
-
-- **What does the next thing cost?** Count the files touched to add the canonical new thing: a content type, an entity, a command. One registration is the target. A checklist of edits is a framework asking to be built.
-- **The consumer test.** Can code outside the framework extend the system without editing framework internals? Answer from the API surface: if registering means editing a framework enum or switch, the answer is no.
-- **Bypassed is worse than missing.** Code doing by hand what an extension point exists to do. The architecture says growth goes through this point, and its own codebase went around it. Report it as a misalignment, and route the bypasser through the point before building anything new.
-
-## Defect Classes
-
-A defect class is every defect sharing one structural cause. A patch removes one defect instance. A design change makes the defect class inexpressible: the code path where the mistake lived does not exist, or the compiler rejects it.
-
-Three grades, by where they fail:
-
-**Bug class:** Fails at runtime. Multiple instances where the same bug is being experienced.
-
-- "Forgot to call refresh()" is not one bug. Every call site is another instance.
-- Two write paths that can disagree.
-- Eliminated when one write path exists and desync is inexpressible.
-
-**Structural defect class:** Fails on change. Nothing misbehaves today, but the code cannot absorb an edit cleanly.
-
-- **Duplication.** The same edit must land in N places, and eventually you forget one. Copy-paste registration, parallel implementations.
-- **Fragility.** Fixing one spot breaks another. Whack-a-mole, where coupling has no ownership boundary to stop a change propagating.
-- Eliminated when the N places become one, or when an ownership boundary contains the change.
-
-**Misalignment class:** Fails in interpretation. Nothing crashes. The human and the agent build on the lie, and what they write becomes instances of the other two grades.
-
-- Comments, docs, and names that say something the code does not do.
-- A `validateUser()` that secretly mutates.
-- A comment claiming "sorted by date" but the list is still unsorted.
-- An AGENTS.md rule describing a build step that does not exist.
-- Eliminated by refactor renaming to tell the truth, or updating the docs.
-
-## Time is Cheap, Bandaids are Costly
-
-Cut the time estimates. Don't let time influence your design decisions. Always take as much time as you need to do things right.
-
-I literally do not care how long you estimate something to take. Don't get lazy and defer work because it "takes weeks to accomplish". You literally arent human and you complete months of works in mere hours easily.
+Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster. /prose rules always apply.
 
 ## Agents
 
@@ -81,13 +37,71 @@ Each agent maps its slice per **Assessment Dimensions** below.
 
 Spawn Agent `refactor-worker`, `code-analyst`, and `ux-tester` directly via Agent, Task, or runSubagent, picking `team-*` or `subagent-*` by the same rule.
 
+## Engineering Standard
+
+Highest quality only. "Overkill", "YAGNI", and "weeks of work" is not a valid objection. Design well once so we never sit at THIS drawing board again. Reject "good enough." Reject patches that hides structural defects. Choose patterns or paradigms that fit the domain; Not ones that ships fast.
+
+
+
 ## Assessment Dimensions
 
-Framework design is in one of three states:
 
-- **Zero**: no framework. State scattered, mutations direct, no extension points. Find the patterns hiding in the chaos and name them.
-- **Partial**: attempted clean architecture that broke under pressure. Patterns half-built or bypassed. Identify what was started, what is missing, what completing would unlock.
-- **Full**: well-designed custom framework. The work here is repair, not invention.
+
+### Defect Classes
+
+A defect class is every defect sharing one structural cause. A patch removes one defect instance. An architectural design change makes the defect class inexpressible: the code path where the mistake once lived no longer exists, or the compiler rejects it.
+
+Four grades, by where they fail:
+
+#### Bug class
+
+**Fails at runtime.** Multiple instances where the same bug is being experienced.
+
+- "Forgot to call `refresh()`" is not one bug. Every call site is another instance.
+- Two write paths that can disagree.
+
+**Eliminated** when one write path exists and desync is inexpressible.
+
+#### Structural defect class
+
+**Fails on change.** Nothing misbehaves today, but the code cannot absorb an edit cleanly.
+
+- **Duplication.** The same edit must land in N places, and eventually you forget one. Copy-paste registration, parallel implementations.
+- **Fragility.** Fixing one spot breaks another. Whack-a-mole, where coupling has no ownership boundary to stop a change propagating.
+
+**Eliminated** when the N places become one, or when an ownership boundary contains the change.
+
+#### Misalignment class
+
+**Fails in interpretation.** Nothing crashes. The human and the agent build on a lie, and what they write becomes instances of the bug classes.
+
+- Comments, docs, and names that say something the code does not do.
+- A `validateUser()` that secretly mutates.
+- A comment claiming "sorted by date" but the list is still unsorted.
+- An `AGENTS.md` rule describing a build step that does not exist.
+
+**Eliminated** by refactor renaming to tell the truth, or updating the docs.
+
+#### Hidden class
+
+**Polluted codebase.** Nothing is wrong, but the codebase is slowly being poisoned by your own pollution.
+
+- **Comment noise.** 4-line comment blocks every few lines. They are correct now, but you battle them every few edits to judge if the comments match the behavior, or if the code matches the comment. You are programming comments, not code.
+- **Excessive testing** that misses the point of behavioral testing. Each bug fixed causes 30 tests to fail and heavy maintenance to realign the tests.
+
+**Eliminated** with `/coding` rules: reduce comments or kill them entirely (preferred), and reorganize / prune out pointless tests.
+
+
+
+### Frameworkiness
+
+#### Framework State
+
+The existing design could be in one of few states:
+
+- **Zero:** No framework. State scattered, mutations direct, no extension points. Find the patterns hiding in the chaos and name them.
+- **Partial:** Attempted clean architecture that broke under pressure. Patterns half-built or bypassed. Identify what was started, what is missing, what completing would unlock.
+- **Full:** Well-designed custom framework. The work here is repairs and improvements.
 
 Map the architecture:
 
@@ -103,7 +117,7 @@ For each pattern found: name it by recognized paradigm, assess completion (rough
 
 For Zero codebases, also identify what SHOULD exist based on the problem domain. An app managing state multiple consumers read needs a consistent write path. An app persisting data needs a storage strategy.
 
-### Recognizing Patterns
+#### Recognizing Patterns
 
 Common paradigms worth looking for. Not exhaustive; domain-specific patterns also exist. Name anything you recognize.
 
@@ -115,15 +129,37 @@ Common paradigms worth looking for. Not exhaustive; domain-specific patterns als
 - **Actor model**: entities own their state and communicate only through messages, no shared memory. Race conditions, shared mutable state, or functions reaching into other modules' internals signal the need for actor-style isolation.
 - **Declarative configuration**: behavior defined by config rather than imperative code. New features added by writing config, not new code paths. Adding an entity type by touching multiple files with similar boilerplate signals the need for declarative registration.
 
-### What Synthesis Returns
 
-**1-5 opportunities**, each with:
+
+### Extensibility
+
+Extensibility is how cheap the next feature is. A strong framework absorbs a new feature as one registration or one config entry. A weak one needs similar edits across N files, and every N-file feature is the next defect class forming.
+
+Measure it with three questions:
+
+- **What does the next thing cost:** Count the files touched to add the canonical new thing: a content type, an entity, a command. One registration point is the dream target. A checklist of edits that requires an AGENT.md to keep track of it, means poor extensibility.
+- **The consumer test:** Can code outside the framework extend the system without editing framework internals? Answer from the API surface: if registering means editing a framework enum or switch, the answer is no.
+- **Convenient bypassing:** Code doing by hand what an extension point exists to do. The architecture says *growth goes through this point*, but the codebase went around it for some reason. Report it as a misalignment, and route the bypasser through the point before building anything new.
+
+### Time is Cheap, Bandaids are Costly
+
+Cut the time estimates. Don't let time influence your design decisions. Always take as much time as you need to do things right.
+
+I literally do not care how long you estimate something to take. Don't get lazy and defer work because it "takes weeks to accomplish". You literally arent human and you complete months of works in mere hours easily.
+
+
+
+## Full Audit Report
+
+If you were asked to analyze the codebase and report, use this process and style.
+
+|Table| of **1-5 opportunities**, each with:
 
 - Name.
-- Shape: **build** a framework component, or **repair** existing code.
+- Shape: **build** a framework component, **repair** existing code, etc.
 - Description, impact, scope, and dependencies.
 
-Each opportunity is complete, self-contained, and committable on its own. One deliberate leap forward, not a massive overhaul, and never "everything changed at once and now something's broken."
+Each opportunity is complete, self-contained, and committable on its own. One deliberate leap forward, not a massive overhaul, and never "everything changed at once and now everything's broken."
 
 **ONE recommendation**, with rationale and implementation notes for the remediation agent.
 
@@ -148,8 +184,8 @@ When invoked, user may describe specific pain points, or may just point you at a
 
 Two tells in the code itself, independent of any pain you remember:
 
-- **Magic** - If an expression needs a comment to explain it, framework is missing a concept. Build concept, name it, give it method.
-- **Same operation, different hats** - If several features are the same operation wearing different costumes, they want one code path, not N similar ones.
+- **Magic:** If an expression needs a 3 line comment to explain it, framework is missing a concept. Build concept, name it, give it method.
+- **Same operation, different skin:** If several features are the same operation wearing different hats, they should get a unified code path.
 
 ## Procedure
 
@@ -204,14 +240,14 @@ Either shape, set the compatibility strategy:
 
 ### 3. Execution
 
-If implementation surfaces a problem, delegate to Agent `code-analyst` to assess impact before going further.
+If implementation surfaces a problem, delegate to an audit/analysis Agent to assess impact before going further.
 
-1. **Implement:** Delegate to Agent `refactor-worker` with specific instructions. For a build: what to build, what existing code to replace, how application code should call the new API. For a repair: what to improve and why, affected areas and constraints. Both: whether backwards compatibility is preserved.
+1. **Implement:** Delegate to an implementer Agent with specific instructions. For a build: what to build, what existing code to replace, how application code should call the new API. For a repair: what to improve and why, affected areas and constraints. Both: whether backwards compatibility is preserved.
 
-2. **Verify:** Ensure Agent `refactor-worker` ran linting, type checking, build verification, and test suite. Codebase stays buildable at every step; never leave it broken. Delegate to Agent `ux-tester` if the change affects user-facing behavior.
+2. **Verify:** Ensure an implementer Agent ran linting, type checking, build verification, and test suite. Codebase stays buildable at every step; never leave it broken. Delegate to a tester Agent if the change affects user-facing behavior.
 
 3. **User acceptance:** Present result: what was built or improved, what was removed, verification status. ❓ Request manual testing for anything requiring human judgment.
 
-4. **Cleanup & Commit:** Delegate to Agent `refactor-worker` to remove temporary diagnostics. Encourage the user to commit; it locks in the structural improvement.
+4. **Cleanup & Commit:** Delegate to an implementer Agent to remove temporary diagnostics. Encourage the user to commit; it locks in the structural improvement.
 
 If what shipped meaningfully moved the picture, say what you would look at next and why. A new component often lifts other patterns off zero, and a foundational repair often unblocks improvements that are not viable without it.

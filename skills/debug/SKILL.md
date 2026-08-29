@@ -7,7 +7,7 @@ description: Debugging guidelines. Always load this skill before any debugging w
 
 ## Terse and Concise
 
-Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster.
+Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster. /prose rules always apply.
 
 ## Accountability
 

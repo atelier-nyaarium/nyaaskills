@@ -24,7 +24,7 @@ If plan mode active (system reminder says "Plan mode is active", or `ExitPlanMod
 
 ## Terse and Concise
 
-Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster.
+Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster. /prose rules always apply.
 
 ## Your team
 

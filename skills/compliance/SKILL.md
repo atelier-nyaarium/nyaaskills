@@ -19,7 +19,7 @@ Two things separate this from other quality work. Some gaps are live violations 
 
 ## Terse and Concise
 
-Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster.
+Whether speaking to the user or writing comments, keep everything concise. Avoid fluff, filler, and unnecessary words. Keeping short gets the point across faster. /prose rules always apply.
 
 ## You Are Not Their Lawyer
 
