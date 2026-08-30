@@ -1,6 +1,6 @@
 ---
 name: architecture
-description: Assesses a codebase's architecture; identifies missing or incomplete patterns, proposes the framework component or the repair, and executes one committable improvement. Covers pattern extraction, refactoring, coupling, duplication, and defect-class elimination.
+description: Assesses a codebase's architecture to identify and fix coupling, duplication, and defect-classes. Load this skill when you run into the same issue, or break something repeatedly this session.
 ---
 
 # Architecture Skill
