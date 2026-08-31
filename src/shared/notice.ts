@@ -1,4 +1,4 @@
-// SYNC-HASH: 5f7a1c4ef4b9296a586112003e1c91e7
+// SYNC-HASH: 0a9eb987710eccd8d1b3e4d5d458fba6
 // SYNCED MODULE - source of truth: switchboard/src/shared/notice.ts
 // Copied verbatim into: nyaaskills/src/shared/notice.ts
 // MUST re-copy on change: cp src/shared/notice.ts ../nyaaskills/src/shared/notice.ts
@@ -22,10 +22,13 @@ import { z } from "zod";
 //  Field schemas (reused by each tool's own object so the describes stay
 //  in one place even where a consumer loosens a field's optionality).
 
+/** The headline bound, exported so a relay hop truncates to the same number this rejects past. */
+export const NOTICE_TITLE_MAX = 200;
+
 export const NoticeTitle = z
 	.string()
 	.min(1)
-	.max(200)
+	.max(NOTICE_TITLE_MAX)
 	.describe(
 		`A very short one-line headline. It becomes the console's notification-bar line and is read aloud as the shortest text-to-speech tier. Spoken language only: no code, raw identifiers, or all-caps shouting.`,
 	);
