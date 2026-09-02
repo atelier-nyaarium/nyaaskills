@@ -83,7 +83,7 @@ If a fix changed anything, `cycleGoto(...)` back to `red-team-fan-out` to re-aud
 
 If this project is git tracked, gitStage + gitCommit.
 
-Commit description rules: One short phrase or sentence. Start with a verb. Describe only what changed, not process.
+Commit message rules: One short phrase or sentence. Start with a verb. Describe only what changed, not the process.
 - No prefixes or tags, "feat:", "chore:", "wip:", "[sandbox]".
 - Don't include plan/cycle/slice/lap labels or progress narrative anywhere, e.g. "(slice 4)", "(some phase name)", "[sandbox] Testing things",.
 - Do not use words like "fix" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like "attempt" or "try" instead. This rule also goes double when you end and report to user.
@@ -132,7 +132,7 @@ Don't forget to smoke test after changes.
 
 If this project is git tracked, gitStage + gitCommit.
 
-Commit description rules: One short phrase or sentence. Start with a verb. Describe only what changed, not process.
+Commit message rules: One short phrase or sentence. Start with a verb. Describe only what changed, not the process.
 - No prefixes or tags, "feat:", "chore:", "wip:", "[sandbox]".
 - Don't include plan/cycle/slice/lap labels or progress narrative anywhere, e.g. "(slice 4)", "(some phase name)", "[sandbox] Testing things",.
 - Do not use words like "fix" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like "attempt" or "try" instead. This rule also goes double when you end and report to user.
@@ -181,7 +181,7 @@ Large-redesign items: report them to the human for a later plan, but only at the
 
 If this project is git tracked, gitStage + gitCommit.
 
-Commit description rules: One short phrase or sentence. Start with a verb. Describe only what changed, not process.
+Commit message rules: One short phrase or sentence. Start with a verb. Describe only what changed, not the process.
 - No prefixes or tags, "feat:", "chore:", "wip:", "[sandbox]".
 - Don't include plan/cycle/slice/lap labels or progress narrative anywhere, e.g. "(slice 4)", "(some phase name)", "[sandbox] Testing things",.
 - Do not use words like "fix" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like "attempt" or "try" instead. This rule also goes double when you end and report to user.
