@@ -24,6 +24,8 @@ Be sure to fan out a couple Workflow audit passes on every modified file or rang
 
 ## align-fan-out
 
+Do this step when on the final slice of the phase. Skip when slices are not all accounted for yet.
+
 **Analysis only.** Plan alignment audit. Fan out via `Workflow()`.
 
 Vet the implementation for misalignments from the plan:
@@ -40,6 +42,8 @@ Vet the implementation for misalignments from the plan:
 Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
 
 ## align-fix
+
+Do this step when on the final slice of the phase. Skip when slices are not all accounted for yet.
 
 Fix real misalignments and run smoke tests (run editor/game instances, introspection checks, screenshots, etc). Have a team? If it is their role, ask them to unit-test or smoke run.
 
