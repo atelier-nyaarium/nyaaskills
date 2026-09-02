@@ -73,8 +73,7 @@ Fix the real issues and run smoke tests again. Watch out for: yes-manning, scope
 
 **Same bug twice is a design bug:** Note which mechanism each fix lands in. The second or third time you patch the same defect class in the same mechanism, that is a /architecture violation, not bad luck. Stop trying to fix it properly here. Land the smallest patch that keeps the phase green, then append it under a `### Bug Classes` heading inside the current phase's section of the plan file, creating that heading if it is not there yet: the mechanism, the defect class, and what each round patched. Save the fix for `architecture-fan-out`, or raise it to `crust-collection`.
 
-/coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
-Don't forget to smoke test after changes.
+**Final prose fan out** to have agents enforce /coding skill rules. Especially **Concise** and **Timeless** rules. Be sure to tell them the scope, like the unstaged files or whatever. Don't forget to smoke test after cleanup.
 
 If a fix changed anything, `cycleGoto(...)` back to `red-team-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `cycleNext` instead.
 
@@ -127,6 +126,8 @@ Don't forget to smoke test after changes.
 
 **Then hand it to red team.** A refactor is unproven until something hostile has looked at it. `cycleGoto(...)` to `red-team-fan-out`. Step order brings you back through here, and `architecture-fan-out` can wave you past when nothing is left worth doing.
 
+**Final prose fan out** to have agents enforce /coding skill rules. Especially **Concise** and **Timeless** rules. Be sure to tell them the scope, like the unstaged files or whatever. Don't forget to smoke test after cleanup.
+
 ## architecture-commit
 
 If this project is git tracked, gitStage + gitCommit.
@@ -173,6 +174,8 @@ Don't forget to smoke test after changes.
 **Then hand it to red team.** A fix is unproven until something hostile has looked at it. `cycleGoto(...)` to `red-team-fan-out`. Step order brings you back through here, and `compliance-fan-out` can wave you past when nothing is left worth doing.
 
 Large-redesign items: report them to the human for a later plan, but only at the very end after the plan is fully accounted for (`done`). Don't break out of the cycles just to report.
+
+**Final prose fan out** to have agents enforce /coding skill rules. Especially **Concise** and **Timeless** rules. Be sure to tell them the scope, like the unstaged files or whatever. Don't forget to smoke test after cleanup.
 
 ## compliance-commit
 
