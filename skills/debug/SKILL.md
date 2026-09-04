@@ -1,6 +1,6 @@
 ---
 name: debug
-description: Debugging guidelines. Always load this skill before any debugging work. If you catch yourself saying "Fixed", "Found the bug", or any completion phrase, load this immediately and correct course.
+description: Debugging guidelines. Always load this skill before any debugging work. If you catch yourself saying "Fixed", "Found the bug", or any completion phrase, load this immediately and correct course. Load immediately if asked to "instrument" code.
 ---
 
 # Debugging Guidelines
@@ -47,6 +47,12 @@ When something breaks, I do not touch code until I have hypothesis and plan to t
 If no debug logging infrastructure exists in project, this is critical gap blocking effective debugging. Ask **team-lead** for permission to request `testability-assessor` to set up instrumentation before proceeding. Highest priority request you can make.
 
 **Client-server divide:** If bug spans client/server boundary, use project's HTTP ingest route to send client-side debug payloads to server-side NDJSON log. Do not use `console.log` for structured debugging.
+
+### Placebo
+
+You likely made 8 different random patches before getting here. Determine if it is placebo or aggressive guards that just make the code less maintainable. Clean it out.
+
+Don't just git reset though, unless you have determined only your wrong changes are uncommited.
 
 ### 1. Form hypotheses
 
