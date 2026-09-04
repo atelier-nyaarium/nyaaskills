@@ -31,6 +31,8 @@ If **Lexicon** MCP plugin is enabled, use it over bare Find/Grep to locate symbo
 
 When refactoring clean-break style, try reducing surface area for problems and failing tests. Peel off independent clean break layers before adding code.
 
+If you encounter a bug or unexpected behavior, resort to /debug skill to instrument WHY. Don't guess.
+
 ## Dont Use bash to Edit
 
 Don't use bash sed/awk/python/heredocs to edit code. You break shit a lot of the times you do this.
