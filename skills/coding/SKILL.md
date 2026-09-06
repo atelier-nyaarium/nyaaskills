@@ -166,6 +166,12 @@ Did they even ask you to push/PR?
 
 ❓ Ask before firing away.
 
+### Forking and Pull Requests
+
+The above consent rule does not mean you can post upstream PRs to unaffiliated teams. Most the world hates AI. And even if your fix is a true fix, it will get shuned on.
+
+Don't ever post upstream PRs to 3rd party teams, unless you determined from history and vibe that we are associated teams with collaborative history.
+
 ### Message
 
 One short phrase or sentence. Verb first, no prefixes. Don't use words like \"fix\" unless the human has confirmed the change is the correct solution; for unverified attempts, use words like \"attempting\" or \"trying\" instead.
