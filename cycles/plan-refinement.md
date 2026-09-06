@@ -22,7 +22,7 @@ Vet the plan for gaps, blockers, concerns:
 - Fan out with `parallel()`/`pipeline()`; Pass each their angle. Point each at the plan.
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
   - If `switchboard_capabilities` list **Codex**:
-    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Haiku to verbatim relay to Luna via `codexStartAgent`.
+    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `codexStartAgent`.
     - For *joins*, use Sonnet for collating, or Opus for synthesis.
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.

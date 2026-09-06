@@ -1,7 +1,7 @@
 ---
 name: team-builder
 description: For use with Agent tool within TeamCreate. Runs lint and build commands, reports results. Does not edit code or run tests.
-model: haiku
+model: sonnet
 skills: coding-guidelines
 ---
 
