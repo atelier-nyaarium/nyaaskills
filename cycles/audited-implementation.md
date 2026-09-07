@@ -16,7 +16,7 @@ Implement the phase. Complex code -> handle yourself. Have a TeamCreate() team? 
 
 If `switchboard_capabilities` list **Task Board**, use Switchboard `taskBoard*` series of tools instead of vanilla Claude `TaskCreate`/`TaskUpdate`. Else, use vanilla Task series. Maintain the task board frequently to show active progress. Recommended to build the full phase listing and their nested slices in Task Board, so the whole plan is visible from the app.
 
-Be sure to fan out a couple Workflow audit passes on every modified file or range. If `switchboard_capabilities` list **Codex**, use Sonnet to verbatim relay to Codex Luna. Otherwise, audit with Sonnet.
+If `switchboard_capabilities` list **Codex**, use Sonnet to verbatim relay to Codex Luna. Otherwise, audit with Sonnet. I don't trust you with comments, so always fan out a couple Workflow edits to Luna to clean your pollution.
 1. Violators of /coding guidelines. Especially overly long comments (keep to 4 words or less, unless CRITICAL), narrative comments. Anything listed in `## Documentation Style`.
 2. Units that test plain internal states instead of behavior. They report, you fix if real.
 
@@ -47,7 +47,9 @@ Do this step when on the final slice of the phase. Skip when slices are not all 
 
 Fix real misalignments and run smoke tests (run editor/game instances, introspection checks, screenshots, etc). Have a team? If it is their role, ask them to unit-test or smoke run.
 
-/coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
+If `switchboard_capabilities` list **Codex**, use Sonnet to verbatim relay to Codex Luna. Otherwise, audit with Sonnet. I don't trust you with comments, so always fan out a couple Workflow edits to Luna to clean your pollution.
+- Violators of /coding guidelines. Especially overly long comments (keep to 4 words or less, unless CRITICAL), narrative comments. Anything listed in `## Documentation Style`.
+
 Don't forget to smoke test after changes.
 
 If a fix changed anything, `cycleGoto(...)` back to `align-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `next()` instead.
@@ -123,7 +125,9 @@ Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinate
 
 Apply the top chunk `architecture-fan-out` handed you.
 
-/coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
+If `switchboard_capabilities` list **Codex**, use Sonnet to verbatim relay to Codex Luna. Otherwise, audit with Sonnet. I don't trust you with comments, so always fan out a couple Workflow edits to Luna to clean your pollution.
+- Violators of /coding guidelines. Especially overly long comments (keep to 4 words or less, unless CRITICAL), narrative comments. Anything listed in `## Documentation Style`.
+
 Don't forget to smoke test after changes.
 
 **Reconcile the plan with what shipped.** This step is licensed to deviate, so slices you already marked `✅` may no longer describe the code. Rewrite those sections to match what is actually there. The plan is the record of what was built, not what was intended, and a stale `✅` means the next lap audits against a spec that no longer exists.
@@ -170,7 +174,9 @@ Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinate
 
 Apply the small fixes `compliance-fan-out` flagged.
 
-/coding skill hygiene. Especially **Comments Must be Timeless** and reduce massive comments.
+If `switchboard_capabilities` list **Codex**, use Sonnet to verbatim relay to Codex Luna. Otherwise, audit with Sonnet. I don't trust you with comments, so always fan out a couple Workflow edits to Luna to clean your pollution.
+- Violators of /coding guidelines. Especially overly long comments (keep to 4 words or less, unless CRITICAL), narrative comments. Anything listed in `## Documentation Style`.
+
 Don't forget to smoke test after changes.
 
 **Reconcile the plan with what shipped.** Slices you already marked `✅` may no longer describe the code. Rewrite those sections to match what is actually there. The plan is the record of what was built, not what was intended, and a stale `✅` means the next lap audits against a spec that no longer exists.
@@ -196,7 +202,7 @@ Commit message rules: One short phrase or sentence. Start with a verb. Describe 
 
 ## documentation
 
-Update `docs/` and jsdoc/tsdoc/etc above major functional systems and classes. And cleanup comments according to /coding rules and update docs if needed.
+Update `docs/` and jsdoc/tsdoc/etc above major functional systems and classes. And cleanup docs according to /coding rules if needed.
 
 General rules:
 - Must be clear enough that human can skim and take over. Clear, but not dense.
