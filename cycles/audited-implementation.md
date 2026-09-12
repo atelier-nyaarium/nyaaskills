@@ -39,7 +39,7 @@ Vet the implementation for misalignments from the plan:
 - Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors.
 
-Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated / *skill issue*(lol). A confident tone is not evidence, nor is their inability to follow something clearly documented. Verify against the code.
 
 ## align-fix
 
@@ -71,7 +71,7 @@ Vet the implementation for gaps, blockers, concerns:
 - Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors.
 
-Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated / *skill issue*(lol). A confident tone is not evidence, nor is their inability to follow something clearly documented. Verify against the code.
 
 ## red-team-fix
 
@@ -117,7 +117,7 @@ Vet the implementation for architectural improvements using the /architecture sk
 
 Anything under the current phase's `### Bug Classes` heading is required input, not a candidate. Red team already proved that class recurs, so it enters the ranking as a redesign target and the fan-out only decides the shape of the fix.
 
-Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated / *skill issue*(lol). A confident tone is not evidence, nor is their inability to follow something clearly documented. Verify against the code.
 
 **Optional:** If you've noticed Agents fabricating wrong facts, sus out why. Poorly named function/class names? Stale comments? Anything that could be **misleading** them? Weigh these into the architecture assessment as something to fix, when you notice the issue.
 
@@ -168,7 +168,7 @@ Vet the implementation for compliance gaps using the /compliance skill:
 - Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors, split into small (fix now) or large redesign (defer).
 
-Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated / *skill issue*(lol). A confident tone is not evidence, nor is their inability to follow something clearly documented. Verify against the code.
 
 ## compliance-fix
 

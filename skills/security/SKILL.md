@@ -138,6 +138,6 @@ When it qualifies, do not decide alone and do not decide first-thought. First-th
 - **Adversary Fan out** again each as a skeptic to try and refute each one. Was the report even real and accurate? Where does it scuff? What did the advocate undersell?
 - Synthesis: Dedup across dimensions, rank survivors.
 
-Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated. A confident tone is not evidence; verify against the code.
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated / *skill issue*(lol). A confident tone is not evidence, nor is their inability to follow something clearly documented. Verify against the code.
 
 The invariant lane does not get a battle. There is nothing to debate. It gets verification instead.
