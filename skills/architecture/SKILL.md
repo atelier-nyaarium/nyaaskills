@@ -66,8 +66,8 @@ Four grades, by where they fail:
 
 **Fails on change.** Nothing misbehaves today, but the code cannot absorb an edit cleanly.
 
-- **Duplication.** The same edit must land in N places, and eventually you forget one. Copy-paste registration, parallel implementations.
-- **Fragility.** Fixing one spot breaks another. Whack-a-mole, where coupling has no ownership boundary to stop a change propagating.
+- **Duplication:** The same edit must land in N places, and eventually you forget one. Copy-paste registration, parallel implementations.
+- **Fragility:** Fixing one spot breaks another. Whack-a-mole, where coupling has no ownership boundary to stop a change propagating.
 
 **Eliminated** when the N places become one, or when an ownership boundary contains the change.
 
@@ -86,10 +86,11 @@ Four grades, by where they fail:
 
 **Polluted codebase.** Nothing is wrong, but the codebase is slowly being poisoned by your own pollution.
 
-- **Comment noise.** 4-line comment blocks every few lines. They are correct now, but you battle them every few edits to judge if the comments match the behavior, or if the code matches the comment. You are programming comments, not code.
+- **Legacy hell:** You've created fallback after fallback, and now nobody knows what the expected modern behavior is.
+- **Comment noise:** 4-line comment blocks every few lines. They are correct now, but you battle them every few edits to judge if the comments match the behavior, or if the code matches the comment. You are programming comments, not code.
 - **Excessive testing** that misses the point of behavioral testing. Each bug fixed causes 30 tests to fail and heavy maintenance to realign the tests.
 
-**Eliminated** with `/coding` rules: reduce comments or kill them entirely (preferred), and reorganize / prune out pointless tests.
+**Eliminated** with a clean codebase. Legacy code should be commented as old, and if a clean break is desired, comment a FIXME date of when it should be removed. Reduce comments (`/coding` rules) or kill them entirely (preferred), and reorganize / prune out pointless tests.
 
 
 
@@ -205,7 +206,7 @@ Each of these is likely an instance of a defect class. Carry all of it into the 
 
 Fan out per the Agents section above. Forward your recalled pain points into the prompts.
 
-You want 1-5 opportunities and ONE recommendation, ranked per **Assessment Dimensions**. Map the dependency graph before choosing what to do first. Base it on this codebase's actual architecture, never on generic advice.
+You want 1-5 opportunities and ONE recommendation, ranked per **Assessment Dimensions**. Map the dependency graph before choosing what to do first. Base it on this codebase's actual architecture, not on general advice and pretty words.
 
 Review findings with user.
 

@@ -98,4 +98,4 @@ Re-run with instrumentation still in place to confirm problem resolved, and chec
 
 Once fix verified, clean up hypothesis debug regions no longer needed. Region markers make them easy to find and remove.
 
-**Auto-clearing the log file:** To prevent log bloating, debug logs should be cleared automatically at appropriate points in project (e.g., at start of build script).
+**Auto-clearing the log file:** To prevent log bloating, debug logs should be cleared automatically at appropriate points in project (e.g., at start of the dev server).
