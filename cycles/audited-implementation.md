@@ -230,7 +230,7 @@ If you need to mention a line number, use **Reference format:** `FilePath:Namesp
 
 ## plan-completeness
 
-Audit what part of the plan is incomplete. In the plan file, mark completed phases and slices with `✅`.
+Audit what part of the plan is incomplete. In the plan file, mark completed phases and slices with `✅`. If the plan is fully done, delete the plan with the very final commit.
 
 If there is:
 - Unfinished work in this current phase: `cycleGoto` back to the `implementation-phase`.
