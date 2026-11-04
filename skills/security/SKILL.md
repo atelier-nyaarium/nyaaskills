@@ -1,6 +1,6 @@
 ---
 name: security
-description: Decides how much security a project actually needs, then builds that much correctly. Load this skill immediately when security is on the table; login and sessions, access control, serving user data, key exchange, or anything a client could forge.
+description: Decides with the human how much security a project needs, then builds that much correctly. Load when designing or changing login and session flows, access control, endpoints serving user data, encryption or key exchange, or anything a client could forge or peek at.
 ---
 
 # Ease-of-Use vs Security
@@ -9,12 +9,12 @@ The strongest security is the one the human will actually keep using.
 
 Pile on ceremony and it gets worked around:
 
-- Rotated 20-character password -> sticky note.
-- Awkward key exchange -> secret pasted into Discord.
+- Rotated 20-character password -> Excel passwords spreadsheet.
+- Awkward key exchange -> secret pasted into Discord (I do it, and they inevitably will too).
 
-A worked-around control is not high security. It is zero security you believe is strong. So "maximum security" is the lazy answer. The real question is what the human will tolerate.
+A control that gets worked around is not high security. It's zero security that you now believe is strong. So "maximum security" is the laziest answer you can give. The real question is what security is needed (the floor), and what the human will **tolerate** (the ceiling).
 
-Two lanes get you there. Scope the problem first, then pick.
+Scope the problem first, then run the two checks.
 
 ## Terse and Concise
 
@@ -22,7 +22,7 @@ Whether speaking to the user or writing comments, keep everything concise. Avoid
 
 ## Agents
 
-The fan-out here is per candidate option, and it is gated. You write the prompts, so the context goes in with them: the threat model you scoped, the appetite the human named, and the floor and ceiling you bounded. A fresh agent recovers none of that on its own.
+The fan-out here is per candidate option. You write the prompts, so the context goes in with them: the threat model you scoped, anything the human mentioned they care about, and the floor/ceiling you bounded.
 
 **With `Workflow()`,** see **Run It as an Agent Battle** for when it qualifies and how to shape it.
 
@@ -30,101 +30,95 @@ The fan-out here is per candidate option, and it is gated. You write the prompts
 
 ## Scope It First
 
-Name the threat model. Who is the attacker, relative to the system?
+Name the threat model. Who is the malicious actor, and what position do they hold relative to the system? How they got that position is not your concern.
 
-- **Outsider** - no account. Scanning, guessing, scraping.
-- **Peer** - a logged-in user reaching for another user's data. The most-missed one in any multi-user system.
-- **Climber** - a logged-in user reaching for higher privilege. Free to paid, member to admin.
-- **The client itself** - everything it sends is attacker-authored, and everything you send it is disclosed. A wallhack is data you shipped.
-- **A leaked credential** - assume the token, session, or DB dump gets out. What does it unlock?
-- **The middle** - the network, a third-party script, a malicious extension, the tab next door.
-- **The insider** - support staff, a rogue admin, and you. What do you want to be unable to read?
-- **A compromised machine** - their device or your server process.
+- **Outsider**: No account. Scanning, guessing, scraping.
+- **Peer**: A logged-in user reaching for another user's data. The most-missed one in any multi-user system.
+- **Climber**: A logged-in user reaching for higher privilege. Free to paid, member to admin.
+- **The server-client model**: Data it sends that can be authored. A wallhack is data you shipped.
+- **A leaked credential**: Assume the token, session, or DB dump gets out. What does it unlock?
+- **The middle**: The network, a third-party script, a malicious extension, the tab next door.
+- **The insider**: Support staff, a rogue admin, and you. What do you want to be unable to read?
+- **A compromised machine**: Their device, a peer or relay, or your server process.
 
-Some of it is not fixable from here. If the host computer is compromised, most application-level security is theater. Do not spend there.
+Whether that is fixable depends on the design. In a typical app, a compromised host makes application-level security theater. Do not spend your time there. When the design treats a machine as untrusted (federation, relays, end-to-end encryption), holding it must not let them forge or read what they shouldn't.
 
-❓ Ask the human how much security they actually want. Do not infer it, and do not default to maximum.
-
+❓ Ask the human how much security they actually want.
 - A blog does not need 2FA and a hardware key.
 - Most corporate sites fail Mozilla Observatory and ship anyway, on purpose.
 - "Enough that a scraper moves on" and "enough that a subpoena gets nothing" are different products.
 
 Only the human picks which one they are building. Advise against a bad call, but they have the final say.
 
-## Pick the Lane
+## Two Checks
 
 For anything still in scope, two questions.
 
-**What does a careless choice do?**
+**If you get it slightly wrong, what happens?**
 
-- **Degrades gracefully** - you lose a little surface area or convenience. A tradeoff.
-- **Fails catastrophically and silently** - forgeable, replayable, impersonable, and nobody notices. An invariant.
+- **Tradeoff**: It gets a bit worse, and someone notices. You lose a little protection or convenience.
+- **Invariant**: It breaks completely, and nobody notices. Forgeable, replayable, impersonable.
 
-**What does the strong path cost the human?**
+**What does the strong version cost the human?**
 
-- **Nothing** - the library or the platform enforces it. Nobody needs to weigh in.
-- **A secret to carry, a blocking step, a fumble that means redoing setup** - anything that tempts "I'll just paste it here for now." The human decides if it is worth it.
+- **Nothing**: The library or platform handles it.
+- **Something**: A secret to carry, a blocking step, a setup that has to be redone if fumbled. Anything that tempts "I'll just paste it here."
 
-Failure shape decides how much freedom you have. Cost decides who gets to choose. A costly invariant goes through both lanes: the weighed lane for whether, the invariant lane for how.
+Each check applies on its own:
 
-## The Invariant Lane
+- **Costly?** Ask the human.
+- **Invariant?** Build it exactly.
+- **Both?** Ask first, then build it exactly.
+- **Neither?** Pick a sane default and move on.
 
-Scoping decides whether you build the control at all. This lane is only about how, once the human has said yes.
+## Invariant: Build It Exactly
 
-At that point there is no decision left. Take it in full, do not soften it.
+This section is only about how. A free invariant needs no ask. A costly one needs the human's yes first.
 
-Most projects only ever meet the everyday ones. Each has exactly one correct shape, and the near-miss does not weaken the guarantee, it voids it:
+Each example has one correct shape. The near-miss looks the same and protects nothing:
+- **Password hashing**: Use Argon2id or bcrypt. A fast hash like SHA-256 has the same API and cracks offline.
+- **Token comparison**: Compare in constant time (`crypto.timingSafeEqual`, `hmac.compare_digest`). `==` leaks the answer a byte at a time.
+- **Session and signature verification**: Verify before reading. `jwt.decode` instead of `jwt.verify` accepts forged tokens and looks identical on the happy path.
+- **Access scoping**: Filter every query by the current user. One unfiltered path exposes every row.
+- **Queries and output**: Parameterize queries and escape output. One concatenated string is an injection.
+- **Client-side visibility**: Don't send what they shouldn't see, like fog of war or the other player's hand. Hiding it in the UI still ships it.
+- **Server authority**: Compute score, position, and damage on the server. Trust one client-reported field and the leaderboard is fiction.
+- **Replay guards**: Reject repeats on every state-changing path with a single-use ID or timestamp window. Miss one path and a captured request works twice.
+- **Nonces and IVs**: Use a fresh one per message under the same key. One reuse exposes plaintext, and with GCM lets attackers forge messages.
+- **Signing bytes**: Sign and verify the exact bytes on the wire. A stray newline or re-serialized JSON lets two sides disagree on what was signed.
+- **Key exchange**: Authenticate the handshake. Skip it and you may be encrypting to the attacker.
 
-- **Password hashing** - a fast hash instead of a slow one. Same API, no warning, offline-crackable.
-- **Token comparison** - `==` instead of constant-time. Leaks the answer a byte at a time.
-- **Session and signature verification** - parsed, never actually verified. The happy path is identical.
-- **Access scoping** - every query filtered by the current user. One unfiltered path exposes every row.
-- **Client-side visibility** - hiding it in the UI is not hiding it. Fog of war, the other player's hand, anything behind a wall.
-- **Server authority** - the client reporting its own score, position, or damage. One trusted field and the leaderboard is fiction.
-- **Replay guards** - the check skipped on one path. Every other path still looks right.
+Where possible, use a well-known library, and write the test that fails the cases.
 
-Note what they share: the mistake is invisible. Tests pass, the UI works, nothing logs. That is what makes it an invariant and not a tradeoff.
+## Costly: The Human Decides
 
-If the human scoped higher, the same rule extends up. Nothing changes but the grade:
+**A floor with no ceiling is what lands passwords onto an Excel passwords spreadsheet: technically strong, practically abandoned.**
 
-- **Nonces and IVs** - one reuse. Not weaker, broken.
-- **Signing bytes** - a stray newline, or re-serialized JSON with reordered keys. Verifies here, forges there.
-- **Key exchange** - a handshake that authenticates nothing. Encrypted to the attacker is still encrypted.
-- **Commit-then-reveal, SAS comparison, forward secrecy** - canonical constructions with published vectors. Reproduce, do not invent.
+The strong version costs the human something, so they decide. For a costly tradeoff, pick among several reasonable options. For a costly invariant, decide whether to build it at all.
 
-So the discipline is fidelity, not judgment. You are not designing something new, you are reproducing a known-correct primitive. Take it from the library. If two implementations have to agree, prove it with shared test vectors.
+Bound it first:
+- **Floor**: What must not happen, from the threat model you scoped. "A logged-in player must not download another player's saves."
+- **Ceiling**: How much friction the human will accept. Ask about each cost, don't guess:
+  - A step on every use, not just at setup
+  - Something to carry, copy, or retype
+  - A setup that can fail halfway and has to be redone
+  - No recovery path. Lose the key, lose the account.
 
-## The Weighed Lane
+Drop every option below the floor or above the ceiling. Show the human what's left with its costs, and recommend the easiest. Security is a gate, not a sort key, so "most secure" never wins on its own.
 
-Here the strong path has real human cost and several honest answers exist. Do not maximize. Bound it, then take the cheapest thing inside the bounds.
-
-- **Floor** - the threat model you already scoped. What must not happen, and who is explicitly out of scope. "A hostile process on their own machine means they are already compromised. Not ours to fix."
-- **Ceiling** - what the human will actually tolerate. Ask, do not guess.
-
-Ceilings usually look like:
-
-- A step on every use, not just at setup
-- Something to carry, copy, or retype
-- A tedious setup that can fail halfway and has to be redone
-- No recovery path. Lose the key, lose the account.
-
-Then choose. Drop everything under the floor, and among what survives take the easiest. Security is a gate, not a sort key, so "most secure" never wins on its own.
-
-Most "evaluate the options" thinking sets only a floor.
-
-**A floor with no ceiling is what produces the sticky note: technically strong, practically abandoned.**
+If nothing is left, the floor and ceiling conflict. Show the closest option and what it costs, and let the human raise the ceiling or lower the floor.
 
 ## Run It as an Agent Battle
 
-Not every question needs this, and most do not. Use the library, follow the invariant, move on.
+Most questions don't need this. Invariants never do, since there is nothing to debate. Build them exactly and verify them.
 
 Run the battle when all three are true:
 
-- You are in the weighed lane, so real options exist instead of one correct shape.
+- It's a costly tradeoff, so real options exist instead of one correct shape.
 - The choice is expensive to reverse. It shapes storage, protocol, or the signup flow.
 - You cannot already name the winner and defend it against the best counterargument.
 
-When it qualifies, do not decide alone and do not decide first-thought. First-thought is almost always the lazy option or the quietly-insecure one. Spend a `Workflow()` and make the agents fight.
+When it qualifies, don't settle on your first thought. It's usually the lazy option or the quietly insecure one. Spend a `Workflow()` and make the agents fight. Each dimension is a candidate option. Give every agent the threat model, the floor, the ceiling, and anything the human said they care about.
 
 - Fan out with `parallel()`/`pipeline()`; One agent per dimension. Enumerate several distinct avenues, plus a wildcard agent whose only job is "find one we have not named."
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
@@ -140,4 +134,6 @@ When it qualifies, do not decide alone and do not decide first-thought. First-th
 
 Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated / *skill issue*(lol). A confident tone is not evidence, nor is their inability to follow something clearly documented. Overcatious 100-line fixes for an edge case nobody cares about, or 100 lines of "tests" for simple 5-line fixes. Verify against the code.
 
-The invariant lane does not get a battle. There is nothing to debate. It gets verification instead.
+Then take the survivors to the human, as in **Costly: The Human Decides**.
+
+Without `Workflow()`, spawn the advocates and skeptics one at a time via Agent, Task, or runSubagent, using `team-*` or `subagent-*` depending on whether you are team lead via `CreateTeam`. Rank the results the same way.
