@@ -76,7 +76,7 @@ Live violations outrank all hardening, always.
 - Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors.
 
-Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated / *skill issue*(lol). A confident tone is not evidence, nor is their inability to follow something clearly documented. Verify against the code.
+Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated / *skill issue*(lol). A confident tone is not evidence, nor is their inability to follow something clearly documented. Overcatious 100-line fixes for an edge case nobody cares about, or 100 lines of "tests" for simple 5-line fixes. Verify against the code.
 
 Each dimension's checklist is in **Assessment Dimensions** below. Hand each fan-out agent its checklist.
 

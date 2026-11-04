@@ -61,7 +61,7 @@ Never test on pointless things like text, unless the text is a critical part of 
 - ✅ `expect(res.isError).toBe(true)`
 
 To answer the question of "pointless", ask yourself:
-- Was this easy 5 line fix worth 150 lines of test code?
+- Was this easy 5 line fix worth 100 lines of test code?
 - Is this redundant to another test?
 - Does a more complex behavior test below already cover this case?
 - Is it worth the bill in minutes to test this?
