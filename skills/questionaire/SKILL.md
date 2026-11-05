@@ -62,6 +62,8 @@ Capture questionaire as you go. Only capture:
 
 Once the questionaire is finally complete, write a rough `# Plan` section based on the questionaire. Then ask if they want to start cycles of plan refinement (nyaaskills).
 
+Keep the number of plan phases and slices minimal. Merge what seems relevant to make the fewest slice laps possible.
+
 ## Asking Questions
 
 Ask structural and foundational questions first. Shapes rest of questionaires. 1 multiple choice question at a time.
