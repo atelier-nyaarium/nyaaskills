@@ -32,7 +32,7 @@ Vet the implementation for misalignments from the plan:
 - Fan out with `parallel()`/`pipeline()`; Pass each their angle. Each agent git diffs on their own.
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
   - If `switchboard_capabilities` list **Codex**:
-    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `codexStartAgent`.
+    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `agentStart` with `backend: "codex"`.
     - For *joins*, use Sonnet for collating, or Opus for synthesis.
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
@@ -64,7 +64,7 @@ Vet the implementation for gaps, blockers, concerns:
 - Fan out with `parallel()`/`pipeline()`; Pass each their angle. Each agent git diffs on their own.
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
   - If `switchboard_capabilities` list **Codex**:
-    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `codexStartAgent`.
+    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `agentStart` with `backend: "codex"`.
     - For *joins*, use Sonnet for collating, or Opus for synthesis.
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
@@ -108,7 +108,7 @@ Vet the implementation for architectural improvements using the /architecture sk
 - Fan out with `parallel()`/`pipeline()`; Pass each a list of relevant sections and their angle.
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
   - If `switchboard_capabilities` list **Codex**:
-    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `codexStartAgent`.
+    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `agentStart` with `backend: "codex"`.
     - For *joins*, use Sonnet for collating, or Opus for synthesis.
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
@@ -159,7 +159,7 @@ Vet the implementation for compliance gaps using the /compliance skill:
 - Fan out with `parallel()`/`pipeline()`; Pass each a list of relevant sections and their angle.
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
   - If `switchboard_capabilities` list **Codex**:
-    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `codexStartAgent`.
+    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `agentStart` with `backend: "codex"`.
     - For *joins*, use Sonnet for collating, or Opus for synthesis.
   - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - Access control, data handling/classification, audit trails, retention, data-subject rights
