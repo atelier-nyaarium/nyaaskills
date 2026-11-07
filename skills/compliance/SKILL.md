@@ -67,11 +67,13 @@ Live violations outrank all hardening, always.
 **With `Workflow()`,** author the fan-out.
 
 - Fan out with `parallel()`/`pipeline()`; One agent per dimension that actually applies. Skip dimensions belonging to regulations you already scoped out.
-- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
-  - If `switchboard_capabilities` list **Codex**:
-    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `agentStart` with `backend: "codex"`.
-    - For *joins*, use Sonnet for collating, or Opus for synthesis.
-  - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out.
+  - If `switchboard_capabilities` list **workflow** and **Codex**:
+    - Author the script with Switchboard's `workflowStart`, not Claude's Workflow.
+    - Fan-out steps run on Luna directly (`backend: "codex"`).
+    - The join is a `backend: "claude"` step: Sonnet to collate, Opus to synthesize.
+  - Else, use Claude's `Workflow()`:
+    - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
 - Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors.

@@ -16,7 +16,7 @@ Implement the phase. Complex code -> handle yourself. Have a TeamCreate() team? 
 
 If `switchboard_capabilities` list **Task Board**, use Switchboard `taskBoard*` series of tools instead of vanilla Claude `TaskCreate`/`TaskUpdate`. Else, use vanilla Task series. Maintain the task board frequently to show active progress. Recommended to build the full phase listing and their nested slices in Task Board, so the whole plan is visible from the app.
 
-If `switchboard_capabilities` list **Codex**, use Sonnet to verbatim relay to Codex Luna. Otherwise, audit with Sonnet. I don't trust you with comments, so always fan out a couple Workflow edits to Luna to clean your pollution.
+I don't trust you with comments, so always fan out a couple of edit steps to clean your pollution. If `switchboard_capabilities` list **workflow** and **Codex**, run them as Luna steps in a `workflowStart` script. Otherwise, use Sonnet in `Workflow()`. Give parallel edit steps disjoint files.
 1. Violators of /coding guidelines. Especially overly long comments (keep to 4 words or less, unless CRITICAL), narrative comments. Anything listed in `## Documentation Style`.
 2. Units that test plain internal states instead of behavior. They report, you fix if real.
 
@@ -30,11 +30,13 @@ Do this step when on the final slice of the phase. Skip when slices are not all 
 
 Vet the implementation for misalignments from the plan:
 - Fan out with `parallel()`/`pipeline()`; Pass each their angle. Each agent git diffs on their own.
-- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
-  - If `switchboard_capabilities` list **Codex**:
-    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `agentStart` with `backend: "codex"`.
-    - For *joins*, use Sonnet for collating, or Opus for synthesis.
-  - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out.
+  - If `switchboard_capabilities` list **workflow** and **Codex**:
+    - Author the script with Switchboard's `workflowStart`, not Claude's Workflow.
+    - Fan-out steps run on Luna directly (`backend: "codex"`).
+    - The join is a `backend: "claude"` step: Sonnet to collate, Opus to synthesize.
+  - Else, use Claude's `Workflow()`:
+    - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
 - Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors.
@@ -47,7 +49,7 @@ Do this step when on the final slice of the phase. Skip when slices are not all 
 
 Fix real misalignments and run smoke tests (run editor/game instances, introspection checks, screenshots, etc). Have a team? If it is their role, ask them to unit-test or smoke run.
 
-If `switchboard_capabilities` list **Codex**, use Sonnet to verbatim relay to Codex Luna. Otherwise, audit with Sonnet. I don't trust you with comments, so always fan out a couple Workflow edits to Luna to clean your pollution.
+I don't trust you with comments, so always fan out a couple of edit steps to clean your pollution. If `switchboard_capabilities` list **workflow** and **Codex**, run them as Luna steps in a `workflowStart` script. Otherwise, use Sonnet in `Workflow()`. Give parallel edit steps disjoint files.
 - Violators of /coding guidelines. Especially overly long comments (keep to 4 words or less, unless CRITICAL), narrative comments. Anything listed in `## Documentation Style`.
 
 Don't forget to smoke test after changes.
@@ -62,11 +64,13 @@ If a fix changed anything, `cycleGoto(...)` back to `align-fan-out` to re-audit.
 
 Vet the implementation for gaps, blockers, concerns:
 - Fan out with `parallel()`/`pipeline()`; Pass each their angle. Each agent git diffs on their own.
-- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
-  - If `switchboard_capabilities` list **Codex**:
-    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `agentStart` with `backend: "codex"`.
-    - For *joins*, use Sonnet for collating, or Opus for synthesis.
-  - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out.
+  - If `switchboard_capabilities` list **workflow** and **Codex**:
+    - Author the script with Switchboard's `workflowStart`, not Claude's Workflow.
+    - Fan-out steps run on Luna directly (`backend: "codex"`).
+    - The join is a `backend: "claude"` step: Sonnet to collate, Opus to synthesize.
+  - Else, use Claude's `Workflow()`:
+    - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
 - Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors.
@@ -106,11 +110,13 @@ Commit message rules: One short phrase or sentence. Start with a verb. Describe 
 
 Vet the implementation for architectural improvements using the /architecture skill. You can now deviate from the plan, but do respect its goal:
 - Fan out with `parallel()`/`pipeline()`; Pass each a list of relevant sections and their angle.
-- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
-  - If `switchboard_capabilities` list **Codex**:
-    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `agentStart` with `backend: "codex"`.
-    - For *joins*, use Sonnet for collating, or Opus for synthesis.
-  - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out.
+  - If `switchboard_capabilities` list **workflow** and **Codex**:
+    - Author the script with Switchboard's `workflowStart`, not Claude's Workflow.
+    - Fan-out steps run on Luna directly (`backend: "codex"`).
+    - The join is a `backend: "claude"` step: Sonnet to collate, Opus to synthesize.
+  - Else, use Claude's `Workflow()`:
+    - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
 - Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors.
@@ -125,7 +131,7 @@ Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinate
 
 Apply the top chunk `architecture-fan-out` handed you.
 
-If `switchboard_capabilities` list **Codex**, use Sonnet to verbatim relay to Codex Luna. Otherwise, audit with Sonnet. I don't trust you with comments, so always fan out a couple Workflow edits to Luna to clean your pollution.
+I don't trust you with comments, so always fan out a couple of edit steps to clean your pollution. If `switchboard_capabilities` list **workflow** and **Codex**, run them as Luna steps in a `workflowStart` script. Otherwise, use Sonnet in `Workflow()`. Give parallel edit steps disjoint files.
 - Violators of /coding guidelines. Especially overly long comments (keep to 4 words or less, unless CRITICAL), narrative comments. Anything listed in `## Documentation Style`.
 
 Don't forget to smoke test after changes.
@@ -157,11 +163,13 @@ Commit message rules: One short phrase or sentence. Start with a verb. Describe 
 
 Vet the implementation for compliance gaps using the /compliance skill:
 - Fan out with `parallel()`/`pipeline()`; Pass each a list of relevant sections and their angle.
-- Adjust Agent count to complexity. Choose between 4 to 12 per fan out. Explicitly choose a model:
-  - If `switchboard_capabilities` list **Codex**:
-    - For *fan outs* (like Explore/Analyze/Audit/Edits), use Sonnet to verbatim relay to Luna via `agentStart` with `backend: "codex"`.
-    - For *joins*, use Sonnet for collating, or Opus for synthesis.
-  - Else, use Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
+- Adjust Agent count to complexity. Choose between 4 to 12 per fan out.
+  - If `switchboard_capabilities` list **workflow** and **Codex**:
+    - Author the script with Switchboard's `workflowStart`, not Claude's Workflow.
+    - Fan-out steps run on Luna directly (`backend: "codex"`).
+    - The join is a `backend: "claude"` step: Sonnet to collate, Opus to synthesize.
+  - Else, use Claude's `Workflow()`:
+    - Sonnet for **light** fact checks and exploration, Opus for complex reasoning.
 - Access control, data handling/classification, audit trails, retention, data-subject rights
 - SOC2/GDPR/CPRA
 - If **Lexicon** MCP plugin is enabled, have them use it over bare Find/Grep.
@@ -174,7 +182,7 @@ Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinate
 
 Apply the small fixes `compliance-fan-out` flagged.
 
-If `switchboard_capabilities` list **Codex**, use Sonnet to verbatim relay to Codex Luna. Otherwise, audit with Sonnet. I don't trust you with comments, so always fan out a couple Workflow edits to Luna to clean your pollution.
+I don't trust you with comments, so always fan out a couple of edit steps to clean your pollution. If `switchboard_capabilities` list **workflow** and **Codex**, run them as Luna steps in a `workflowStart` script. Otherwise, use Sonnet in `Workflow()`. Give parallel edit steps disjoint files.
 - Violators of /coding guidelines. Especially overly long comments (keep to 4 words or less, unless CRITICAL), narrative comments. Anything listed in `## Documentation Style`.
 
 Don't forget to smoke test after changes.
