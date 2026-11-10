@@ -20,6 +20,10 @@ I don't trust you with comments, so always fan out a couple of edit steps to cle
 1. Violators of /coding guidelines. Especially overly long comments (keep to 4 words or less, unless CRITICAL), narrative comments. Anything listed in `## Documentation Style`.
 2. Units that test plain internal states instead of behavior. They report, you fix if real.
 
+**Green commit disipline**:
+- Phases should end green. Aside from data migration/un-migration juggles, the app should run somewhat fine at the commit hash of any phase end.
+- Slices should end green where it matters. You might have to divided a system over multiple slices, but tests should at least be green within each part where the work is focused on.
+
 
 
 ## align-fan-out
@@ -86,6 +90,10 @@ Fix the real issues and run smoke tests again. Watch out for: yes-manning, scope
 **Final prose fan out** to have agents enforce /coding skill rules. Especially **Concise** and **Timeless** rules. Be sure to tell them the scope, like the unstaged files or whatever. Don't forget to smoke test after cleanup.
 
 If a fix changed anything, `cycleGoto(...)` back to `red-team-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `cycleNext` instead.
+
+**Green commit disipline**:
+- Ensure phases end green.
+- Ensure slices end green where it matters.
 
 
 
