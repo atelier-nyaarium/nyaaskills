@@ -46,14 +46,14 @@ When you leave something whole, report it as an **honest remainder** with the re
 
 For more than a handful of files, use `cycleStartItems` with the `audited-implementation` cycle and one item per file or file group. The queue survives compaction; your memory does not.
 
-Each lap: implement, red team, fix, commit, document. One commit per lap, and only on a fully green tree.
+Each lap: implement, adversarial audit, fix, commit, document. One commit per lap, and only on a fully green tree.
 
 ### The lap machine
 
 1. **Baseline first.** Copy the source file somewhere outside the repo BEFORE any edit. Every later proof compares against it.
 2. **Mover** (Sonnet is enough): assembles new files from verified range extractions of that baseline. Never retype a body. Only imports, package lines, section headers and class wrappers are hand-written.
 3. **Verifier** (a second agent, adversarial): partitions the baseline into contiguous regions and diffs each against its destination. The partition must cover every line with no gap or overlap.
-4. **Red team fan-out**: independent angles the verifier's checklist cannot see. Tell it explicitly not to re-run the verifier's checks.
+4. **Adversarial fan-out**: independent angles the verifier's checklist cannot see. Tell it explicitly not to re-run the verifier's checks. Static analysis only. No /cyber or live-target work.
 
 Give every agent a schema so it returns data, not prose. A confident report is not evidence.
 

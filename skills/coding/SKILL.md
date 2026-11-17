@@ -185,7 +185,7 @@ Don't claim authorship (omit "Co-Authored-By" / "Generated with") for **human-wr
 
 Typically I have you execute a plan with phases, so all slices in a phase must be committed together.
 
-Audit thoroughly before committing. Our typical Red Team workflow depend on unstaged diffs.
+Audit thoroughly before committing. The adversarial audit depends on unstaged diffs.
 
 Found a bug after commiting? gitCommit(amend:true) to keep commits consolidated. If amending, merge messages intelligently. Keep it terse and concise.
 

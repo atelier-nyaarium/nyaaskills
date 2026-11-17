@@ -1,5 +1,5 @@
 ---
-steps: [implementation-phase, align-fan-out, align-fix, red-team-fan-out, red-team-fix, implementation-commit, architecture-fan-out, architecture-fix, architecture-commit, compliance-fan-out, compliance-fix, compliance-commit, documentation, crust-collection, plan-completeness]
+steps: [implementation-phase, align-fan-out, align-fix, adversarial-fan-out, adversarial-fix, implementation-commit, architecture-fan-out, architecture-fix, architecture-commit, compliance-fan-out, compliance-fix, compliance-commit, documentation, crust-collection, plan-completeness]
 ---
 
 # Audited Phase Implementation
@@ -62,11 +62,13 @@ If a fix changed anything, `cycleGoto(...)` back to `align-fan-out` to re-audit.
 
 
 
-## red-team-fan-out
+## adversarial-fan-out
 
-**Analysis only.** Red team audit. Fan out via `Workflow()`.
+**Analysis only.** Adversarial audit. Fan out via `Workflow()`.
 
-Vet the implementation for gaps, blockers, concerns:
+Assume the implementation is broken until the code proves otherwise. Analyze it for gaps, blockers, concerns:
+
+**Static analysis only.** Read code, reason about it. No firing payloads, probing endpoints, scanning or knocking ports, or breaking anything. Live cyber testing is /cyber lab work; agents in this cycle never do it.
 - Fan out with `parallel()`/`pipeline()`; Pass each their angle. Each agent git diffs on their own.
 - Adjust Agent count to complexity. Choose between 4 to 12 per fan out.
   - If `switchboard_capabilities` list **workflow** and **Codex**:
@@ -81,15 +83,15 @@ Vet the implementation for gaps, blockers, concerns:
 
 Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated / *skill issue*(lol). A confident tone is not evidence, nor is their inability to follow something clearly documented. Overcatious 100-line fixes for an edge case nobody cares about, or 100 lines of "tests" for simple 5-line fixes. Verify against the code.
 
-## red-team-fix
+## adversarial-fix
 
-Fix the real issues and run smoke tests again. Watch out for: yes-manning, scope creep, drift from codebase patterns.
+Fix only what survived triage, and run smoke tests again. Watch out for: yes-manning, scope creep, drift from codebase patterns.
 
 **Same bug twice is a design bug:** Note which mechanism each fix lands in. The second or third time you patch the same defect class in the same mechanism, that is a /architecture violation, not bad luck. Stop trying to fix it properly here. Land the smallest patch that keeps the phase green, then append it under a `### Bug Classes` heading inside the current phase's section of the plan file, creating that heading if it is not there yet: the mechanism, the defect class, and what each round patched. Save the fix for `architecture-fan-out`, or raise it to `crust-collection`.
 
 **Final prose fan out** to have agents enforce /coding skill rules. Especially **Concise** and **Timeless** rules. Be sure to tell them the scope, like the unstaged files or whatever. Don't forget to smoke test after cleanup.
 
-If a fix changed anything, `cycleGoto(...)` back to `red-team-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `cycleNext` instead.
+If a fix changed anything, `cycleGoto(...)` back to `adversarial-fan-out` to re-audit. If fixes are giving diminishing returns, advance with `cycleNext` instead.
 
 **Green commit disipline**:
 - Ensure phases end green.
@@ -129,7 +131,7 @@ Vet the implementation for architectural improvements using the /architecture sk
 - Give each a markdown Report format.
 - Synthesis: Dedup across dimensions, rank survivors.
 
-Anything under the current phase's `### Bug Classes` heading is required input, not a candidate. Red team already proved that class recurs, so it enters the ranking as a redesign target and the fan-out only decides the shape of the fix.
+Anything under the current phase's `### Bug Classes` heading is required input, not a candidate. The adversarial audit already proved that class recurs, so it enters the ranking as a redesign target and the fan-out only decides the shape of the fix.
 
 Post Workflow triage gate: Real gap vs overcautious / out-of-scope / hallucinated / *skill issue*(lol). A confident tone is not evidence, nor is their inability to follow something clearly documented. Overcatious 100-line fixes for an edge case nobody cares about, or 100 lines of "tests" for simple 5-line fixes. Verify against the code.
 
@@ -146,7 +148,7 @@ Don't forget to smoke test after changes.
 
 **Reconcile the plan with what shipped.** This step is licensed to deviate, so slices you already marked `✅` may no longer describe the code. Rewrite those sections to match what is actually there. The plan is the record of what was built, not what was intended, and a stale `✅` means the next lap audits against a spec that no longer exists.
 
-**Then hand it to red team.** A refactor is unproven until something hostile has looked at it. `cycleGoto(...)` to `red-team-fan-out`. Step order brings you back through here, and `architecture-fan-out` can wave you past when nothing is left worth doing.
+**Then hand it to adversarial review.** A refactor is unproven until something hostile has read it. `cycleGoto(...)` to `adversarial-fan-out`. Step order brings you back through here, and `architecture-fan-out` can wave you past when nothing is left worth doing.
 
 **Final prose fan out** to have agents enforce /coding skill rules. Especially **Concise** and **Timeless** rules. Be sure to tell them the scope, like the unstaged files or whatever. Don't forget to smoke test after cleanup.
 
@@ -197,7 +199,7 @@ Don't forget to smoke test after changes.
 
 **Reconcile the plan with what shipped.** Slices you already marked `✅` may no longer describe the code. Rewrite those sections to match what is actually there. The plan is the record of what was built, not what was intended, and a stale `✅` means the next lap audits against a spec that no longer exists.
 
-**Then hand it to red team.** A fix is unproven until something hostile has looked at it. `cycleGoto(...)` to `red-team-fan-out`. Step order brings you back through here, and `compliance-fan-out` can wave you past when nothing is left worth doing.
+**Then hand it to adversarial review.** A fix is unproven until something hostile has read it. `cycleGoto(...)` to `adversarial-fan-out`. Step order brings you back through here, and `compliance-fan-out` can wave you past when nothing is left worth doing.
 
 Large-redesign items: report them to the human for a later plan, but only at the very end after the plan is fully accounted for (`done`). Don't break out of the cycles just to report.
 
