@@ -5,11 +5,12 @@ description: For cyber team. Dont load unless asked.
 
 # Cyber Security Testing
 
-How to test an app and write up the result. Work a target against the case catalogue below (or an unlisted one you've spotted), try to reach a goal (a payload that actually executes in the target's context), then record the outcome as `report-risk.md` or `report-safe.md`.
+How to test an app and write up the result.
+- Work a target against the case catalogue below (or an unlisted one you've spotted)
+- Try to reach a goal (a payload that actually executes in the target's context)
+- Then record the outcome as a md.
 
 The loop, in short: **pick a surface → pick cases → fire payloads until one reaches its goal → record evidence or lack-of → write the report.**
-
-For every input, the defaults are **too long, too short, empty, wrong type, and malicious characters**; for every object, ask **"am I allowed to see/change this?"**; for every input stream, ask **"does a real parser read this, or do regexes guess at it?"**.
 
 ## Best Practices
 
@@ -43,6 +44,8 @@ Structured input (a request, JSON, CSV, an upload, an expression) is an input st
 Observe per surface: **parsed by a real parser, or dissected by regex?** Regex standing in for a parser means the input's language was never defined, and every downstream reader becomes a parser differential (cases 14–15). That input is a priority surface.
 
 ## Common Vulnerability Cases
+
+For every input, the defaults are **too long, too short, empty, wrong type, and malicious characters**; for every object, ask **"am I allowed to see/change this?"**.
 
 ### 1. Input validation & boundaries
 
