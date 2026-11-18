@@ -176,9 +176,9 @@ A test ends in one of:
 - 1 file, `report-safe.md`
 - Or if something was discovered, one file **`report-{level}-{casename}.md`** and its artifacts, per classification. Make a new folder per casename if multiple classifications were discovered. Reuse a casename and amend the document if it was the same case as before, just rediscovered. Reuse an officially known casename if that's the exact case discovered.
 
-The report title should be: `INITIALS-### (casename if discovered) — <component / target>`
+The report title should be: `INITIALS-### (casename) — <component / target>`
 - Replace `INITIALS` with the app's initials or something short so we can tell it apart from our many apps.
-- Fill in a casename if something was discovered.
+- Fill in a casename if something was discovered. Remove if safe.
 
 The verdict is the first thing a reader sees, and it stands or falls on **independent lines of evidence**, not one. Aim for at least two or three that don't share an assumption.
 
@@ -191,7 +191,7 @@ The verdict is the first thing a reader sees, and it stands or falls on **indepe
 ### Template
 
 ```markdown
-# <INITIALS-### (casename)> — <component / target>
+# INITIALS-### (casename, if discovered) — <component / target>
 
 - **Risk:** <risk level>
 - **Date:** YYYY-MM-DD
