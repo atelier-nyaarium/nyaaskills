@@ -16,7 +16,7 @@ The loop, in short: **pick a surface → pick cases → fire payloads until one 
 
 First get to know your local resources, and which ones are on the tables to pentest. Ask first if you intend to reach resources beyond the stated list.
 
-Existing keys test out to be pointing to a localhost/test/development resource. Raise and fix first if the lab is wrongly configured.
+Ensure existing API keys test out to be pointing to a localhost/test/development resource. Raise and fix first if the lab is wrongly configured.
 
 If you make a local webserver as a lab endpoint, place it in `./cve/lab-server/`. Reuse the lab server and tweak for future runs.
 
@@ -24,7 +24,7 @@ If you make a local webserver as a lab endpoint, place it in `./cve/lab-server/`
 
 The Cases list are represent some known vectors that you might find. And if you do find one, it could either be entirely harmless, or reveal a critical flaw.
 
-When pentesting, payloads you craft should always be harmless. Send them as the bad actor client, and observe on the server logs whether the server API handled odd cases gracefully, or let you do something it didn't expect. You may need to build in /debug instrumentation in the server code or run a lab webserver to actually observe it's effect.
+When pentesting, payloads you craft should always be harmless. Send them as the bad actor client, and observe on the server logs whether the server API handled odd cases gracefully, or let you do something it didn't expect. You may need to write `/debug` instrumentation in the server code or run a lab webserver to actually observe it's effect.
 
 Examples:
 - **Node Server:** `console.log("Hi!")`, `console.log(fs.readFileSync("/home/username/.bashrc"))`, `... exec("man grep")`
